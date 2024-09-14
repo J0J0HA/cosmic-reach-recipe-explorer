@@ -15,12 +15,12 @@
     let filtered = getUsesOf($page.params.item);
     let itemStack = getItemStack($page.params.item);
 
+    $: filtered = getUsesOf($page.params.item);
+    $: itemStack = getItemStack($page.params.item);
     onchange(() => {
         filtered = getUsesOf($page.params.item);
         itemStack = getItemStack($page.params.item);
     });
-    $: filtered = getUsesOf($page.params.item);
-    $: itemStack = getItemStack($page.params.item);
 </script>
 
 <svelte:head>

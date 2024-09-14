@@ -130,7 +130,7 @@
                     dataModFiles.set({});
                 }}
             >
-                Unload your data mods folder
+                Unload data mods
             </button>
         {:else}
             <button
