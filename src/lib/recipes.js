@@ -61,7 +61,13 @@ export function parseCraftingRecipe(data) {
                         gridRow.push(getItemStack(recipe.inputs[char]));
                     }
                 }
+                while (gridRow.length < 3) {
+                    gridRow.push(getItemStack(null));
+                }
                 grid.push(gridRow);
+            }
+            while (grid.length < 3) {
+                grid.push([getItemStack(null), getItemStack(null), getItemStack(null)]);
             }
             result.push(new CraftingRecipe(grid, output, true));
         }
