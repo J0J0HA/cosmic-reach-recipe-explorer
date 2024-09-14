@@ -1,5 +1,5 @@
 import * as zip from "@zip.js/zip.js";
-import { textures, items, craftingRecipes, blocks, furnaceRecipes } from "./stores";
+import { textures, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion } from "./stores";
 import { parseItem } from "./items";
 import { parseBlock } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
@@ -11,6 +11,7 @@ export async function unzipJar(file) {
         textures: {},
         items: {},
         blocks: {},
+        version: "unknown",
         recipes: {
             crafting: [],
             furnace: [],
@@ -21,6 +22,8 @@ export async function unzipJar(file) {
             let blob = await entry.getData(new zip.BlobWriter());
             let url = URL.createObjectURL(blob);
             result.textures[entry.filename] = url;
+        } else if (entry.filename.startsWith("build_assets/version.txt")) {
+            result.version = await entry.getData(new zip.TextWriter());
         }
         if (entry.filename.endsWith(".json")) {
             let data = await entry.getData(new zip.TextWriter());
@@ -69,4 +72,6 @@ export async function loadFromJar(file) {
         new_furnaceRecipes.push(...parseFurnaceRecipe(furnaceRecipe));
     }
     furnaceRecipes.set(new_furnaceRecipes);
+
+    loadedVersion.set(data.version);
 }
