@@ -2,6 +2,7 @@
     import { items, textures, craftingRecipes, blocks } from "$lib/stores";
     import { loadFromJar } from "$lib/unzipjar";
     import { downloadVersion, getVersionList } from "$lib/versions";
+    import { version } from "$app/environment";
 
     let current_items = {};
     items.subscribe((value) => {
@@ -20,6 +21,8 @@
         current_recipes = value;
     });
 </script>
+
+<div style="position: absolute; top:10px; left: 12.5px; font-size: 0.7rem;">{version.slice(0, 6)}</div>
 
 <div class="jar-chooser-box">
     {#if Object.keys(current_blocks).length + Object.keys(current_items).length + current_recipes.length + Object.keys(current_textures).length <= 0}
