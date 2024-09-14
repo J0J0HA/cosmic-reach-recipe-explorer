@@ -4,6 +4,7 @@ import { parseItem } from "./items";
 import { parseBlock } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
 import { writable } from "svelte/store";
+import * as Hjson from "hjson";
 
 
 export async function getFilesFromJar(file) {
@@ -19,7 +20,7 @@ export async function getFilesFromJar(file) {
             },
             readJson: async () => {
                 let text = await ifile.getData(new zip.TextWriter());
-                return JSON.parse(text);
+                return Hjson.parse(text);
             }
         }];
     }))
@@ -36,7 +37,7 @@ export async function getFilesFromFileList(files) {
             },
             readJson: async () => {
                 let text = await ifile.text();
-                return JSON.parse(text);
+                return Hjson.parse(text);
             },
         }]
     }))
@@ -45,6 +46,7 @@ export async function getFilesFromFileList(files) {
 export async function categorizeFiles(files) {
     let result = {
         textures: {},
+        models: {},
         items: {},
         blocks: {},
         version: "none",
