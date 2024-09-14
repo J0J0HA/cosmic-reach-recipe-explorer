@@ -23,76 +23,79 @@
 
 <div class="jar-chooser-box bordered">
     {#if $loadedVersion == "none"}
-        <h2>Hi! Load a jar file and/or data mod to start!</h2>
+        <h2>Load a jar file and/or data mod to start:</h2>
     {/if}
-    <input
-        id="jar-chooser"
-        accept="application/java-archive,application/x-java-archive,application/x-jar"
-        type="file"
-        hidden
-        on:change={(event) => {
-            document.querySelector("#jar-downloader").disabled = true;
-            document.querySelector("#jar-chooser-trigger").disabled = true;
-            const file = event.target.files[0];
-            getFilesFromJar(file).then((files) => {
-                jarFiles.set(files);
-                document.querySelector("#jar-downloader").disabled = false;
-                document.querySelector("#jar-chooser-trigger").disabled = false;
-            });
-        }}
-    />
 
     To get the games' content:
-    <button
-        id="jar-chooser-trigger"
-        on:click={() => {
-            document.querySelector("#jar-chooser").click();
-        }}>Upload a jar file from your PC</button
-    >
-    or
-    {#await getVersionList()}
-        <select value=":" id="jar-downloader" disabled>
-            <option value=":" key=":" disabled selected> Wait... </option>
-            <option value=":spacer" key=":spacer" disabled>
-                Choose one from the CRModders Archive
-            </option>
-        </select>
-    {:then versions}
-        <select
-            value=":"
-            id="jar-downloader"
-            on:change={(e) => {
+    <div>
+        <input
+            id="jar-chooser"
+            accept="application/java-archive,application/x-java-archive,application/x-jar"
+            type="file"
+            hidden
+            on:change={(event) => {
                 document.querySelector("#jar-downloader").disabled = true;
                 document.querySelector("#jar-chooser-trigger").disabled = true;
-                downloadVersion(
-                    versions.filter(
-                        (version) => version.id == e.target.value,
-                    )[0],
-                ).then((file) => {
-                    getFilesFromJar(file).then((files) => {
-                        jarFiles.set(files);
-                        document.querySelector("#jar-downloader").disabled =
-                            false;
-                        document.querySelector(
-                            "#jar-chooser-trigger",
-                        ).disabled = false;
-                    });
+                const file = event.target.files[0];
+                getFilesFromJar(file).then((files) => {
+                    jarFiles.set(files);
+                    document.querySelector("#jar-downloader").disabled = false;
+                    document.querySelector("#jar-chooser-trigger").disabled =
+                        false;
                 });
-
-                document.querySelector("#jar-downloader").value = ":";
             }}
+        />
+        <button
+            id="jar-chooser-trigger"
+            on:click={() => {
+                document.querySelector("#jar-chooser").click();
+            }}>Upload a jar file from your PC</button
         >
-            <option value=":" key=":" disabled selected>
-                Choose one from the CRModders Archive
-            </option>
-            {#each versions as version}
-                <option value={version.id} key={version.id}
-                    >{version.id} ({version.type})</option
-                >
-            {/each}
-        </select>
-    {/await}
+        or
+        {#await getVersionList()}
+            <select value=":" id="jar-downloader" disabled>
+                <option value=":" key=":" disabled selected> Wait... </option>
+                <option value=":spacer" key=":spacer" disabled>
+                    Choose one from the CRModders Archive
+                </option>
+            </select>
+        {:then versions}
+            <select
+                value=":"
+                id="jar-downloader"
+                on:change={(e) => {
+                    document.querySelector("#jar-downloader").disabled = true;
+                    document.querySelector("#jar-chooser-trigger").disabled =
+                        true;
+                    downloadVersion(
+                        versions.filter(
+                            (version) => version.id == e.target.value,
+                        )[0],
+                    ).then((file) => {
+                        getFilesFromJar(file).then((files) => {
+                            jarFiles.set(files);
+                            document.querySelector("#jar-downloader").disabled =
+                                false;
+                            document.querySelector(
+                                "#jar-chooser-trigger",
+                            ).disabled = false;
+                        });
+                    });
 
+                    document.querySelector("#jar-downloader").value = ":";
+                }}
+            >
+                <option value=":" key=":" disabled selected>
+                    Choose one from the CRModders Archive
+                </option>
+                {#each versions as version}
+                    <option value={version.id} key={version.id}
+                        >{version.id} ({version.type})</option
+                    >
+                {/each}
+            </select>
+        {/await}
+    </div>
     <hr />
     To load data mods:
     <input
