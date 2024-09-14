@@ -49,11 +49,11 @@
     >
     or
     {#await getVersionList()}
-        <select value=":" id="jar-downloader rep">
-            <option value=":" key=":" disabled selected>
+        <select value=":" id="jar-downloader" disabled>
+            <option value=":" key=":" disabled selected> Wait... </option>
+            <option value=":spacer" key=":spacer" disabled>
                 Choose one from the CRModders Archive
             </option>
-            <option value=":2" key=":2" disabled> Loading versions... </option>
         </select>
     {:then versions}
         <select
