@@ -7,7 +7,12 @@
         blocks,
         loadedVersion,
     } from "$lib/stores";
-    import { loadFromJar } from "$lib/unzipjar";
+    import {
+        dataModFiles,
+        jarFiles,
+        getFilesFromFileList,
+        getFilesFromJar,
+    } from "$lib/unzipjar";
     import { downloadVersion, getVersionList } from "$lib/versions";
     import { version } from "$app/environment";
 </script>
@@ -18,7 +23,7 @@
 
 <div class="jar-chooser-box bordered">
     {#if $loadedVersion == "none"}
-        <h2>Choose a Cosmic Reach .jar file to start</h2>
+        <h2>Hi! Load a jar file and/or data mod to start!</h2>
     {/if}
     <input
         id="jar-chooser"
@@ -29,13 +34,15 @@
             document.querySelector("#jar-downloader").disabled = true;
             document.querySelector("#jar-chooser-trigger").disabled = true;
             const file = event.target.files[0];
-            loadFromJar(file).then(() => {
+            getFilesFromJar(file).then((files) => {
+                jarFiles.set(files);
                 document.querySelector("#jar-downloader").disabled = false;
                 document.querySelector("#jar-chooser-trigger").disabled = false;
             });
         }}
     />
 
+    To get the games' content:
     <button
         id="jar-chooser-trigger"
         on:click={() => {
@@ -62,7 +69,8 @@
                         (version) => version.id == e.target.value,
                     )[0],
                 ).then((file) => {
-                    loadFromJar(file).then(() => {
+                    getFilesFromJar(file).then((files) => {
+                        jarFiles.set(files);
                         document.querySelector("#jar-downloader").disabled =
                             false;
                         document.querySelector(
@@ -85,9 +93,59 @@
         </select>
     {/await}
 
+    <hr />
+    To load data mods:
+    <input
+        id="dir-chooser"
+        type="file"
+        directory
+        mozdirectory
+        webkitdirectory
+        multiple
+        hidden
+        on:change={(event) => {
+            document.querySelector("#dir-chooser-trigger").disabled = true;
+            getFilesFromFileList(event.target.files).then((files) => {
+                dataModFiles.set(files);
+                document.querySelector("#dir-chooser-trigger").disabled = false;
+            });
+        }}
+    />
+    <div>
+        {#if Object.keys($dataModFiles).length > 0}
+            <button
+                id="dir-chooser-trigger"
+                on:click={() => {
+                    document.querySelector("#dir-chooser").click();
+                }}
+            >
+                Select a different data mod folder
+            </button>
+            <button
+                id="dir-unload"
+                on:click={() => {
+                    dataModFiles.set({});
+                }}
+            >
+                Unload your data mods folder
+            </button>
+        {:else}
+            <button
+                id="dir-chooser-trigger"
+                on:click={() => {
+                    document.querySelector("#dir-chooser").click();
+                }}
+            >
+                Select your data mod folder
+            </button>
+        {/if}
+    </div>
+    <hr />
+
     {$loadedVersion} with {Object.keys($blocks).length} blockstates, {Object.keys(
         $items,
-    ).length} items, {Object.keys($craftingRecipes).length + Object.keys($furnaceRecipes).length}
+    ).length} items, {Object.keys($craftingRecipes).length +
+        Object.keys($furnaceRecipes).length}
     recipes, and {Object.keys($textures).length} textures loaded.
 </div>
 
@@ -102,5 +160,9 @@
 
     .jar-chooser-box > * {
         margin: 10px;
+    }
+
+    hr {
+        width: 100%;
     }
 </style>
