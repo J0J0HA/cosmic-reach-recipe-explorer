@@ -1,0 +1,75 @@
+:root {
+    color-scheme: light;
+
+    --outline: blue;
+
+    --tooltip-back: #333;
+    --tooltip-text: white;
+    --tooltip-lore: lightgrey;
+
+    --slot-color: rgb(22, 78, 161);
+    --slot-hover-effect: color-mix(in srgb, transparent 75%, rgb(129, 129, 129));
+    --slot-color--output: orange;
+
+    --border: black;
+
+    --link-color: rgb(84, 84, 255);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+
+        --outline: lightblue;
+
+        --tooltip-back: #141414;
+        --tooltip-text: white;
+        --tooltip-lore: lightgrey;
+
+        --slot-color: rgb(22, 78, 161);
+        --slot-hover-effect: lightgrey;
+        --slot-color--output: rgb(153, 87, 11);
+
+        --border: white;
+
+        --link-color: rgb(84, 84, 255);
+    }
+}
+
+.bordered {
+    border: 1px solid color-mix(in srgb, transparent 80%, var(--border));
+    border-radius: 5px;
+}
+
+.bordered:hover {
+    border: 1px solid color-mix(in srgb, transparent 65%, var(--border));
+}
+
+img {
+    image-rendering: pixelated;
+}
+
+* {
+    margin-left: var(--margin-lr);
+    margin-right: var(--margin-lr);
+    margin-top: var(--margin-tb);
+    margin-bottom: var(--margin-tb);
+}
+
+a,
+a:link,
+a:visited {
+    all: unset;
+    text-decoration: underline;
+    color: var(--link-color);
+    cursor: pointer;
+}
+
+a:hover {
+    text-decoration: dashed underline;
+}
+
+a:active {
+    text-decoration: underline;
+    color: transparent;
+}

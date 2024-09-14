@@ -1,5 +1,5 @@
 <script>
-    import JarChooser from "../../JarChooser.svelte";
+    import Header from "../../Header.svelte";
     import { getWaysToGet } from "$lib/utils";
     import { getItemStack } from "$lib/items";
     import CraftingRecipe from "../../CraftingRecipe.svelte";
@@ -9,38 +9,40 @@
     import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
     import { onchange } from "$lib/stores";
-    let filtered = getWaysToGet($page.params.item);
-    let itemStack = getItemStack($page.params.item);
+    import Body from "../../Body.svelte";
 
+    $: filtered = getWaysToGet($page.params.item);
+    $: itemStack = getItemStack($page.params.item);
     onchange(() => {
         filtered = getWaysToGet($page.params.item);
         itemStack = getItemStack($page.params.item);
     });
-    $: filtered = getWaysToGet($page.params.item);
-    $: itemStack = getItemStack($page.params.item);
 </script>
 
 <svelte:head>
     <title>How to make {$page.params.item} - CR Recipes</title>
 </svelte:head>
 
-<JarChooser />
-<a href="/">Back to item list</a>
+<Header />
 
-<p>How to get</p>
-<ItemStackDetailDisplay {itemStack} />
+<Body>
+    <a href="/">Back to item list</a>
 
-<div class="center">
-    {#each filtered.furnace as recipe}
-        <FurnaceRecipe {recipe} />
-    {/each}
-    {#each filtered.crafting as recipe}
-        <CraftingRecipe {recipe} />
-    {/each}
-    {#if filtered.noUse}
-        <p>{$page.params.item} has no recipes.</p>
-    {/if}
-</div>
+    <h2>How to get</h2>
+    <ItemStackDetailDisplay {itemStack} />
+
+    <div class="center">
+        {#each filtered.furnace as recipe}
+            <FurnaceRecipe {recipe} />
+        {/each}
+        {#each filtered.crafting as recipe}
+            <CraftingRecipe {recipe} />
+        {/each}
+        {#if filtered.noUse}
+            <p>{$page.params.item} has no recipes.</p>
+        {/if}
+    </div>
+</Body>
 
 <style>
     .center {
@@ -49,5 +51,9 @@
         align-items: center;
         gap: 30px;
         margin-top: 30px;
+    }
+
+    h2 {
+        margin-bottom: 5px;
     }
 </style>

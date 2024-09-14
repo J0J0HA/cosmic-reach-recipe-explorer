@@ -15,7 +15,7 @@
 
 <input
     type="text"
-    class="search"
+    class="search bordered"
     placeholder="Search..."
     on:change={(e) => {
         search = e.target.value;
@@ -25,23 +25,23 @@
     }}
 />
 
-{#each filtered_items as itemId}
-    <ItemStackDetailDisplay itemStack={getItemStack(itemId)}>
-        <a href="/get/{itemId}">How to get</a>
-        &nbsp;|&nbsp;
-        <a href="/use/{itemId}">Uses</a>
-        {#if getItemStack(itemId).item instanceof BlockState}
+<div class="results">
+    {#each filtered_items as itemId}
+        <ItemStackDetailDisplay itemStack={getItemStack(itemId)}>
+            <a href="/get/{itemId}">How to get</a>
             &nbsp;|&nbsp;
-            <a href="/states/{itemId}">Other states</a>
-        {/if}
-    </ItemStackDetailDisplay>
-{/each}
+            <a href="/use/{itemId}">Uses</a>
+            {#if getItemStack(itemId).item instanceof BlockState}
+                &nbsp;|&nbsp;
+                <a href="/states/{itemId}">Other states</a>
+            {/if}
+        </ItemStackDetailDisplay>
+    {/each}
+</div>
 
 <style>
     .search {
-        all: unset;
         display: block;
-        border: 1px solid black;
         border-radius: 10px;
         padding: 10px;
         margin-top: 20px;
@@ -49,10 +49,15 @@
         width: calc(100% - 20px);
     }
     .search:focus {
-        outline: 2px solid rgba(0, 0, 255, 0.5);
+        outline: 2px solid color-mix(in srgb, var(--outline) 50%, transparent);
     }
 
     .search:active {
-        outline: 2px solid blue;
+        outline: 2px solid var(--outline);
+    }
+
+    .results {
+        display: flex;
+        flex-direction: column;
     }
 </style>

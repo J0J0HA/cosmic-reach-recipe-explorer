@@ -1,23 +1,12 @@
 <script>
     // import CraftingRecipe from "./CraftingRecipe.svelte";
-    import JarChooser from "./JarChooser.svelte";
+    import Header from "./Header.svelte";
     import { items, blocks } from "$lib/stores";
-    import { getItemStack } from "$lib/items";
-    import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
     import SearchableItemList from "./SearchableItemList.svelte";
+    import Body from "./Body.svelte";
 
-    let current_items = {};
-
-    items.subscribe((value) => {
-        current_items = value;
-    });
-    let current_blocks = {};
-
-    blocks.subscribe((value) => {
-        current_blocks = value;
-    });
     $: filtered_blocks = Object.fromEntries(
-        Object.entries(current_blocks).filter((val) => {
+        Object.entries($blocks).filter((val) => {
             return val[1].getShowInCatalog();
         }),
     );
@@ -27,30 +16,10 @@
     <title>Item overview - CR Recipes</title>
 </svelte:head>
 
-<JarChooser />
-
-<div class="itemListWrapper">
-    <div class="itemList">
-        <SearchableItemList
-            itemIds={Object.keys(current_items).concat(
-                Object.keys(filtered_blocks),
-            )}
-        />
-    </div>
-</div>
-
-<style>
-    .itemListWrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-    }
-    .itemList {
-        flex-grow: 0;
-        flex-shrink: 0;
-        width: 60%;
-        min-width: 30rem;
-    }
-</style>
+<Header />
+<Body>
+    <h2>Item overview</h2>
+    <SearchableItemList
+        itemIds={Object.keys($items).concat(Object.keys(filtered_blocks))}
+    />
+</Body>

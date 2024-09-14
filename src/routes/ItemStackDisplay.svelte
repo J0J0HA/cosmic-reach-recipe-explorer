@@ -42,7 +42,10 @@
             {iitemStack?.count == 1 ? "" : iitemStack?.count}
         </div>
         <div class="tooltip">
-            {iitemStack?.count}x {iitemStack?.getName()}<br />
+            {#if iitemStack?.count !== 1}
+                {iitemStack?.count}x
+            {/if}
+            {iitemStack?.getName()}<br />
             <div class="tooltip-lore">
                 {@html iitemStack?.getLore().join("<br />")}
             </div>
@@ -60,7 +63,6 @@
         min-width: 60px;
         width: fit-content;
         height: 60px;
-        background-color: #dbdbdb;
         user-select: none;
 
         transition: scale 50ms ease-in;
@@ -68,7 +70,6 @@
 
     .img-wrapper:not(.nohover):hover {
         scale: 1.1;
-        background-color: #e6e6e6;
     }
 
     .img-wrapper:hover .tooltip {
@@ -86,7 +87,6 @@
     .count {
         font-size: 1.2em;
         font-weight: bold;
-        text-shadow: 0px 0px 10px black;
         position: absolute;
         translate: 25px 22.5px;
     }
@@ -98,8 +98,8 @@
         left: 50%;
         translate: -15px 10px;
         padding: 5px;
-        background-color: #333;
-        color: white;
+        background-color: var(--tooltip-back);
+        color: var(--tooltip-text);
         border-radius: 5px;
         width: fit-content;
         text-wrap: nowrap;
@@ -111,6 +111,6 @@
 
     .tooltip-lore {
         font-size: 0.8em;
-        color: lightgray;
+        color: var(--tooltip-lore);
     }
 </style>

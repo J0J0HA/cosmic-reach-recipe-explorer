@@ -12,8 +12,10 @@
     });
 </script>
 
-<div class="before-after">
-    <InventoryDisplay grid={recipe.grid} />
+<div class="before-after bordered">
+    <div class="table">
+        <InventoryDisplay grid={recipe.grid} />
+    </div>
     <img
         src={current_textures["textures/ui/progress-arrow-full.png"]}
         alt="makes"
@@ -25,14 +27,23 @@
             (shapeless)
         {/if}
     </p>
-    <InventoryDisplay grid={[[recipe.output]]} />
+    <InventoryDisplay grid={[[recipe.output]]} out={true} />
 </div>
 
 <style>
+    .table {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 222.5px;
+    }
+
     .before-after {
         display: flex;
         flex-direction: row;
         align-items: center;
+        
+        padding: 15px;
     }
 
     .note {
@@ -44,9 +55,7 @@
     .arrow {
         width: 50px;
         padding: 10px;
-        margin-right: 20px;
-        margin-left: 20px;
-        image-rendering: pixelated;
+        --margin-lr: 20px;
     }
 
     .before-after > * {

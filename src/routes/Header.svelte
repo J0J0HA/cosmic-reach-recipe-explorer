@@ -1,31 +1,23 @@
 <script>
-    import { items, textures, craftingRecipes, blocks } from "$lib/stores";
+    import {
+        items,
+        textures,
+        craftingRecipes,
+        furnaceRecipes,
+        blocks,
+        loadedVersion,
+    } from "$lib/stores";
     import { loadFromJar } from "$lib/unzipjar";
     import { downloadVersion, getVersionList } from "$lib/versions";
     import { version } from "$app/environment";
-
-    let current_items = {};
-    items.subscribe((value) => {
-        current_items = value;
-    });
-    let current_blocks = {};
-    blocks.subscribe((value) => {
-        current_blocks = value;
-    });
-    let current_textures = {};
-    textures.subscribe((value) => {
-        current_textures = value;
-    });
-    let current_recipes = {};
-    craftingRecipes.subscribe((value) => {
-        current_recipes = value;
-    });
 </script>
 
-<div style="position: absolute; top:10px; left: 12.5px; font-size: 0.7rem;">{version.slice(0, 6)}</div>
+<div style="position: absolute; top:10px; left: 12.5px; font-size: 0.7rem;">
+    {version.slice(0, 6)}
+</div>
 
-<div class="jar-chooser-box">
-    {#if Object.keys(current_blocks).length + Object.keys(current_items).length + current_recipes.length + Object.keys(current_textures).length <= 0}
+<div class="jar-chooser-box bordered">
+    {#if $loadedVersion == "none"}
         <h2>Choose a Cosmic Reach .jar file to start</h2>
     {/if}
     <input
@@ -78,6 +70,8 @@
                         ).disabled = false;
                     });
                 });
+
+                document.querySelector("#jar-downloader").value = ":";
             }}
         >
             <option value=":" key=":" disabled selected>
@@ -91,10 +85,10 @@
         </select>
     {/await}
 
-    {Object.keys(current_blocks).length} blockstates, {Object.keys(
-        current_items,
-    ).length} items, {Object.keys(current_recipes).length}
-    recipes, and {Object.keys(current_textures).length} textures loaded.
+    {$loadedVersion} with {Object.keys($blocks).length} blockstates, {Object.keys(
+        $items,
+    ).length} items, {Object.keys($craftingRecipes).length + Object.keys($furnaceRecipes).length}
+    recipes, and {Object.keys($textures).length} textures loaded.
 </div>
 
 <style>
@@ -102,9 +96,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        border: 1px solid lightgrey;
-        border-radius: 10px;
         padding: 10px;
+        margin: 10px;
     }
 
     .jar-chooser-box > * {

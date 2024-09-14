@@ -1,11 +1,12 @@
 <script>
+    import InventoryDisplay from "./InventoryDisplay.svelte";
     import ItemStackDisplay from "./ItemStackDisplay.svelte";
     export let itemStack;
 </script>
 
-<div class="item">
+<div class="item bordered">
     <div class="leftmost">
-        <ItemStackDisplay {itemStack} />
+        <InventoryDisplay grid={[[itemStack]]} />
         <div>
             <div class="name">{itemStack.getName()}</div>
             <div class="lore">{@html itemStack.getLore().join("<br />")}</div>
@@ -24,8 +25,6 @@
         align-items: center;
         justify-content: space-between;
         padding: 10px;
-        border: 1px solid #dbdbdb;
-        border-radius: 5px;
         margin: 5px;
     }
 
