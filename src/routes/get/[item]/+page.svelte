@@ -20,6 +20,10 @@
     $: itemStack = getItemStack($page.params.item);
 </script>
 
+<svelte:head>
+    <title>How to make {$page.params.item} - CR Recipes</title>
+</svelte:head>
+
 <JarChooser />
 <a href="/">Back to item list</a>
 

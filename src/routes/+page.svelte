@@ -23,6 +23,10 @@
     );
 </script>
 
+<svelte:head>
+    <title>Item overview - CR Recipes</title>
+</svelte:head>
+
 <JarChooser />
 
 <div class="itemListWrapper">

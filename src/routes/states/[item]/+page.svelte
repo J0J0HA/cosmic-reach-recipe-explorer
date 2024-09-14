@@ -45,6 +45,10 @@
     $: itemStack = getItemStack($page.params.item);
 </script>
 
+<svelte:head>
+    <title>Blockstates of {$page.params.item} - CR Recipes</title>
+</svelte:head>
+
 <JarChooser />
 <a href="/">Back to item list</a>
 
