@@ -12,6 +12,7 @@
         justify-content: center;
         width: 100%;
         margin-top: 30px;
+        margin-bottom: 30px;
     }
 
     main {

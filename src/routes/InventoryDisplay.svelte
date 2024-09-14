@@ -19,7 +19,7 @@
     {#each grid as row}
         <tr>
             {#each row as cell}
-                <td><ItemStackDisplay itemStack={cell} {out} /></td>
+                <td><ItemStackDisplay itemStack={cell} /></td>
             {/each}
         </tr>
     {/each}
