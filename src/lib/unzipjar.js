@@ -24,7 +24,12 @@ export async function unzipJar(file) {
         }
         if (entry.filename.endsWith(".json")) {
             let data = await entry.getData(new zip.TextWriter());
-            let jsonData = JSON.parse(data);
+            let jsonData;
+            try {
+                jsonData = JSON.parse(data);
+            } catch (e) {
+                continue;
+            }
 
             if (entry.filename.startsWith("items/")) {
                 result.items[jsonData.id] = jsonData;
