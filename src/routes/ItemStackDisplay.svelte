@@ -2,7 +2,6 @@
     import { ItemStack } from "$lib/items";
     import { goto } from "$app/navigation";
     export let itemStack = new ItemStack("air", 0);
-    export let specialGoto = null;
     if (itemStack instanceof Array && !itemStack) {
         itemStack = new ItemStack("air", 0);
     }
@@ -16,21 +15,26 @@
 
 <button
     class="img-wrapper{air ? ' nohover' : ''}"
-    on:click={(e) => {
+    on:mousedown={(e) => {
+        console.log(e);
         e.preventDefault();
         if (air) return false;
-        goto(`/get/${iitemStack?.item.id}`);
+        switch (e.button) {
+            case 0:
+                goto(`/get/${iitemStack?.item.id}`);
+                break;
+            case 1:
+                goto(`/states/${iitemStack?.item.id}`);
+                break;
+            case 2:
+                goto(`/use/${iitemStack?.item.id}`);
+                break;
+            default:
+                console.warn("How many mouse buttons do you have???");
+                break;
+        }
     }}
-    on:auxclick={(e) => {
-        e.preventDefault();
-        if (air) return false;
-        goto(specialGoto || `/states/${iitemStack?.item.id}`);
-    }}
-    on:contextmenu={(e) => {
-        e.preventDefault();
-        if (air) return false;
-        goto(`/use/${iitemStack?.item.id}`);
-    }}
+    on:contextmenu={(e) => e.preventDefault()}
 >
     <img
         src={iitemStack?.item.getImage?.()}
