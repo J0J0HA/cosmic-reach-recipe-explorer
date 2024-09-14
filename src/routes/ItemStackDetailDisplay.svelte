@@ -1,6 +1,5 @@
 <script>
     import InventoryDisplay from "./InventoryDisplay.svelte";
-    import ItemStackDisplay from "./ItemStackDisplay.svelte";
     export let itemStack;
 </script>
 

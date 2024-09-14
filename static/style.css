@@ -9,10 +9,6 @@
     --tooltip-text: white;
     --tooltip-lore: lightgrey;
 
-    --slot-color: rgb(22, 78, 161);
-    --slot-hover-effect: color-mix(in srgb, transparent 75%, rgb(129, 129, 129));
-    --slot-color--output: orange;
-
     --border: black;
 
     --link-color: rgb(84, 84, 255);
@@ -27,10 +23,6 @@
         --tooltip-back: #141414;
         --tooltip-text: white;
         --tooltip-lore: lightgrey;
-
-        --slot-color: rgb(22, 78, 161);
-        --slot-hover-effect: lightgrey;
-        --slot-color--output: rgb(153, 87, 11);
 
         --border: white;
 
