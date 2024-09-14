@@ -72,7 +72,6 @@ function findMatchingItems(condition) {
 
 function getItemFilter(filter, count, props) {
     return findMatchingItems(filter).map((item) => getItemStack(item, count, props));
-    // return new ItemStack(new Item("unknown!tag=" + forTag, { __texture_override: "/debug.png" }), count, { name: `Any with tag ${forTag}`, ...props });
 }
 
 const air = new Item("air", { __texture_override: "https://placehold.co/64/0000/0000" });

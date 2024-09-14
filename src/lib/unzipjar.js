@@ -24,21 +24,17 @@ export async function unzipJar(file) {
         }
         if (entry.filename.endsWith(".json")) {
             let data = await entry.getData(new zip.TextWriter());
+            let jsonData = JSON.parse(data);
 
             if (entry.filename.startsWith("items/")) {
-                let item = JSON.parse(data);
-                result.items[item.id] = item;
+                result.items[jsonData.id] = jsonData;
             } else if (entry.filename.startsWith("blocks/")) {
-                let block = JSON.parse(data);
-                result.blocks[block.stringId] = block;
+                result.blocks[jsonData.stringId] = jsonData;
             }
-            else if (entry.filename.startsWith("recipes/")) {
-                let recipe = JSON.parse(data);
-                if (entry.filename.startsWith("recipes/crafting/")) {
-                    result.recipes.crafting.push(recipe);
-                } else if (entry.filename.startsWith("recipes/furnace/")) {
-                    result.recipes.furnace.push(recipe);
-                }
+            else if (entry.filename.startsWith("recipes/crafting/")) {
+                result.recipes.crafting.push(jsonData);
+            } else if (entry.filename.startsWith("recipes/furnace/")) {
+                result.recipes.furnace.push(jsonData);
             }
         }
     }

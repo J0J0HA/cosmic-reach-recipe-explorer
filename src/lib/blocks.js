@@ -14,7 +14,7 @@ export class BlockState {
     }
 
     getImage() {
-        return "https://placehold.co/64/0000/000F" || this.properties.modelName;
+        return "https://placehold.co/64/0000/000F";// || this.properties.modelName;
     }
 
     getShowInCatalog() {
