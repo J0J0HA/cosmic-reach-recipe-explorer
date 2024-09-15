@@ -1,14 +1,18 @@
 import * as THREE from 'three';
-import { models, textures } from "./stores";
+import { models, textures, loader } from "./stores";
 
 let current_models = {};
 let current_textures = {};
+let current_loader;
 
 models.subscribe((value) => {
     current_models = value;
 })
 textures.subscribe((value) => {
     current_textures = value;
+})
+loader.subscribe((value) => {
+    current_loader = value;
 })
 
 const textureMapping = {
@@ -20,40 +24,43 @@ const textureMapping = {
     bottom: ["bottom", "all"]
 }
 
-function getTexture(texture) {
-    return current_textures["textures/blocks/" + texture]
-}
-
-function resolveTexture(scope, model, side) {
+function resolveTexture(model, side) {
     for (let key of textureMapping[side]) {
-        if (model.textures[key]) return model.textures[key].fileName;
+        if (model.textures[key]) {
+            let fileName = model.textures[key].fileName;
+
+            if (current_loader.name === "V1") {
+                fileName = "textures/blocks/" + fileName;
+            }
+
+            return fileName;
+        };
     }
     if (model.parent) {
-        return resolveTexture(scope, current_models[scope + "/" + model.parent + ".json"], side);
+        return resolveTexture(current_models[model.parent], side);
     }
     return null;
 }
 
-function isCube(scope, model) {
-    console.log(scope, model)
-    if (model.parent === "cube" || model.parent === "cube_no_ao") {
+function isCube(model) {
+    if (model.parent === "base:models/blocks/cube.json" || model.parent === "base:models/blocks/cube_no_ao.json" || model.parent === "cube" || model.parent === "cube_no_ao") {
         return true;
     } else if (model.parent) {
-        return isCube(scope, current_models[scope + "/" + model.parent + ".json"]);
+        return isCube(current_models[model.parent]);
     }
     return false;
 }
 
-export async function renderModel(scope, modelName) {
-    const model = current_models[scope + "/" + modelName + ".json"];
+export async function renderBlockModel(modelName) {
+    const model = current_models[modelName];
     if (!model) return null;
-    if (isCube(scope, model)) {
-        const top = getTexture(resolveTexture(scope, model, "top"));
-        const bottom = getTexture(resolveTexture(scope, model, "bottom"));
-        const front = getTexture(resolveTexture(scope, model, "front"));
-        const back = getTexture(resolveTexture(scope, model, "back"));
-        const right = getTexture(resolveTexture(scope, model, "right"));
-        const left = getTexture(resolveTexture(scope, model, "left"));
+    if (isCube(model)) {
+        const top = current_textures[resolveTexture(model, "top")];
+        const bottom = current_textures[resolveTexture(model, "bottom")];
+        const front = current_textures[resolveTexture(model, "front")];
+        const back = current_textures[resolveTexture(model, "back")];
+        const right = current_textures[resolveTexture(model, "right")];
+        const left = current_textures[resolveTexture(model, "left")];
 
         const scene = new THREE.Scene();
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 100);

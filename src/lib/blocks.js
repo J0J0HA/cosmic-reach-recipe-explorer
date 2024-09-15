@@ -1,4 +1,4 @@
-import { renderModel } from "./rendering";
+import { renderBlockModel } from "./rendering";
 import { models, textures } from "./stores";
 
 export class BlockState {
@@ -30,7 +30,7 @@ export class BlockState {
         if (this.textureCache) {
             blob = this.textureCache;
         } else {
-            blob = await renderModel("blocks", this.properties.modelName);
+            blob = await renderBlockModel(this.properties.modelName);
         }
         this.textureCache = blob;
         if (blob) {

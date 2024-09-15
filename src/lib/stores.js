@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 
+export const loader = writable({name:"VX"});
 export const items = writable({});
 export const blocks = writable({});
 export const craftingRecipes = writable([]);

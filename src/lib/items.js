@@ -102,11 +102,6 @@ export class ItemStack {
     }
 }
 
-export function parseItem(data) {
-    let item = new Item(data.id, data.itemProperties);
-    return item;
-}
-
 let current_items = [];
 
 items.subscribe((value) => {
