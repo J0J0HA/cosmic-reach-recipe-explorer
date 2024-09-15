@@ -4,8 +4,7 @@ import { Item } from "./items";
 import { parseBlock } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
 import { writable } from "svelte/store";
-// import * as Hjson from "hjson";
-const Hjson = JSON; // temp fix because of stupid Hjson importing os
+import * as Hjson from "hjson";
 
 
 
