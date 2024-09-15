@@ -82,6 +82,9 @@ export async function renderBlockModel(modelName) {
 
         const loadedTextures = await Promise.all(textures.map(blob => new Promise((resolve) => {
             let texture;
+            if (!blob) {
+                resolve(null);
+            }
             texture = loader.load(URL.createObjectURL(blob), () => resolve(texture));
         })))
         const materials = loadedTextures.map(texture => new THREE.MeshBasicMaterial({ map: texture }));
