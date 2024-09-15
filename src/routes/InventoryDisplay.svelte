@@ -12,12 +12,12 @@
     style="--img-slot: url({getTexture(
         $textures,
         out ? 'textures/ui/container-output.png' : 'textures/ui/container.png',
-    )});--img-slot-hover: url({getTexture(
+    ) || ""});--img-slot-hover: url({getTexture(
         $textures,
         out
             ? 'textures/ui/container-output-hovered.png'
             : 'textures/ui/container-hovered.png',
-    )})"
+    ) || ""})"
 >
     {#each grid as row}
         <tr>
