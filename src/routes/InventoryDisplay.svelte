@@ -1,6 +1,7 @@
 <script>
     import ItemStackDisplay from "./ItemStackDisplay.svelte";
     import { textures } from "$lib/stores";
+    import { getTexture } from "$lib/utils";
 
     export let grid = [];
     export let out = false;
@@ -8,13 +9,15 @@
 
 <table
     class="inventory-grid{out ? ' output' : ''}"
-    style="--img-slot: url({$textures[
-        out ? 'textures/ui/container-output.png' : 'textures/ui/container.png'
-    ]});--img-slot-hover: url({$textures[
+    style="--img-slot: url({getTexture(
+        $textures,
+        out ? 'textures/ui/container-output.png' : 'textures/ui/container.png',
+    )});--img-slot-hover: url({getTexture(
+        $textures,
         out
             ? 'textures/ui/container-output-hovered.png'
-            : 'textures/ui/container-hovered.png'
-    ]})"
+            : 'textures/ui/container-hovered.png',
+    )})"
 >
     {#each grid as row}
         <tr>

@@ -53,3 +53,11 @@ export function getWaysToGet(itemId) {
         noUse: (filteredCraftingRecipes.length <= 0) && (filteredFurnaceRecipes.length <= 0)
     }
 }
+
+export function getTexture(textures, texture) {
+    const textureBlob = textures[texture];
+    if (textureBlob) {
+        return URL.createObjectURL(textureBlob);
+    }
+    return null;
+}

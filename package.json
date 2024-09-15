@@ -17,6 +17,7 @@
 	"type": "module",
 	"dependencies": {
 		"@zip.js/zip.js": "^2.7.52",
-		"hjson": "^3.2.2"
+		"hjson": "^3.2.2",
+		"three": "^0.168.0"
 	}
 }

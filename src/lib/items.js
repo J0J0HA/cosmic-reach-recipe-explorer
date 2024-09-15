@@ -19,9 +19,9 @@ export class Item {
         return this.properties.fuelTicks;
     }
 
-    getImage() {
+    async getImage() {
         if (this.properties.__texture_override) return this.properties.__texture_override;
-        return current_textures[this.properties.texture];
+        return current_textures[this.properties.texture] ? URL.createObjectURL(current_textures[this.properties.texture]) : null;
     }
 
     getLore() {

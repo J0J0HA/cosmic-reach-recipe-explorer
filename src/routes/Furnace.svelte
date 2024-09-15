@@ -4,23 +4,17 @@
     export let input;
     export let fuel;
     export let output;
-    export let ticks;
+    export let ticks = null;
 
     import { textures } from "$lib/stores";
-    import { getItemStack } from "$lib/items";
-
-    let current_textures = {};
-
-    textures.subscribe((value) => {
-        current_textures = value;
-    });
+    import { getTexture } from "$lib/utils";
 </script>
 
 <div class="before-after bordered">
     <div class="oven">
         <InventoryDisplay grid={[[input]]} />
         <img
-            src={current_textures["textures/ui/progress-fuel-full.png"]}
+            src={getTexture($textures, "textures/ui/progress-fuel-full.png")}
             alt="flame"
             class="flame"
             draggable="false"
@@ -29,7 +23,7 @@
     </div>
 
     <img
-        src={current_textures["textures/ui/progress-arrow-full.png"]}
+        src={getTexture($textures, "textures/ui/progress-arrow-full.png")}
         alt="makes"
         class="arrow"
         draggable="false"

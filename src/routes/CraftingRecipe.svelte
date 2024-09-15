@@ -5,11 +5,7 @@
 
     import { textures } from "$lib/stores";
 
-    let current_textures = {};
-
-    textures.subscribe((value) => {
-        current_textures = value;
-    });
+    import { getTexture } from "$lib/utils";
 </script>
 
 <div class="before-after bordered">
@@ -17,7 +13,7 @@
         <InventoryDisplay grid={recipe.grid} />
     </div>
     <img
-        src={current_textures["textures/ui/progress-arrow-full.png"]}
+        src={getTexture($textures, "textures/ui/progress-arrow-full.png")}
         alt="makes"
         class="arrow"
         draggable="false"
@@ -42,7 +38,7 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        
+
         padding: 15px;
     }
 

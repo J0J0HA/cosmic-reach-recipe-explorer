@@ -5,29 +5,29 @@
     if (itemStack instanceof Array && !itemStack) {
         itemStack = new ItemStack("air", 0);
     }
+    let itemStackList = itemStack instanceof Array ? itemStack : [itemStack];
     let iter = 0;
-    $: iitemStack = itemStack instanceof Array ? itemStack[iter] : itemStack;
-    $: air = iitemStack?.item.id === "air" || iitemStack?.count <= 0;
+    $: currentItemStack = itemStack instanceof Array ? itemStack[iter] : itemStack;
+    $: air = currentItemStack?.item.id === "air" || currentItemStack?.count <= 0;
     setInterval(() => {
-        iter = (iter + 1) % itemStack.length;
+        iter = (iter + 1) % itemStackList.length;
     }, 1000);
 </script>
 
 <button
     class="img-wrapper{air ? ' nohover' : ''}"
     on:mousedown={(e) => {
-        console.log(e);
         e.preventDefault();
         if (air) return false;
         switch (e.button) {
             case 0:
-                goto(`/get/${iitemStack?.item.id}`);
+                goto(`/get/${currentItemStack?.item.id}`);
                 break;
             case 1:
-                goto(`/states/${iitemStack?.item.id}`);
+                goto(`/states/${currentItemStack?.item.id}`);
                 break;
             case 2:
-                goto(`/use/${iitemStack?.item.id}`);
+                goto(`/use/${currentItemStack?.item.id}`);
                 break;
             default:
                 console.warn("How many mouse buttons do you have???");
@@ -36,22 +36,27 @@
     }}
     on:contextmenu={(e) => e.preventDefault()}
 >
-    <img
-        src={iitemStack?.item.getImage?.()}
-        alt={iitemStack?.getName()}
-        draggable="false"
-    />
+    {#each itemStackList as subitemStack, index}
+        {#await subitemStack.item.getImage() then image}
+            <img
+                src={image}
+                alt={subitemStack?.getName()}
+                draggable="false"
+                style="display: {index === iter ? 'block' : 'none'};"
+            />
+        {/await}
+    {/each}
     {#if !air}
         <div class="count">
-            {iitemStack?.count == 1 ? "" : iitemStack?.count}
+            {currentItemStack?.count == 1 ? "" : currentItemStack?.count}
         </div>
         <div class="tooltip">
-            {#if iitemStack?.count !== 1}
-                {iitemStack?.count}x
+            {#if currentItemStack?.count !== 1}
+                {currentItemStack?.count}x
             {/if}
-            {iitemStack?.getName()}<br />
+            {currentItemStack?.getName()}<br />
             <div class="tooltip-lore">
-                {@html iitemStack?.getLore().join("<br />")}
+                {@html currentItemStack?.getLore().join("<br />")}
             </div>
         </div>
     {/if}

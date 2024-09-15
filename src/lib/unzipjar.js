@@ -1,5 +1,5 @@
 import * as zip from "@zip.js/zip.js";
-import { textures, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion } from "./stores";
+import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion } from "./stores";
 import { parseItem } from "./items";
 import { parseBlock } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
@@ -60,8 +60,7 @@ export async function categorizeFiles(files) {
         let file = entry[1];
         if (path.startsWith("textures/") && path.endsWith(".png")) {
             let blob = await file.readBlob();
-            let url = URL.createObjectURL(blob);
-            result.textures[path] = url;
+            result.textures[path] = blob;
         } else if (path.startsWith("build_assets/version.txt")) {
             result.version = await file.readText();
         }
@@ -78,6 +77,8 @@ export async function categorizeFiles(files) {
                 result.items[jsonData.id] = jsonData;
             } else if (path.startsWith("blocks/")) {
                 result.blocks[jsonData.stringId] = jsonData;
+            } else if (path.startsWith("models/")) {
+                result.models[path.slice(7)] = jsonData;
             }
             else if (path.startsWith("recipes/crafting/")) {
                 result.recipes.crafting.push(jsonData);
@@ -100,9 +101,8 @@ async function update() {
     const files = Object.fromEntries(Object.entries(currentJarFiles).concat(Object.entries(currentDataModFiles)));
     const categorizedFiles = await categorizeFiles(files);
 
-    console.log(categorizedFiles)
-
     textures.set(categorizedFiles.textures);
+    models.set(categorizedFiles.models);
     const new_items = {};
     for (let item of Object.values(categorizedFiles.items)) {
         new_items[item.id] = parseItem(item);

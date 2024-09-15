@@ -1,7 +1,19 @@
+import { renderModel } from "./rendering";
+import { models, textures } from "./stores";
+
 export class BlockState {
     constructor(id, properties) {
         this.id = id;
         this.properties = properties;
+
+        this.textureCache = null;
+
+        models.subscribe(() => {
+            this.textureCache = null;
+        })
+        textures.subscribe(() => {
+            this.textureCache = null;
+        })
     }
 
 
@@ -13,8 +25,18 @@ export class BlockState {
         return this.properties.intProperties?.fuelTicks;
     }
 
-    getImage() {
-        return "https://placehold.co/64/0000/000F";// || this.properties.modelName;
+    async getImage() {
+        let blob;
+        if (this.textureCache) {
+            blob = this.textureCache;
+        } else {
+            blob = await renderModel("blocks", this.properties.modelName);
+        }
+        this.textureCache = blob;
+        if (blob) {
+            return URL.createObjectURL(blob);
+        }
+        return null;
     }
 
     getShowInCatalog() {
