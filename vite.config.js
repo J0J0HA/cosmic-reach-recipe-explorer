@@ -1,11 +1,12 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-	plugins: [sveltekit()],
-	resolve: {
-		alias: {
-			os: "rollup-plugin-node-polyfills/polyfills/empty"
+	plugins: [sveltekit(), nodePolyfills({
+		include: ["os"],
+		overrides: {
+			os: '$lib/os.js'
 		}
-	}
+	})],
 });
