@@ -1,5 +1,5 @@
 import * as zip from "@zip.js/zip.js";
-import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader } from "./stores";
+import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime } from "./stores";
 import { Item } from "./items";
 import { parseBlock } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
@@ -50,7 +50,7 @@ export async function getFilesFromFileList(files) {
 };
 
 const V1 = {
-    version: /^0\.(1|2)\.\d+[a-z]?$/,
+    version: /^0\.(0|1|2)\.\d+[a-z]?$/,
     name: "V1",
     async categorizeFiles(files) {
         let result = {
@@ -195,6 +195,7 @@ let currentDataModFiles = {};
 let currentJarFiles = {};
 
 async function update() {
+    const startTime = performance.now();
     if (!currentJarFiles["build_assets/version.txt"]) {
         console.error("Version could not be determined!");
         return;
@@ -245,13 +246,17 @@ async function update() {
         new_furnaceRecipes.push(...parseFurnaceRecipe(furnaceRecipe));
     }
     furnaceRecipes.set(new_furnaceRecipes);
+
+    const endTime = performance.now();
+
+    loadTime.set((endTime - startTime) / 1000);
 }
 
 dataModFiles.subscribe((value) => {
     currentDataModFiles = value;
-    update()
+    update();
 });
 jarFiles.subscribe((value) => {
     currentJarFiles = value;
-    update()
+    update();
 });

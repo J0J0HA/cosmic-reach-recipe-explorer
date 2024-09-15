@@ -8,6 +8,7 @@ export const furnaceRecipes = writable([]);
 export const textures = writable({});
 export const models = writable({});
 export const loadedVersion = writable("none");
+export const loadTime = writable(0);
 
 export function onchange(callback) {
     items.subscribe(callback);

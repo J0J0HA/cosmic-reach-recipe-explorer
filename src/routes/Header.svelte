@@ -6,6 +6,8 @@
         furnaceRecipes,
         blocks,
         loadedVersion,
+        loader,
+        loadTime,
     } from "$lib/stores";
     import {
         dataModFiles,
@@ -25,8 +27,6 @@
     {#if $loadedVersion == "none"}
         <h2>Load a jar file and/or data mod to start:</h2>
     {/if}
-
-    To get the games' content:
     <div>
         <input
             id="jar-chooser"
@@ -96,60 +96,63 @@
             </select>
         {/await}
     </div>
-    <hr />
-    To load data mods:
-    <input
-        id="dir-chooser"
-        type="file"
-        directory
-        mozdirectory
-        webkitdirectory
-        multiple
-        hidden
-        on:change={(event) => {
-            document.querySelector("#dir-chooser-trigger").disabled = true;
-            getFilesFromFileList(event.target.files).then((files) => {
-                dataModFiles.set(files);
-                document.querySelector("#dir-chooser-trigger").disabled = false;
-            });
-        }}
-    />
-    <div>
-        {#if Object.keys($dataModFiles).length > 0}
-            <button
-                id="dir-chooser-trigger"
-                on:click={() => {
-                    document.querySelector("#dir-chooser").click();
-                }}
-            >
-                Select a different data mod folder
-            </button>
-            <button
-                id="dir-unload"
-                on:click={() => {
-                    dataModFiles.set({});
-                }}
-            >
-                Unload data mods
-            </button>
-        {:else}
-            <button
-                id="dir-chooser-trigger"
-                on:click={() => {
-                    document.querySelector("#dir-chooser").click();
-                }}
-            >
-                Select your data mod folder
-            </button>
-        {/if}
-    </div>
-    <hr />
-
-    {$loadedVersion} with {Object.keys($blocks).length} blockstates, {Object.keys(
-        $items,
-    ).length} items, {Object.keys($craftingRecipes).length +
-        Object.keys($furnaceRecipes).length}
-    recipes, and {Object.keys($textures).length} textures loaded.
+    {#if $loadedVersion !== "none"}
+        <hr />
+        To load your data mods,
+        <input
+            id="dir-chooser"
+            type="file"
+            directory
+            mozdirectory
+            webkitdirectory
+            multiple
+            hidden
+            on:change={(event) => {
+                document.querySelector("#dir-chooser-trigger").disabled = true;
+                getFilesFromFileList(event.target.files).then((files) => {
+                    dataModFiles.set(files);
+                    document.querySelector("#dir-chooser-trigger").disabled =
+                        false;
+                });
+            }}
+        />
+        <div>
+            {#if Object.keys($dataModFiles).length > 0}
+                <button
+                    id="dir-chooser-trigger"
+                    on:click={() => {
+                        document.querySelector("#dir-chooser").click();
+                    }}
+                >
+                    Select a different data mod folder
+                </button>
+                <button
+                    id="dir-unload"
+                    on:click={() => {
+                        dataModFiles.set({});
+                    }}
+                >
+                    Unload data mods
+                </button>
+            {:else}
+                <button
+                    id="dir-chooser-trigger"
+                    on:click={() => {
+                        document.querySelector("#dir-chooser").click();
+                    }}
+                >
+                    Select your data mod folder
+                </button>
+            {/if}
+        </div>
+        <hr />
+        Loaded {Object.keys($blocks).length} blockstates, {Object.keys($items)
+            .length} items, {Object.keys($craftingRecipes).length +
+            Object.keys($furnaceRecipes).length}
+        recipes, and {Object.keys($textures).length} textures in
+        {Math.round($loadTime * 10) / 10}s with loader
+        {$loader.name} for version {$loadedVersion}.
+    {/if}
 </div>
 
 <style>
