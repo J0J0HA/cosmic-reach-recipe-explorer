@@ -1,14 +1,17 @@
 <script>
-    import { ItemStack } from "$lib/items";
     import { goto } from "$app/navigation";
+    import { ItemStack } from "$lib/items";
+    import { textures } from "$lib/stores";
     export let itemStack = new ItemStack("air", 0);
     if (itemStack instanceof Array && !itemStack) {
         itemStack = new ItemStack("air", 0);
     }
-    let itemStackList = itemStack instanceof Array ? itemStack : [itemStack];
+    $: itemStackList = itemStack instanceof Array ? itemStack : [itemStack];
     let iter = 0;
-    $: currentItemStack = itemStack instanceof Array ? itemStack[iter] : itemStack;
-    $: air = currentItemStack?.item.id === "air" || currentItemStack?.count <= 0;
+    $: currentItemStack =
+        itemStack instanceof Array ? itemStack[iter] : itemStack;
+    $: air =
+        currentItemStack?.item.id === "air" || currentItemStack?.count <= 0;
     setInterval(() => {
         iter = (iter + 1) % itemStackList.length;
     }, 1000);
@@ -37,7 +40,7 @@
     on:contextmenu={(e) => e.preventDefault()}
 >
     {#each itemStackList as subitemStack, index}
-        {#await subitemStack.item.getImage() then image}
+        {#await subitemStack.item.getImage($textures) then image}
             <img
                 src={image}
                 alt={subitemStack?.getName()}

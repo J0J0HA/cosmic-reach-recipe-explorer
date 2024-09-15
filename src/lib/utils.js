@@ -54,10 +54,12 @@ export function getWaysToGet(itemId) {
     }
 }
 
+const textureCache = {};
+
 export function getTexture(textures, texture) {
     const textureBlob = textures[texture];
-    if (textureBlob) {
-        return URL.createObjectURL(textureBlob);
+    if (textureBlob && !textureCache[texture]) {
+        textureCache[texture] = URL.createObjectURL(textureBlob);
     }
-    return null;
+    return textureCache[texture];
 }
