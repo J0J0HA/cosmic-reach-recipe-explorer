@@ -6,7 +6,7 @@ export default defineConfig({
 	plugins: [sveltekit(), nodePolyfills({
 		include: ["os"],
 		overrides: {
-			os: '$lib/os.js'
+			os: 'empty-polyfill.js'
 		}
 	})],
 });
