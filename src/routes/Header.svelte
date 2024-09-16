@@ -156,8 +156,9 @@
     {/if}
 
     {#if $updated}
+        <hr />
         <div class="toast">
-            <p>
+            <p style:font-weight="bold">
                 CR Recipes was updated since you loaded this page.
                 <a href="/" on:click={() => location.reload()}>
                     Reload to apply
