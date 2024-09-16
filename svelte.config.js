@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-cloudflare';
+import adapter from '@sveltejs/adapter-auto';
 import child_process from 'child_process';
 
 /** @type {import('@sveltejs/kit').Config} */

@@ -1,8 +1,12 @@
-import { items, blocks, textures } from "./stores";
+import { items, blocks, textures, lang } from "./stores";
 
 let current_textures = {};
 textures.subscribe((value) => {
     current_textures = value;
+})
+let current_lang = {};
+lang.subscribe((value) => {
+    current_lang = value;
 })
 
 export class Item {
@@ -13,6 +17,10 @@ export class Item {
 
     isFuel() {
         return this.properties.fuelTicks && this.properties.fuelTicks >= 0;
+    }
+
+    getName(locale) {
+        return current_lang[locale]?.[this.id] || this.id;
     }
 
     getBurnTime() {
@@ -90,8 +98,8 @@ export class ItemStack {
         return this.item.getBurnTime();
     }
 
-    getName() {
-        return this.properties.name || this.item.id;
+    getName(locale) {
+        return this.properties.name || this.item.getName(locale);
     }
 
     getLore() {

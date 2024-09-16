@@ -1,6 +1,10 @@
 import { renderBlockModel } from "./rendering";
-import { models, textures } from "./stores";
+import { models, textures, lang } from "./stores";
 
+let current_lang = {};
+lang.subscribe((value) => {
+    current_lang = value;
+})
 export class BlockState {
     constructor(id, properties) {
         this.id = id;
@@ -16,6 +20,9 @@ export class BlockState {
         })
     }
 
+    getName(locale) {
+        return current_lang[locale]?.[this.properties.langKey || this.id.split("[")[0]] || this.id;
+    }
 
     isFuel() {
         return this.properties.intProperties?.fuelTicks && this.properties.intProperties?.fuelTicks >= 0;

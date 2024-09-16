@@ -1,7 +1,7 @@
 <script>
     import { goto } from "$app/navigation";
     import { ItemStack } from "$lib/items";
-    import { textures } from "$lib/stores";
+    import { textures, locale } from "$lib/stores";
     export let itemStack = new ItemStack("air", 0);
     if (itemStack instanceof Array && !itemStack) {
         itemStack = new ItemStack("air", 0);
@@ -43,7 +43,7 @@
         {#await subitemStack.item.getImage($textures) then image}
             <img
                 src={image}
-                alt={subitemStack?.getName()}
+                alt={subitemStack?.getName($locale)}
                 draggable="false"
                 style="display: {index === iter ? 'block' : 'none'};"
             />
@@ -57,7 +57,7 @@
             {#if currentItemStack?.count !== 1}
                 {currentItemStack?.count}x
             {/if}
-            {currentItemStack?.getName()}<br />
+            {currentItemStack?.getName($locale)}<br />
             <div class="tooltip-lore">
                 {@html currentItemStack?.getLore().join("<br />")}
             </div>

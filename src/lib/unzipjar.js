@@ -1,11 +1,10 @@
 import * as zip from "@zip.js/zip.js";
-import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime } from "./stores";
+import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime, lang } from "./stores";
 import { Item } from "./items";
 import { parseBlock } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
 import { writable } from "svelte/store";
-// import * as Hjson from "hjson";
-const Hjson = JSON; // hjson-js stupid.
+import * as Hjson from "hjson-devvit";
 
 
 
@@ -57,6 +56,7 @@ const V1 = {
         let result = {
             textures: {},
             models: {},
+            lang: {},
             items: {},
             blocks: {},
             version: "none",
@@ -112,6 +112,7 @@ const V2 = {
     async categorizeFiles(files) {
         let result = {
             textures: {},
+            lang: {},
             models: {},
             items: {},
             blocks: {},
@@ -155,7 +156,9 @@ const V2 = {
                     continue;
                 }
 
-                if (path.startsWith("items/")) {
+                if (path.startsWith("lang/")) {
+                    result.lang[namespacedPath] = jsonData;
+                } else if (path.startsWith("items/")) {
                     result.items[namespacedPath] = jsonData;
                 } else if (path.startsWith("blocks/")) {
                     result.blocks[namespacedPath] = jsonData;
@@ -223,6 +226,13 @@ async function update() {
 
     loadedVersion.set(version);
 
+    const languages = {};
+    for (let lang_file of Object.entries(categorizedFiles.lang)) {
+        const new_lang = lang_file[0].split("/")[1];
+        languages[new_lang] = Object.fromEntries(Object.entries(languages[new_lang] || {}).concat(Object.entries(lang_file[1])));
+    }
+
+    lang.set(languages);
     loader.set(chosenLoader);
     textures.set(categorizedFiles.textures);
     models.set(categorizedFiles.models);
