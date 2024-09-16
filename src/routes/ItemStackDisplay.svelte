@@ -19,7 +19,7 @@
 
 <button
     class="img-wrapper{air ? ' nohover' : ''}"
-    on:mousedown={(e) => {
+    on:mouseup={(e) => {
         e.preventDefault();
         if (air) return false;
         switch (e.button) {
