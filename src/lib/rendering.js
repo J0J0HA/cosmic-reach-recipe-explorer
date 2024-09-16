@@ -72,12 +72,12 @@ export async function renderBlockModel(modelName) {
 
         const loader = new THREE.TextureLoader();
         const textures = [
+            right,
+            back,
             top,
             bottom,
-            right,
-            left,
             front,
-            back,
+            left,
         ];
 
         const loadedTextures = await Promise.all(textures.map(blob => new Promise((resolve) => {
@@ -87,7 +87,12 @@ export async function renderBlockModel(modelName) {
             }
             texture = loader.load(URL.createObjectURL(blob), () => resolve(texture));
         })))
-        const materials = loadedTextures.map(texture => new THREE.MeshBasicMaterial({ map: texture }));
+        const materials = loadedTextures.map(texture => new THREE.MeshBasicMaterial({ map: texture })).map((material) => {
+            material.map.minFilter = THREE.NearestFilter;
+            material.map.magFilter = THREE.NearestFilter;
+            material.transparent = true;
+            return material;
+        });
 
         const cube = new THREE.Mesh(geometry, materials);
         scene.add(cube);
