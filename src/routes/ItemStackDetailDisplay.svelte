@@ -1,6 +1,5 @@
 <script>
     import InventoryDisplay from "./InventoryDisplay.svelte";
-    import { locale } from "$lib/stores";
     export let itemStack;
 </script>
 
@@ -8,7 +7,7 @@
     <div class="leftmost">
         <InventoryDisplay grid={[[itemStack]]} />
         <div>
-            <div class="name">{itemStack.getName($locale)}</div>
+            <div class="name">{itemStack.getName()}</div>
             <div class="lore">{@html itemStack.getLore().join("<br />")}</div>
         </div>
     </div>

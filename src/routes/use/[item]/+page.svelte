@@ -1,7 +1,7 @@
 <script>
     import Header from "../../Header.svelte";
     import { craftingRecipes } from "$lib/stores";
-    import { getItemStack } from "$lib/items";
+    import { getItemStack } from "$lib/utils";
     import CraftingRecipe from "../../CraftingRecipe.svelte";
     import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
     import { getUsesOf } from "$lib/utils";
@@ -9,18 +9,11 @@
     import { page } from "$app/stores";
     import FurnaceRecipe from "../../FurnaceRecipe.svelte";
     import FuelRecipe from "../../FuelRecipe.svelte";
-
-    import { onchange } from "$lib/stores";
+    import { reload } from "$lib/stores"; // recieve changes to data
     import Body from "../../Body.svelte";
-    let filtered = getUsesOf($page.params.item);
-    let itemStack = getItemStack($page.params.item);
 
-    $: filtered = getUsesOf($page.params.item);
-    $: itemStack = getItemStack($page.params.item);
-    onchange(() => {
-        filtered = getUsesOf($page.params.item);
-        itemStack = getItemStack($page.params.item);
-    });
+    $: filtered = getUsesOf($page.params.item) || ($reload && false);
+    $: itemStack = getItemStack($page.params.item) || ($reload && false);
 </script>
 
 <svelte:head>

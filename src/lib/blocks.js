@@ -1,27 +1,15 @@
 import { renderBlockModel } from "./rendering";
-import { models, textures, lang } from "./stores";
+import { translations } from "./stores";
+import { get } from 'svelte/store';
 
-let current_lang = {};
-lang.subscribe((value) => {
-    current_lang = value;
-})
 export class BlockState {
     constructor(id, properties) {
         this.id = id;
         this.properties = properties;
-
-        this.textureCache = null;
-
-        models.subscribe(() => {
-            this.textureCache = null;
-        })
-        textures.subscribe(() => {
-            this.textureCache = null;
-        })
     }
 
-    getName(locale) {
-        return current_lang[locale]?.[this.properties.langKey || this.id.split("[")[0]] || this.id;
+    getName() {
+        return get(translations)[this.properties.langKey || this.id.split("[")[0]] || this.id;
     }
 
     isFuel() {
@@ -33,17 +21,9 @@ export class BlockState {
     }
 
     async getImage() {
-        let blob;
-        if (this.textureCache) {
-            blob = this.textureCache;
-        } else {
-            blob = await renderBlockModel(this.properties.modelName);
-        }
-        this.textureCache = blob;
-        if (blob) {
-            return URL.createObjectURL(blob);
-        }
-        return null;
+        const blob = await renderBlockModel(this.properties.modelName);
+        if (!blob) return null;
+        return URL.createObjectURL(blob);
     }
 
     getShowInCatalog() {
@@ -68,16 +48,4 @@ export class BlockState {
         }
         return result;
     }
-}
-
-export function parseBlock(data) {
-    const result = {};
-    const baseId = data.stringId;
-    for (let _ of Object.entries(data.blockStates)) {
-        const blockStateId = _[0];
-        const blockState = _[1];
-
-        result[`${baseId}[${blockStateId}]`] = new BlockState(`${baseId}[${blockStateId}]`, blockState);
-    }
-    return result;
 }

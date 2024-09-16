@@ -1,11 +1,12 @@
 <script>
     import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
-    import { getItemStack } from "$lib/items";
+    import { getItemStack } from "$lib/utils";
     import { BlockState } from "$lib/blocks";
 
     export let itemIds = [];
 
     let search = "";
+    import { reload } from "$lib/stores"; // recieve changes to data
 
     $: cleaned_search = search.trim().toLowerCase().split(" ");
     $: filtered_items = itemIds.filter((itemId) =>
@@ -26,8 +27,8 @@
 />
 
 <div class="results">
-    {#each filtered_items as itemId}
-        <ItemStackDetailDisplay itemStack={getItemStack(itemId)}>
+    {#each filtered_items as itemId (itemId)}
+        <ItemStackDetailDisplay itemStack={getItemStack(itemId)  || ($reload && false)}>
             <a href="/get/{itemId}">How to get</a>
             &nbsp;|&nbsp;
             <a href="/use/{itemId}">Uses</a>

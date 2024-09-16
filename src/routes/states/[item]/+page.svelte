@@ -1,15 +1,13 @@
 <script>
     import Header from "../../Header.svelte";
     import { items, blocks } from "$lib/stores";
-    import { getItemStack } from "$lib/items";
+    import { getItemStack } from "$lib/utils";
     import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
     import { page } from "$app/stores";
     import SearchableItemList from "../../SearchableItemList.svelte";
-
-    import { onchange } from "$lib/stores";
     import Body from "../../Body.svelte";
-
+    import { reload } from "$lib/stores"; // recieve changes to data
     $: filtered = Object.keys(
         Object.fromEntries(
             Object.entries($items)
@@ -21,12 +19,8 @@
                         item[1].id != $page.params.item,
                 ),
         ),
-    );
-    $: itemStack = getItemStack($page.params.item);
-
-    onchange(() => {
-        itemStack = getItemStack($page.params.item);
-    });
+    ) || ($reload && false);
+    $: itemStack = getItemStack($page.params.item) || ($reload && false);
 </script>
 
 <svelte:head>

@@ -4,12 +4,12 @@
     import { items, blocks } from "$lib/stores";
     import SearchableItemList from "./SearchableItemList.svelte";
     import Body from "./Body.svelte";
-
+    import { reload } from "$lib/stores"; // recieve changes to data
     $: filtered_blocks = Object.fromEntries(
         Object.entries($blocks).filter((val) => {
             return val[1].getShowInCatalog();
         }),
-    );
+    ) || ($reload && false);
 </script>
 
 <svelte:head>

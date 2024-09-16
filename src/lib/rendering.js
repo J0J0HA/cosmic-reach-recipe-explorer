@@ -51,6 +51,31 @@ function isCube(model) {
     return false;
 }
 
+let renderingCache = null;
+
+function getRenderingCache() {
+    if (renderingCache) return renderingCache;
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 100);
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
+    const loader = new THREE.TextureLoader();
+    camera.position.x = 2;
+    camera.position.y = 2;
+    camera.position.z = 2;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    renderingCache = {
+        scene,
+        camera,
+        renderer,
+        geometry,
+        loader
+    }
+
+    return renderingCache;
+}
+
 export async function renderBlockModel(modelName) {
     const model = current_models[modelName];
     if (!model) return null;
@@ -62,15 +87,8 @@ export async function renderBlockModel(modelName) {
         const right = current_textures[resolveTexture(model, "right")];
         const left = current_textures[resolveTexture(model, "left")];
 
-        const scene = new THREE.Scene();
-        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 100);
+        const { scene, camera, renderer, geometry, loader } = getRenderingCache();
 
-        const renderer = new THREE.WebGLRenderer({ alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-
-        const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
-
-        const loader = new THREE.TextureLoader();
         const textures = [
             right,
             back,
@@ -95,25 +113,19 @@ export async function renderBlockModel(modelName) {
         });
 
         const cube = new THREE.Mesh(geometry, materials);
+
         scene.add(cube);
-
-        camera.position.x = 2;
-        camera.position.y = 2;
-        camera.position.z = 2;
         camera.lookAt(cube.position);
-
         renderer.render(scene, camera);
+        scene.remove(cube);
 
         return new Promise((resolve, reject) => {
             renderer.domElement.toBlob((blob) => {
                 resolve(blob);
             })
-
-            renderer.dispose();
             materials.forEach((material) => {
                 material.dispose();
             });
-            geometry.dispose();
         });
     }
 }

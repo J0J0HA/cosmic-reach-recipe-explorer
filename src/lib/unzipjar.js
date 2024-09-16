@@ -1,7 +1,7 @@
 import * as zip from "@zip.js/zip.js";
-import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime, lang } from "./stores";
+import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime, lang, reload } from "./stores";
 import { Item } from "./items";
-import { parseBlock } from "./blocks";
+import { BlockState } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
 import { writable } from "svelte/store";
 import * as Hjson from "hjson-devvit";
@@ -103,6 +103,17 @@ const V1 = {
     parseItem(data) {
         let item = new Item(data[1].id, data[1].itemProperties);
         return item;
+    },
+    parseBlock(data) {
+        const result = {};
+        const baseId = data.stringId;
+        for (let _ of Object.entries(data.blockStates)) {
+            const blockStateId = _[0];
+            const blockState = _[1];
+
+            result[`${baseId}[${blockStateId}]`] = new BlockState(`${baseId}[${blockStateId}]`, blockState);
+        }
+        return result;
     }
 };
 
@@ -121,13 +132,6 @@ const V2 = {
                 furnace: [],
             },
         };
-        // let namespaces = [];
-
-        // for (let path of Object.keys(files)) {
-        //     let namespace = path.split("/")[0];
-        //     if (!namespaces.includes(namespace))
-        //         namespaces.push(namespace);
-        // }
 
         for (let entry of Object.entries(files)) {
             const gpath = entry[0];
@@ -186,6 +190,17 @@ const V2 = {
         itemData.itemProperties.texture = namespace + ":" + itemData.itemProperties.texture;
         let item = new Item(itemData.id, itemData.itemProperties);
         return item;
+    },
+    parseBlock(data) {
+        const result = {};
+        const baseId = data.stringId;
+        for (let _ of Object.entries(data.blockStates)) {
+            const blockStateId = _[0];
+            const blockState = _[1];
+
+            result[`${baseId}[${blockStateId}]`] = new BlockState(`${baseId}[${blockStateId}]`, blockState);
+        }
+        return result;
     }
 };
 
@@ -244,7 +259,7 @@ async function update() {
     items.set(new_items);
     const new_blocks = {};
     for (let item of Object.values(categorizedFiles.blocks)) {
-        Object.assign(new_blocks, parseBlock(item));
+        Object.assign(new_blocks, chosenLoader.parseBlock(item));
     }
     blocks.set(new_blocks);
     const new_craftingRecipes = [];
@@ -261,6 +276,8 @@ async function update() {
     const endTime = performance.now();
 
     loadTime.set((endTime - startTime) / 1000);
+
+    reload.set(Date.now());
 }
 
 dataModFiles.subscribe((value) => {

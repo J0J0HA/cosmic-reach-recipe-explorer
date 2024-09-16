@@ -1,4 +1,4 @@
-import { getItemStack } from "./items";
+import { getItemStack } from "./utils";
 
 class CraftingRecipe {
     constructor(grid, output, ordered) {

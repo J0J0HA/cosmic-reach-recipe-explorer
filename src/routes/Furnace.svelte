@@ -6,15 +6,15 @@
     export let output;
     export let ticks = null;
 
-    import { textures } from "$lib/stores";
     import { getTexture } from "$lib/utils";
+    import { reload } from "$lib/stores";; // recieve changes to data
 </script>
 
 <div class="before-after bordered">
     <div class="oven">
         <InventoryDisplay grid={[[input]]} />
         <img
-            src={getTexture($textures, "textures/ui/progress-fuel-full.png")}
+            src={getTexture("textures/ui/progress-fuel-full.png") || ($reload && false)}
             alt="flame"
             class="flame"
             draggable="false"
@@ -23,7 +23,7 @@
     </div>
 
     <img
-        src={getTexture($textures, "textures/ui/progress-arrow-full.png")}
+        src={getTexture("textures/ui/progress-arrow-full.png") || ($reload && false)}
         alt="makes"
         class="arrow"
         draggable="false"

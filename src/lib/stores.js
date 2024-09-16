@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { derived, writable, readable } from 'svelte/store';
 
 export const lang = writable({});
 export const loader = writable({ name: "VX" });
@@ -12,13 +12,22 @@ export const loadedVersion = writable("none");
 export const loadTime = writable(0);
 export const locale = writable("en_us");
 
-export function onchange(callback) {
-    lang.subscribe(callback);
-    items.subscribe(callback);
-    blocks.subscribe(callback);
-    craftingRecipes.subscribe(callback);
-    furnaceRecipes.subscribe(callback);
-    textures.subscribe(callback);
-    models.subscribe(callback);
-    loadedVersion.subscribe(callback);
-}
+export const translations = derived([lang, locale], ([$lang, $locale]) => {
+    return $lang[$locale] || {};
+}, {});
+
+export const tickTime = readable(0, function start(set) {
+    console.log("Hi")
+    let counter = 0;
+    const interval = setInterval(() => {
+        console.log(counter);
+        counter++;
+        set(counter);
+    }, 1000);
+
+    return function stop() {
+        clearInterval(interval);
+    };
+});
+
+export const reload = writable(0);

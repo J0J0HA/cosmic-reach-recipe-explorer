@@ -1,20 +1,14 @@
 <script>
     import { goto } from "$app/navigation";
-    import { ItemStack } from "$lib/items";
-    import { textures, locale } from "$lib/stores";
-    export let itemStack = new ItemStack("air", 0);
-    if (itemStack instanceof Array && !itemStack) {
-        itemStack = new ItemStack("air", 0);
-    }
-    $: itemStackList = itemStack instanceof Array ? itemStack : [itemStack];
-    let iter = 0;
-    $: currentItemStack =
-        itemStack instanceof Array ? itemStack[iter] : itemStack;
-    $: air =
-        currentItemStack?.item.id === "air" || currentItemStack?.count <= 0;
-    setInterval(() => {
-        iter = (iter + 1) % itemStackList.length;
-    }, 1000);
+    import { getAir } from "$lib/utils";
+    import { tickTime } from "$lib/stores";
+
+    import { reload } from "$lib/stores"; // recieve changes to data
+    export let itemStack = undefined;
+    $: itemStack = itemStack || getAir();
+    $: itemStack = itemStack instanceof Array ? itemStack : [itemStack];
+    $: currentItemStack = itemStack[$tickTime % itemStack.length] || getAir();
+    $: air = currentItemStack?.item.id === "air";
 </script>
 
 <button
@@ -24,13 +18,13 @@
         if (air) return false;
         switch (e.button) {
             case 0:
-                goto(`/get/${currentItemStack?.item.id}`);
+                goto(`/get/${currentItemStack.item.id}`);
                 break;
             case 1:
-                goto(`/states/${currentItemStack?.item.id}`);
+                goto(`/states/${currentItemStack.item.id}`);
                 break;
             case 2:
-                goto(`/use/${currentItemStack?.item.id}`);
+                goto(`/use/${currentItemStack.item.id}`);
                 break;
             default:
                 console.warn("How many mouse buttons do you have???");
@@ -39,27 +33,29 @@
     }}
     on:contextmenu={(e) => e.preventDefault()}
 >
-    {#each itemStackList as subitemStack, index}
-        {#await subitemStack.item.getImage($textures) then image}
+    {#each itemStack as subitemStack, index}
+        {#await subitemStack.item.getImage() then image}
             <img
                 src={image}
-                alt={subitemStack?.getName($locale)}
+                alt={subitemStack.getName()}
                 draggable="false"
-                style="display: {index === iter ? 'block' : 'none'};"
+                style:display={index === $tickTime % itemStack.length
+                    ? "block"
+                    : "none"}
             />
         {/await}
     {/each}
     {#if !air}
         <div class="count">
-            {currentItemStack?.count == 1 ? "" : currentItemStack?.count}
+            {currentItemStack.count === 1 ? "" : currentItemStack.count}
         </div>
         <div class="tooltip">
-            {#if currentItemStack?.count !== 1}
-                {currentItemStack?.count}x
+            {#if currentItemStack.count !== 1}
+                {currentItemStack.count}x
             {/if}
-            {currentItemStack?.getName($locale)}<br />
+            {currentItemStack.getName()}<br />
             <div class="tooltip-lore">
-                {@html currentItemStack?.getLore().join("<br />")}
+                {@html currentItemStack.getLore().join("<br />")}
             </div>
         </div>
     {/if}

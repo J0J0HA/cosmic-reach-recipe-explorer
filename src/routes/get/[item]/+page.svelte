@@ -1,22 +1,18 @@
 <script>
     import Header from "../../Header.svelte";
-    import { getWaysToGet } from "$lib/utils";
-    import { getItemStack } from "$lib/items";
+    import { getWaysToGet, getItemStack } from "$lib/utils";
     import CraftingRecipe from "../../CraftingRecipe.svelte";
     import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
     import { page } from "$app/stores";
     import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
-    import { onchange } from "$lib/stores";
     import Body from "../../Body.svelte";
 
-    $: filtered = getWaysToGet($page.params.item);
-    $: itemStack = getItemStack($page.params.item);
-    onchange(() => {
-        filtered = getWaysToGet($page.params.item);
-        itemStack = getItemStack($page.params.item);
-    });
+    
+    import { reload } from "$lib/stores"; // recieve changes to data
+    $: filtered = getWaysToGet($page.params.item) || ($reload && false);
+    $: itemStack = getItemStack($page.params.item) || ($reload && false);
 </script>
 
 <svelte:head>
