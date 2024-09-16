@@ -15,6 +15,7 @@
         getFilesFromFileList,
         getFilesFromJar,
     } from "$lib/unzipjar";
+    import { updated } from "$app/stores";
     import { downloadVersion, getVersionList } from "$lib/versions";
     import { version } from "$app/environment";
 </script>
@@ -152,6 +153,17 @@
         recipes, and {Object.keys($textures).length} textures in
         {Math.round($loadTime * 10) / 10}s with loader
         {$loader.name} for version {$loadedVersion}.
+    {/if}
+
+    {#if $updated}
+        <div class="toast">
+            <p>
+                CR Recipes was updated since you loaded this page.
+                <a href="/" on:click={() => location.reload()}>
+                    Reload to apply
+                </a>
+            </p>
+        </div>
     {/if}
 </div>
 
