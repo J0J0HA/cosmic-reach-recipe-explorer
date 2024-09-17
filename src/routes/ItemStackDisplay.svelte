@@ -31,6 +31,9 @@
                 break;
         }
     }}
+    on:mousedown={(e) => {
+        e.preventDefault();
+    }}
     on:contextmenu={(e) => e.preventDefault()}
 >
     {#each itemStack as subitemStack, index}
