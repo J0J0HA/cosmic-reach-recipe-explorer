@@ -17,10 +17,8 @@ export const translations = derived([lang, locale], ([$lang, $locale]) => {
 }, {});
 
 export const tickTime = readable(0, function start(set) {
-    console.log("Hi")
     let counter = 0;
     const interval = setInterval(() => {
-        console.log(counter);
         counter++;
         set(counter);
     }, 1000);

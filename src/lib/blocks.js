@@ -32,6 +32,7 @@ export class BlockState {
 
     getLore() {
         let result = [];
+        result.push(this.id);
         for (let property in this.properties) {
             if (property == "dropId") {
                 result.push(`Drops: ${this.properties[property]}`);

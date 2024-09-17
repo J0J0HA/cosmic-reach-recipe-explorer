@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-    <title>Blockstates of {$page.params.item} - CR Recipes</title>
+    <title>Blockstates of {itemStack.getName()} - CR Recipes</title>
 </svelte:head>
 
 <Header />

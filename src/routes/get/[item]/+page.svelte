@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head>
-    <title>How to make {$page.params.item} - CR Recipes</title>
+    <title>How to make {itemStack.getName()} - CR Recipes</title>
 </svelte:head>
 
 <Header />

@@ -17,7 +17,7 @@
 </script>
 
 <svelte:head>
-    <title>Uses of {$page.params.item} - CR Recipes</title>
+    <title>Uses of {itemStack.getName()} - CR Recipes</title>
 </svelte:head>
 
 <Header />

@@ -27,6 +27,7 @@ export class Item {
 
     getLore() {
         let result = [];
+        result.push(this.id);
         for (let property in this.properties) {
             if (property == "stackLimit") {
                 result.push(`Stack Limit: ${this.properties[property]}`);
