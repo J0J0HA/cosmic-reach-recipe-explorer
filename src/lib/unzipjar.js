@@ -34,7 +34,7 @@ export async function getFilesFromFileList(files) {
         requirement = "mods/assets/";
     }
     return Object.fromEntries(Array.prototype.filter.call(files, (file) => file.webkitRelativePath.startsWith(requirement)).map((ifile) => {
-        return [ifile.webkitRelativePath.slice(12), {
+        return [ifile.webkitRelativePath.slice(requirement.length), {
             readBlob: async () => {
                 return ifile;
             },
