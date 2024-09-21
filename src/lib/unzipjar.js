@@ -187,7 +187,9 @@ const V2 = {
     parseItem(data) {
         const namespace = data[0].split(":", 1)[0];
         const itemData = data[1];
-        itemData.itemProperties.texture = namespace + ":" + itemData.itemProperties.texture;
+        if (itemData.itemProperties) {
+            itemData.itemProperties.texture = namespace + ":" + itemData.itemProperties.texture;
+        }
         let item = new Item(itemData.id, itemData.itemProperties);
         return item;
     },
