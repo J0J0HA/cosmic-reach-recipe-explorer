@@ -1,5 +1,6 @@
 <script>
     import InventoryDisplay from "./InventoryDisplay.svelte";
+    import { goto } from "$app/navigation";
 
     export let input;
     export let fuel;
@@ -7,23 +8,24 @@
     export let ticks = null;
 
     import { getTexture } from "$lib/utils";
-    import { reload } from "$lib/stores";; // recieve changes to data
 </script>
 
 <div class="before-after bordered">
     <div class="oven">
         <InventoryDisplay grid={[[input]]} />
-        <img
-            src={getTexture("textures/ui/progress-fuel-full.png") || ($reload && false)}
-            alt="flame"
-            class="flame"
-            draggable="false"
-        />
+        <a href="/fuel"
+            ><img
+                src={getTexture("textures/ui/progress-fuel-full.png")}
+                alt="flame"
+                class="flame"
+                draggable="false"
+            /></a
+        >
         <InventoryDisplay grid={[[fuel]]} />
     </div>
 
     <img
-        src={getTexture("textures/ui/progress-arrow-full.png") || ($reload && false)}
+        src={getTexture("textures/ui/progress-arrow-full.png")}
         alt="makes"
         class="arrow"
         draggable="false"

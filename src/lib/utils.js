@@ -97,3 +97,19 @@ export function getItemsAsStacks() {
     }
     return itemStacks;
 }
+
+
+export function getFuels() {
+    let itemStacks = [];
+    for (let item in get(items)) {
+        if (get(items)[item].isFuel()) {
+            itemStacks.push(item);
+        }
+    }
+    for (let block in get(blocks)) {
+        if (get(blocks)[block].isFuel()) {
+            itemStacks.push(block);
+        }
+    }
+    return itemStacks;
+}
