@@ -185,10 +185,11 @@ const V2 = {
         return Object.fromEntries(Object.entries(files).filter(entry => entry[0].startsWith("base/")));
     },
     parseItem(data) {
-        const namespace = data[0].split(":", 1)[0];
         const itemData = data[1];
         if (itemData.itemProperties) {
-            itemData.itemProperties.texture = namespace + ":" + itemData.itemProperties.texture;
+            const splitTextureId = itemData.itemProperties.texture.split(":", 2);
+            const namespace = splitTextureId.length > 1 ? splitTextureId[0] : "base";
+            itemData.itemProperties.texture = namespace + ":" + (splitTextureId[1] || splitTextureId[0]);
         }
         let item = new Item(itemData.id, itemData.itemProperties);
         return item;
