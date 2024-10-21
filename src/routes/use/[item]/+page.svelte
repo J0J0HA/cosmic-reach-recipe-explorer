@@ -9,11 +9,10 @@
     import { page } from "$app/stores";
     import FurnaceRecipe from "../../FurnaceRecipe.svelte";
     import FuelRecipe from "../../FuelRecipe.svelte";
-    import { reload } from "$lib/stores"; // recieve changes to data
     import Body from "../../Body.svelte";
 
-    $: filtered = getUsesOf($page.params.item) || ($reload && false);
-    $: itemStack = getItemStack($page.params.item) || ($reload && false);
+    $: filtered = getUsesOf($page.params.item);
+    $: itemStack = getItemStack($page.params.item);
 </script>
 
 <svelte:head>

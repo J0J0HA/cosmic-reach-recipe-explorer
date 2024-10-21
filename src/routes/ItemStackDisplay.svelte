@@ -3,7 +3,6 @@
     import { getAir } from "$lib/utils";
     import { tickTime } from "$lib/stores";
 
-    import { reload } from "$lib/stores"; // recieve changes to data
     export let itemStack = undefined;
     $: itemStack = itemStack || getAir();
     $: itemStack = itemStack instanceof Array ? itemStack : [itemStack];

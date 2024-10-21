@@ -9,10 +9,8 @@
 
     import Body from "../../Body.svelte";
 
-    
-    import { reload } from "$lib/stores"; // recieve changes to data
-    $: filtered = getWaysToGet($page.params.item) || ($reload && false);
-    $: itemStack = getItemStack($page.params.item) || ($reload && false);
+    $: filtered = getWaysToGet($page.params.item);
+    $: itemStack = getItemStack($page.params.item);
 </script>
 
 <svelte:head>

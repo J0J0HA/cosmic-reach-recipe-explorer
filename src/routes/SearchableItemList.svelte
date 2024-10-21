@@ -6,8 +6,6 @@
     export let itemIds = [];
 
     let search = "";
-    import { reload } from "$lib/stores"; // recieve changes to data
-
     $: cleaned_search = search.trim().toLowerCase().split(" ");
     $: filtered_items = itemIds.filter((itemId) =>
         cleaned_search.every((word) => itemId.toLowerCase().includes(word)),
@@ -28,7 +26,7 @@
 
 <div class="results">
     {#each filtered_items as itemId (itemId)}
-        <ItemStackDetailDisplay itemStack={getItemStack(itemId)  || ($reload && false)}>
+        <ItemStackDetailDisplay itemStack={getItemStack(itemId)}>
             <a href="/get/{itemId}">How to get</a>
             &nbsp;|&nbsp;
             <a href="/use/{itemId}">Uses</a>

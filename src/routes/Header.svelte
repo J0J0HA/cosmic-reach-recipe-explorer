@@ -1,5 +1,6 @@
 <script>
     import {
+        loadedStore,
         items,
         textures,
         craftingRecipes,
@@ -9,15 +10,19 @@
         loader,
         loadTime,
     } from "$lib/stores";
-    import {
-        dataModFiles,
-        jarFiles,
-        getFilesFromFileList,
-        getFilesFromJar,
-    } from "$lib/unzipjar";
+    // import {
+    //     dataModFiles,
+    //     jarFiles,
+    //     getFilesFromFileList,
+    //     getFilesFromJar,
+    // } from "$lib/unzipjar";
+    import { getZipFiles, getFolderFiles, getLoader } from "$lib/importer";
     import { updated } from "$app/stores";
-    import { downloadVersion, getVersionList } from "$lib/versions";
+    import { downloadVersion, getVersionList, setVersion } from "$lib/versions";
     import { version } from "$app/environment";
+    import { get, writable } from "svelte/store";
+
+    const loadingJar = writable(false);
 </script>
 
 <div style="position: absolute; top:10px; left: 12.5px; font-size: 0.7rem;">
@@ -25,70 +30,62 @@
 </div>
 
 <div class="jar-chooser-box bordered">
-    {#if $loadedVersion == "none"}
-        <h2>Load a jar file and/or data mod to start:</h2>
+    {#if $loadedStore && !$loadedVersion}
+        <h2>To get started:</h2>
     {/if}
     <div>
-        <input
-            id="jar-chooser"
-            accept="application/java-archive,application/x-java-archive,application/x-jar"
-            type="file"
-            hidden
-            on:change={(event) => {
-                document.querySelector("#jar-downloader").disabled = true;
-                document.querySelector("#jar-chooser-trigger").disabled = true;
-                const file = event.target.files[0];
-                getFilesFromJar(file).then((files) => {
-                    jarFiles.set(files);
-                    document.querySelector("#jar-downloader").disabled = false;
-                    document.querySelector("#jar-chooser-trigger").disabled =
-                        false;
-                });
-            }}
-        />
-        <button
-            id="jar-chooser-trigger"
-            on:click={() => {
-                document.querySelector("#jar-chooser").click();
-            }}>Upload a jar file from your PC</button
-        >
-        or
         {#await getVersionList()}
-            <select value=":" id="jar-downloader" disabled>
+            <select value=":" id="version-chooser" disabled key="version-chooser">
                 <option value=":" key=":" disabled selected> Wait... </option>
                 <option value=":spacer" key=":spacer" disabled>
-                    Choose one from the CRModders Archive
+                    Choose a Version
                 </option>
             </select>
         {:then versions}
             <select
-                value=":"
-                id="jar-downloader"
+                disabled={!$loadedStore || $loadingJar}
+                value={$loadingJar ? ":LOAD" : ($loadedVersion || ":")}
+                id="version-chooser"
+                key="version-chooser"
                 on:change={(e) => {
-                    document.querySelector("#jar-downloader").disabled = true;
-                    document.querySelector("#jar-chooser-trigger").disabled =
-                        true;
-                    downloadVersion(
-                        versions.filter(
+                    loadingJar.set(true);
+                    setVersion(versions.filter(
                             (version) => version.id == e.target.value,
-                        )[0],
-                    ).then((file) => {
-                        getFilesFromJar(file).then((files) => {
-                            jarFiles.set(files);
-                            document.querySelector("#jar-downloader").disabled =
-                                false;
-                            document.querySelector(
-                                "#jar-chooser-trigger",
-                            ).disabled = false;
-                        });
+                        )[0]).then(() => {
+                        loadingJar.set(false);
                     });
+                    // downloadVersion(
+                    //     versions.filter(
+                    //         (version) => version.id == e.target.value,
+                    //     )[0],
+                    // ).then((file) => {
+                    //     // crVersion.set(e.target.value);
+                    //     getZipFiles(file).then((files) => {
+                    //         getLoader($crVersion)
+                    //             .loadJarFiles(files)
+                    //             .then(() => {
+                    //                 loadingJar.set(false);
+                    //                 console.log(getLoader($crVersion));
+                    //                 console.log(
+                    //                     getLoader(
+                    //                         $crVersion,
+                    //                     ).getFilesCombined(),
+                    //                 );
+                    //             });
+                    //     });
+                    // });
 
-                    document.querySelector("#jar-downloader").value = ":";
+                    // document.querySelector("#version-chooser").value = ":";
                 }}
             >
                 <option value=":" key=":" disabled selected>
-                    Choose one from the CRModders Archive
+                    Choose a Version
                 </option>
+                {#if $loadingJar}
+                    <option value=":LOAD" key=":LOAD" disabled>
+                        Loading...
+                    </option>
+                {/if}
                 {#each versions as version}
                     <option value={version.id} key={version.id}
                         >{version.id} ({version.type})</option
@@ -97,7 +94,7 @@
             </select>
         {/await}
     </div>
-    {#if $loadedVersion !== "none"}
+    {#if $loadedVersion && false} <!-- No data mods atm -->
         <hr />
         To load your data mods,
         <input
@@ -110,15 +107,19 @@
             hidden
             on:change={(event) => {
                 document.querySelector("#dir-chooser-trigger").disabled = true;
-                getFilesFromFileList(event.target.files).then((files) => {
-                    dataModFiles.set(files);
-                    document.querySelector("#dir-chooser-trigger").disabled =
-                        false;
+                getFolderFiles(event.target.files).then((files) => {
+                    getLoader($loadedVersion)
+                        .loadDataModFiles(files)
+                        .then(() => {
+                            document.querySelector(
+                                "#dir-chooser-trigger",
+                            ).disabled = false;
+                        });
                 });
             }}
         />
         <div>
-            {#if Object.keys($dataModFiles).length > 0}
+            {#if false || Object.keys("$dataModFiles").length > 0}
                 <button
                     id="dir-chooser-trigger"
                     on:click={() => {
@@ -130,7 +131,8 @@
                 <button
                     id="dir-unload"
                     on:click={() => {
-                        dataModFiles.set({});
+                        // dataModFiles.set({});
+                        getLoader($loadedVersion).unloadDataMods();
                     }}
                 >
                     Unload data mods

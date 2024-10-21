@@ -4,7 +4,6 @@
     export let recipe;
 
     import { getTexture } from "$lib/utils";
-    import { reload } from "$lib/stores"; // recieve changes to data
 </script>
 
 <div class="before-after bordered">
@@ -12,7 +11,7 @@
         <InventoryDisplay grid={recipe.grid} />
     </div>
     <img
-        src={getTexture("textures/ui/progress-arrow-full.png") || ($reload && false)}
+        src={getTexture("textures/ui/progress-arrow-full.png")}
         alt="makes"
         class="arrow"
         draggable="false"

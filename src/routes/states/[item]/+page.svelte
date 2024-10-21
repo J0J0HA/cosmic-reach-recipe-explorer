@@ -7,7 +7,6 @@
     import { page } from "$app/stores";
     import SearchableItemList from "../../SearchableItemList.svelte";
     import Body from "../../Body.svelte";
-    import { reload } from "$lib/stores"; // recieve changes to data
     $: filtered = Object.keys(
         Object.fromEntries(
             Object.entries($items)
@@ -19,8 +18,8 @@
                         item[1].id != $page.params.item,
                 ),
         ),
-    ) || ($reload && false);
-    $: itemStack = getItemStack($page.params.item) || ($reload && false);
+    );
+    $: itemStack = getItemStack($page.params.item);
 </script>
 
 <svelte:head>
