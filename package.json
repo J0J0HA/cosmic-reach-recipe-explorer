@@ -18,6 +18,7 @@
 	"type": "module",
 	"dependencies": {
 		"@zip.js/zip.js": "^2.7.52",
+		"dexie": "^4.0.8",
 		"hjson": "^3.2.2",
 		"hjson-devvit": "^3.2.1",
 		"three": "^0.168.0"
