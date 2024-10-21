@@ -1,17 +1,33 @@
 import * as zip from "@zip.js/zip.js";
-import { textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime, lang } from "./stores";
+import { dataModFiles, jarFiles, textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime, lang } from "./stores";
 import { Item } from "./items";
+import { storeFiles } from "./serializer";
 import { BlockState } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 import * as Hjson from "hjson-devvit";
+import { db } from "./db";
+import { browser } from "$app/environment"
 
+export function fileNamesToTree(files) {
+    let result = {};
+    for (let entry of Object.entries(files)) {
+        let path = entry[0].split("/");
+        let file = entry[1];
+        let current = result;
+        for (let i = 0; i < path.length - 1; i++) {
+            let part = path[i];
+            current[part] = current[part] || {};
+            current = current[part];
+        }
+        current[path[path.length - 1]] = file;
+    }
+    return result;
+}
 
-
-export async function getFilesFromJar(file) {
+export async function getZipFiles(file) {
     const zipReader = new zip.ZipReader(new zip.BlobReader(file));
     let entries = await zipReader.getEntries();
-
     return Object.fromEntries(entries.map((ifile) => {
         return [ifile.filename, {
             readBlob: async () => {
@@ -28,13 +44,9 @@ export async function getFilesFromJar(file) {
     }))
 };
 
-export async function getFilesFromFileList(files) {
-    let requirement = "mods/";
-    if (Array.prototype.some.call(files, (entry) => entry.webkitRelativePath.startsWith("mods/assets"))) {
-        requirement = "mods/assets/";
-    }
-    return Object.fromEntries(Array.prototype.filter.call(files, (file) => file.webkitRelativePath.startsWith(requirement)).map((ifile) => {
-        return [ifile.webkitRelativePath.slice(requirement.length), {
+export async function getFolderFiles(files) {
+    return Object.fromEntries(files.map((ifile) => {
+        return [ifile.webkitRelativePath, {
             readBlob: async () => {
                 return ifile;
             },
@@ -49,9 +61,21 @@ export async function getFilesFromFileList(files) {
     }))
 };
 
+if (browser) window.db = db;
+
+const memoryFileSystem = writable({});
+
 const V1 = {
-    version: /^0\.(0|1|2)\.\d+[a-z]?$/,
+    version: /^XXX0\.(0|1|2)\.\d+[a-z]?$/,
     name: "V1",
+    loadDatamodFiles(files) {
+        fileTree = fileNamesToTree(files);
+        memoryFileSystem.set({ ...memoryFileSystem, ...fileTree });
+    },
+    loadJarFiles(files) {
+        fileTree = fileNamesToTree(files);
+        memoryFileSystem.set({ ...memoryFileSystem, ...fileTree });
+    },
     async categorizeFiles(files) {
         let result = {
             textures: {},
@@ -117,9 +141,119 @@ const V1 = {
     }
 };
 
+function blobToDataURL(blob) {
+    return new Promise((resolve, reject) => {
+        var a = new FileReader();
+        a.onload = function(e) {resolve(e.target.result);}
+        a.onerror = reject;
+        a.readAsDataURL(blob);
+    });
+}
+
 const V2 = {
     version: /^0\.3\.\d+$/,
     name: "V2",
+    async loadFiles(source, files) {
+        // await db.transaction("rw", [db.textures, db.models], async () => {
+        // Textures
+        await db.textures.where("source").equals(source).delete();
+        await db.textures.bulkPut(
+            await Promise.all(Object.entries(files).filter(
+                entry => entry[0].split("/")[1] === "textures" && entry[0].endsWith(".png")
+            ).map(
+                async entry => (
+                    {
+                        path: entry[0],
+                        source,
+                        data: (await blobToDataURL(await entry[1].readBlob())).replace("application/octet-stream", "image/png"),
+                        modId: entry[0].split("/")[0],
+                        subPath: entry[0].split("/").slice(1).join("/"),
+                    }
+                )
+            ))
+        );
+
+        // Models
+        await db.models.where("source").equals(source).delete();
+        await db.models.bulkPut(
+            await Promise.all(Object.entries(files).filter(
+                entry => entry[0].split("/")[1] === "models" && entry[0].endsWith(".json")
+            ).map(
+                async entry => {
+                    const data = await entry[1].readJson();
+                    return (
+                    {
+                        path: entry[0],
+                        source,
+                        data,
+                        modId: entry[0].split("/")[0],
+                        subPath: entry[0].split("/").slice(1).join("/"),
+                    }
+                )}
+            ))
+        );
+
+        // Items
+        await db.items.where("source").equals(source).delete();
+        await db.items.bulkPut(
+            await Promise.all(Object.entries(files).filter(
+                entry => entry[0].split("/")[1] === "items" && entry[0].endsWith(".json")
+            ).map(
+                async entry => {
+                    const data = await entry[1].readJson();
+                    if (data.id.split(":")[0] != entry[0].split("/")[0]) {
+                        console.error("Mod ID mismatch in item", entry[0]);
+                    }
+                    return (
+                    {
+                        path: entry[0],
+                        source,
+                        data,
+                        modId: entry[0].split("/")[0],
+                        subId: data.id.split(":")[1],
+                        subPath: entry[0].split("/").slice(1).join("/"),
+                    }
+                )}
+            ))
+        );
+
+        // Blocks
+        await db.blocks.where("source").equals(source).delete();
+        await db.blockstates.where("source").equals(source).delete();
+        await db.blocks.bulkPut(
+            await Promise.all(Object.entries(files).filter(
+                entry => entry[0].split("/")[1] === "blocks" && entry[0].endsWith(".json")
+            ).map(
+                async entry => {
+                    const data = await entry[1].readJson();
+                    if (data.stringId.split(":")[0] != entry[0].split("/")[0]) {
+                        console.error("Mod ID mismatch in block", entry[0]);
+                    }
+                    return (
+                    {
+                        path: entry[0],
+                        source,
+                        data,
+                        modId: entry[0].split("/")[0],
+                        subId: data.stringId.split(":")[1],
+                        subPath: entry[0].split("/").slice(1).join("/"),
+                    }
+                )}
+            ))
+        );
+        // });
+    },
+    getFilesCombined() {
+        return {
+            mods: {
+                ...get(dataModFiles),
+                base: {
+                    ...get(jarFiles).base,
+                    ...get(dataModFiles).base,
+                }
+            }
+        };
+    },
     async categorizeFiles(files) {
         let result = {
             textures: {},
@@ -210,11 +344,14 @@ const V2 = {
 const loaders = [V1, V2];
 
 
-export const dataModFiles = writable({});
-export const jarFiles = writable({});
-
-let currentDataModFiles = {};
-let currentJarFiles = {};
+export function getLoader(version) {
+    for (let mloader of loaders) {
+        if (mloader.version.test(version)) {
+            return mloader;
+        }
+    }
+    return null;
+}
 
 async function update() {
     const startTime = performance.now();
@@ -224,13 +361,7 @@ async function update() {
     }
     const version = await currentJarFiles["build_assets/version.txt"].readText();
 
-    let chosenLoader;
-    for (let mloader of loaders) {
-        if (mloader.version.test(version)) {
-            chosenLoader = mloader;
-            break;
-        }
-    }
+    const chosenLoader = getLoader(version);
     if (!chosenLoader) {
         console.error("No loader found for version", version);
         return;
@@ -278,13 +409,6 @@ async function update() {
 
     const endTime = performance.now();
 
-    loadTime.set((endTime - startTime) / 1000);}
+    loadTime.set((endTime - startTime) / 1000);
+}
 
-dataModFiles.subscribe((value) => {
-    currentDataModFiles = value;
-    update();
-});
-jarFiles.subscribe((value) => {
-    currentJarFiles = value;
-    update();
-});

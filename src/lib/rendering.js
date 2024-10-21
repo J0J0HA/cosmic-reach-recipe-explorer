@@ -5,15 +5,15 @@ let current_models = {};
 let current_textures = {};
 let current_loader;
 
-models.subscribe((value) => {
-    current_models = value;
-})
-textures.subscribe((value) => {
-    current_textures = value;
-})
-loader.subscribe((value) => {
-    current_loader = value;
-})
+// models.subscribe((value) => {
+//     current_models = value;
+// })
+// textures.subscribe((value) => {
+//     current_textures = value;
+// })
+// loader.subscribe((value) => {
+//     current_loader = value;
+// })
 
 const textureMapping = {
     front: ["side", "all"],
