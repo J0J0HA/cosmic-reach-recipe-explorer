@@ -7,8 +7,8 @@
     <div class="leftmost">
         <InventoryDisplay grid={[[itemStack]]} />
         <div>
-            <div class="name">{itemStack.getName()}</div>
-            <div class="lore">{@html itemStack.getLore().join("<br />")}</div>
+            <div class="name">{itemStack.name}</div>
+            <div class="lore">{@html itemStack.lore.join("<br />")}</div>
         </div>
     </div>
     <div class="rightmost">

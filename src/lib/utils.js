@@ -80,6 +80,7 @@ export function getItemFilter(filter, count, props) {
 function getUnknownItem(forId, count, props) {
     return new ItemStack(new Item(forId, {}), count, { name: `Unknown (${forId})`, ...props });
 }
+
 export function getItemStack(item, count = 1, properties = {}) {
     if (item === null) return new ItemStack(air, 0);
     if (!(typeof item === 'string' || item instanceof String)) return getItemFilter(item, count, properties);

@@ -9,7 +9,7 @@ export async function getVersionList() {
 }
 
 export async function downloadVersion(version) {
-    const response = await fetch(version.client.url);
+    const response = await fetch(/*"/Cosmic Reach-0.3.1.jar" ||*/ version.client.url);
     const data = await response.blob();
     return data
 }

@@ -1,6 +1,9 @@
 import { textures, translations } from "./stores";
 import { get } from 'svelte/store';
 
+
+
+
 export class Item {
     constructor(id, properties) {
         this.id = id;
@@ -52,20 +55,20 @@ export class ItemStack {
         this.properties = properties || {};
     }
 
-    isFuel() {
-        return this.item.isFuel();
+    get isFuel() {
+        return this.item.isFuel;
     }
 
-    getBurnTime() {
-        return this.item.getBurnTime();
+    get burnTime() {
+        return this.item.burnTime;
     }
 
-    getName(locale) {
-        return this.properties.name || this.item.getName(locale);
+    get name() {
+        return this.properties.name || this.item.name;
     }
 
-    getLore() {
-        let lore = this.item.getLore();
+    get lore() {
+        let lore = this.item.lore;
         if (this.properties.blockState)
             lore.push(`Block State: ${this.properties.blockState}`);
         return lore;

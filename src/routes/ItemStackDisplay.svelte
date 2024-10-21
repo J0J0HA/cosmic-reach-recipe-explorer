@@ -17,13 +17,13 @@
         if (air) return false;
         switch (e.button) {
             case 0:
-                goto(`/get/${currentItemStack.item.id}`);
+                goto(`/get/${currentItemStack.item.fullId}`);
                 break;
             case 1:
-                goto(`/states/${currentItemStack.item.id}`);
+                goto(`/states/${currentItemStack.item.fullId}`);
                 break;
             case 2:
-                goto(`/use/${currentItemStack.item.id}`);
+                goto(`/use/${currentItemStack.item.fullId}`);
                 break;
             default:
                 console.warn("How many mouse buttons do you have???");
@@ -39,7 +39,7 @@
         {#await subitemStack.item.getImage() then image}
             <img
                 src={image}
-                alt={subitemStack.getName()}
+                alt={subitemStack.name}
                 draggable="false"
                 style:display={index === $tickTime % itemStack.length
                     ? "block"
@@ -55,9 +55,9 @@
             {#if currentItemStack.count !== 1}
                 {currentItemStack.count}x
             {/if}
-            {currentItemStack.getName()}<br />
+            {currentItemStack.name}<br />
             <div class="tooltip-lore">
-                {@html currentItemStack.getLore().join("<br />")}
+                {@html currentItemStack.lore.join("<br />")}
             </div>
         </div>
     {/if}

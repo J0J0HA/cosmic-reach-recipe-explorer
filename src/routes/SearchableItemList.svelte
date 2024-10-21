@@ -1,14 +1,15 @@
 <script>
     import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
-    import { getItemStack } from "$lib/utils";
-    import { BlockState } from "$lib/blocks";
+    import { ItemStack } from "$lib/items";
 
-    export let itemIds = [];
+    export let takeables = [];
 
     let search = "";
     $: cleaned_search = search.trim().toLowerCase().split(" ");
-    $: filtered_items = itemIds.filter((itemId) =>
-        cleaned_search.every((word) => itemId.toLowerCase().includes(word)),
+    $: results = takeables.filter((takeable) =>
+        cleaned_search.every((word) =>
+            takeable.subId.toLowerCase().includes(word),
+        ),
     );
 </script>
 
@@ -25,14 +26,14 @@
 />
 
 <div class="results">
-    {#each filtered_items as itemId (itemId)}
-        <ItemStackDetailDisplay itemStack={getItemStack(itemId)}>
-            <a href="/get/{itemId}">How to get</a>
+    {#each results as takeable (takeable.fullId)}
+        <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
+            <a href="/get/{takeable.fullId}">How to get</a>
             &nbsp;|&nbsp;
-            <a href="/use/{itemId}">Uses</a>
-            {#if getItemStack(itemId).item instanceof BlockState}
+            <a href="/use/{takeable.fullId}">Uses</a>
+            {#if takeable.state}
                 &nbsp;|&nbsp;
-                <a href="/states/{itemId}">Other states</a>
+                <a href="/states/{takeable.blockId}">Other states</a>
             {/if}
         </ItemStackDetailDisplay>
     {/each}

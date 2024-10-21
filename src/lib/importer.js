@@ -144,7 +144,7 @@ const V1 = {
 function blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
         var a = new FileReader();
-        a.onload = function(e) {resolve(e.target.result);}
+        a.onload = function (e) { resolve(e.target.result); }
         a.onerror = reject;
         a.readAsDataURL(blob);
     });
@@ -182,14 +182,15 @@ const V2 = {
                 async entry => {
                     const data = await entry[1].readJson();
                     return (
-                    {
-                        path: entry[0],
-                        source,
-                        data,
-                        modId: entry[0].split("/")[0],
-                        subPath: entry[0].split("/").slice(1).join("/"),
-                    }
-                )}
+                        {
+                            path: entry[0],
+                            source,
+                            data,
+                            modId: entry[0].split("/")[0],
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                        }
+                    )
+                }
             ))
         );
 
@@ -201,45 +202,58 @@ const V2 = {
             ).map(
                 async entry => {
                     const data = await entry[1].readJson();
+                    const modId =entry[0].split("/")[0];
+                    const subId = data.id.split(":")[1];
                     if (data.id.split(":")[0] != entry[0].split("/")[0]) {
                         console.error("Mod ID mismatch in item", entry[0]);
                     }
                     return (
-                    {
-                        path: entry[0],
-                        source,
-                        data,
-                        modId: entry[0].split("/")[0],
-                        subId: data.id.split(":")[1],
-                        subPath: entry[0].split("/").slice(1).join("/"),
-                    }
-                )}
+                        {
+                            path: entry[0],
+                            source,
+                            fullId: `${modId}:${subId}`,
+                            data: data.itemProperties,
+                            modId,
+                            subId,
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                        }
+                    )
+                }
             ))
         );
 
         // Blocks
-        await db.blocks.where("source").equals(source).delete();
+        // await db.blocks.where("source").equals(source).delete();
         await db.blockstates.where("source").equals(source).delete();
-        await db.blocks.bulkPut(
-            await Promise.all(Object.entries(files).filter(
+        let a;
+        await db.blockstates.bulkPut(
+            (await Promise.all(Object.entries(files).filter(
                 entry => entry[0].split("/")[1] === "blocks" && entry[0].endsWith(".json")
             ).map(
                 async entry => {
                     const data = await entry[1].readJson();
+                    const modId = entry[0].split("/")[0];
+                    const subId = data.stringId.split(":")[1]
                     if (data.stringId.split(":")[0] != entry[0].split("/")[0]) {
                         console.error("Mod ID mismatch in block", entry[0]);
                     }
-                    return (
-                    {
-                        path: entry[0],
-                        source,
-                        data,
-                        modId: entry[0].split("/")[0],
-                        subId: data.stringId.split(":")[1],
-                        subPath: entry[0].split("/").slice(1).join("/"),
-                    }
-                )}
-            ))
+                    return await Promise.all(Object.entries(data.blockStates).map(
+                        async ([blockStateName, blockStateData]) => {
+                            return {
+                                path: entry[0],
+                                fullId: `${modId}:${subId}[${blockStateName}]`,
+                                blockId: `${modId}:${subId}`,
+                                source,
+                                data: blockStateData,
+                                modId,
+                                subId,
+                                state: blockStateName,
+                                showInCatalog: !blockStateData.catalogHidden ? 1 : 0,
+                            }
+                        }
+                    ))
+                }
+            ))).flat()
         );
         // });
     },
