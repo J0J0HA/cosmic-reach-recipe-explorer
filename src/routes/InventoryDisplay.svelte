@@ -1,21 +1,45 @@
 <script>
     import ItemStackDisplay from "./ItemStackDisplay.svelte";
     import { getTexture } from "$lib/utils";
+    import { db } from "$lib/db";
+    import { liveQuery } from "dexie";
 
     export let grid = [];
     export let out = false;
+    let bgImage = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: out
+                        ? "textures/ui/container-output.png"
+                        : "textures/ui/container.png",
+                })
+                .first(),
+        {
+            initialValue: null,
+        },
+    );
+    let hoverBgImage = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: out
+                        ? "textures/ui/container-output-hovered.png"
+                        : "textures/ui/container-hovered.png",
+                })
+                .first(),
+        {
+            initialValue: null,
+        },
+    );
 </script>
 
 <table
     class="inventory-grid{out ? ' output' : ''}"
-    style:--img-slot="url({getTexture(
-        out ? "textures/ui/container-output.png" : "textures/ui/container.png",
-    ) || ""})"
-    style:--img-slot-hover="url({getTexture(
-        out
-            ? "textures/ui/container-output-hovered.png"
-            : "textures/ui/container-hovered.png",
-    ) || "" })"
+    style:--img-slot="url({$bgImage?.data || ''})"
+    style:--img-slot-hover="url({$hoverBgImage?.data || ''})"
 >
     {#each grid as row}
         <tr>
