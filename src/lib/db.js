@@ -3,13 +3,14 @@ import { dataModFiles } from './stores';
 import { renderBlockModel } from './rendering';
 
 export const db = new Dexie('FileStore');
-db.version(2).stores({
+db.version(3).stores({
   //   blocks: '&id, source',
   textures: '&path, source, modId, subPath, &[modId+subPath]',
   models: '&path, source, modId, subPath, &[modId+subPath]',
-  // recipes: '&path, source, modId, subPath, &[modId+subPath]',
-  items: '&path, &fullId, source, modId, subId, &[modId+subId]',
-  blockstates: '&fullId, blockId, source, modId, subId, state, [modId+subId], &[modId+subId+state], showInCatalog',
+  craftingRecipes: '++id, source, modId, *usedItems.fullId, result.fullId',
+  furnaceRecipes: '++id, source, modId, usedItem.fullId, result.fullId',
+  items: '&fullId, source, modId, subId, &[modId+subId]',
+  blockstates: '&fullId, blockId, source, modId, subId, state, [modId+subId], &[modId+subId+state], showInCatalog, *data.tags',
 });
 
 export class BlockStateTakeableAdapter {
