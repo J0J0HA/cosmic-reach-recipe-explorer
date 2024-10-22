@@ -55,20 +55,34 @@ export class ItemStack {
         this.properties = properties || {};
     }
 
+    async getImage() {
+        if (this.item === null) return null;
+        return await this.item.getImage();
+    }
+
+    get fullId() {
+        if (this.item === null) return "air";
+        return this.item.fullId;
+    }
+
     get isFuel() {
+        if (this.item === null) return false;
         return this.item.isFuel;
     }
 
     get burnTime() {
+        if (this.item === null) return 0;
         return this.item.burnTime;
     }
 
     get name() {
+        if (this.item === null) return "";
         return this.properties.name || this.item.name;
     }
 
     get lore() {
-        let lore = this.item.lore;
+        if (this.item === null) return [""];
+        let lore = this.item?.lore || [];
         if (this.properties.blockState)
             lore.push(`Block State: ${this.properties.blockState}`);
         return lore;
