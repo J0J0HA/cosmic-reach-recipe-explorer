@@ -1,6 +1,6 @@
 import * as zip from "@zip.js/zip.js";
 import { dataModFiles, jarFiles, textures, models, items, craftingRecipes, blocks, furnaceRecipes, loadedVersion, loader, loadTime, lang } from "./stores";
-import { Item } from "./items";
+import { Item, ItemStack } from "./items";
 import { storeFiles } from "./serializer";
 import { BlockState } from "./blocks";
 import { parseCraftingRecipe, parseFurnaceRecipe } from "./recipes";
@@ -202,7 +202,7 @@ const V2 = {
             ).map(
                 async entry => {
                     const data = await entry[1].readJson();
-                    const modId =entry[0].split("/")[0];
+                    const modId = entry[0].split("/")[0];
                     const subId = data.id.split(":")[1];
                     if (data.id.split(":")[0] != entry[0].split("/")[0]) {
                         console.error("Mod ID mismatch in item", entry[0]);
@@ -255,82 +255,136 @@ const V2 = {
                 }
             ))).flat()
         );
+
+        // Recipes
+        await db.craftingRecipes.where("source").equals(source).delete();
+        await db.craftingRecipes.bulkPut(
+            (
+                await Promise.all(Object.entries(files).filter(
+                    entry => entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "crafting" && entry[0].endsWith(".json")
+                ).map(
+                    async entry => {
+                        const data = await entry[1].readJson();
+                        return (await this.parseCraftingRecipe(data)).map(recipe => ({
+                            path: entry[0],
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                            modId: entry[0].split("/")[0],
+                            source,
+                            ...recipe,
+                        }));
+                    }
+                ))
+            ).flat()
+        );
+
+        await db.furnaceRecipes.where("source").equals(source).delete();
+        await db.furnaceRecipes.bulkPut(
+            (
+                await Promise.all(Object.entries(files).filter(
+                    entry => entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "furnace" && entry[0].endsWith(".json")
+                ).map(
+                    async entry => {
+                        const data = await entry[1].readJson();
+                        return (await this.parseFurnaceRecipe(data)).map(recipe => ({
+                            path: entry[0],
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                            modId: entry[0].split("/")[0],
+                            source,
+                            ...recipe,
+                        }));
+                    }
+                ))
+            ).flat()
+        );
+
         // });
     },
-    getFilesCombined() {
-        return {
-            mods: {
-                ...get(dataModFiles),
-                base: {
-                    ...get(jarFiles).base,
-                    ...get(dataModFiles).base,
-                }
-            }
-        };
-    },
-    async categorizeFiles(files) {
-        let result = {
-            textures: {},
-            lang: {},
-            models: {},
-            items: {},
-            blocks: {},
-            recipes: {
-                crafting: [],
-                furnace: [],
-            },
-        };
-
-        for (let entry of Object.entries(files)) {
-            const gpath = entry[0];
-            const namespace = gpath.split("/", 1)[0];
-            const path = gpath.slice(namespace.length + 1);
-            const namespacedPath = namespace + ":" + path;
-            const file = entry[1];
-
-            if (!path) {
-                continue;
-            }
-
-            if (path.startsWith("textures/") && path.endsWith(".png")) {
-                let blob = await file.readBlob();
-                result.textures[namespacedPath] = blob;
-                if (namespace === "base") {
-                    result.textures[path] = blob;
-                }
-            }
-            if (path.endsWith(".json")) {
-                let jsonData;
-                try {
-                    jsonData = await file.readJson();
-                } catch (e) {
-                    console.warn("could not load", path, e)
-                    continue;
-                }
-
-                if (path.startsWith("lang/")) {
-                    result.lang[namespacedPath] = jsonData;
-                } else if (path.startsWith("items/")) {
-                    result.items[namespacedPath] = jsonData;
-                } else if (path.startsWith("blocks/")) {
-                    result.blocks[namespacedPath] = jsonData;
-                } else if (path.startsWith("models/")) {
-                    result.models[namespacedPath] = jsonData;
-                    if (namespace === "base") {
-                        result.models[path] = jsonData;
-                    }
-                }
-                else if (path.startsWith("recipes/crafting/")) {
-                    result.recipes.crafting.push(jsonData);
-                } else if (path.startsWith("recipes/furnace/")) {
-                    result.recipes.furnace.push(jsonData);
-                }
-            }
+    async parseFurnaceRecipe(data) {
+        const result = [];
+        for (let recipe of Object.entries(data)) {
+            const input = {
+                fullId: recipe[0],
+                count: 1
+            };
+            const output = {
+                fullId: recipe[1],
+                count: 1
+            };
+            result.push({
+                usedItem: input,
+                result: output
+            });
         }
         return result;
     },
-    filterJarFiles(files) {
-        return Object.fromEntries(Object.entries(files).filter(entry => entry[0].startsWith("base/")));
+    async parseCraftingRecipe(data) {
+        const result = [];
+        for (let recipe of data.recipes) {
+            const output = {
+                fullId: recipe.output.item,
+                count: recipe.output.amount
+            };
+
+            if (!recipe.pattern) {
+                const usedItems = [];
+                for (let entry of recipe.inputs) {
+                    for (let item in entry) {
+                        for (let i = 0; i < entry[item]; i++)
+                            usedItems.push({
+                                fullId: item,
+                                count: 1,
+                            });
+                    }
+                }
+                const grid = []
+                for (let x = 0; x < 3; x++) {
+                    const gridRow = [];
+                    for (let y = 0; y < 3; y++) {
+                        gridRow.push(usedItems.shift() || null);
+                    }
+                    grid.push(gridRow);
+                }
+                result.push({
+                    patternless: true,
+                    usedItems,
+                    grid,
+                    result: output
+                });
+            } else {
+                const grid = [];
+                const inputs = {};
+                for (let [key, value] of Object.entries(recipe.inputs)) {
+                    inputs[key] = value || value;
+                }
+                for (let row of recipe.pattern) {
+                    const gridRow = [];
+                    for (let char of row) {
+                        if (char == " ") {
+                            gridRow.push(null);
+                        } else {
+                            gridRow.push(inputs[char]);
+                        }
+                    }
+                    while (gridRow.length < 3) {
+                        gridRow.push(null);
+                    }
+                    grid.push(gridRow);
+                }
+                while (grid.length < 3) {
+                    grid.push([null, null, null]);
+                }
+                result.push({
+                    patternless: false,
+                    usedItems: grid.flat().map(itemId => ({
+                        fullId: itemId,
+                        count: 1,
+                    })),
+                    grid,
+                    result: output,
+                });
+            }
+        }
+        return result;
     },
     parseItem(data) {
         const itemData = data[1];
