@@ -1,3 +1,4 @@
+import { db } from "./db";
 import { Item, ItemStack } from "./items";
 import { items, blocks, craftingRecipes, furnaceRecipes, textures } from "./stores";
 
@@ -113,4 +114,30 @@ export function getFuels() {
         }
     }
     return itemStacks;
+}
+
+
+export async function getTakeable(fullId) {
+    if (fullId.__require__) {
+        return (await db.blockstates.toArray() || [])
+            .filter((block) => block[fullId.__require__])
+            .concat(
+                (await db.items.toArray() || [])
+                    .filter((item) => item[fullId.__require__])
+            );
+    }
+    if (fullId.has_tag) {
+        return await db.blockstates.where("data.tags").equals(fullId.has_tag).toArray() || [];
+    }
+    const item = await db.items.where({ fullId }).first();
+    const blockState = await db.blockstates.where({ fullId }).first();
+    return item || blockState;
+}
+
+export async function makeItemStack(takeable) {
+    if (!takeable) return new ItemStack(null, 0);
+    if (takeable instanceof Array) {
+        return takeable.map((item) => new ItemStack(item, 1));
+    }
+    return new ItemStack(takeable, 1);
 }
