@@ -7,7 +7,30 @@
     export let output;
     export let ticks = null;
 
-    import { getTexture } from "$lib/utils";
+    import { db } from "$lib/db";
+    import { liveQuery } from "dexie";
+
+    const progressArrow = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: "textures/ui/progress-arrow-full.png",
+                })
+                .first(),
+        { initialValue: null },
+    );
+
+    const progressFlame = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: "textures/ui/progress-fuel-full.png",
+                })
+                .first(),
+        { initialValue: null },
+    );
 </script>
 
 <div class="before-after bordered">
@@ -15,7 +38,7 @@
         <InventoryDisplay grid={[[input]]} />
         <a href="/fuel"
             ><img
-                src={getTexture("textures/ui/progress-fuel-full.png")}
+                src={$progressFlame?.data || ""}
                 alt="flame"
                 class="flame"
                 draggable="false"
@@ -25,7 +48,7 @@
     </div>
 
     <img
-        src={getTexture("textures/ui/progress-arrow-full.png")}
+        src={$progressArrow?.data || ""}
         alt="makes"
         class="arrow"
         draggable="false"
