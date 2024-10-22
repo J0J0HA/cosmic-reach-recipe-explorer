@@ -2,12 +2,13 @@
     import { goto } from "$app/navigation";
     import { getAir } from "$lib/utils";
     import { tickTime } from "$lib/stores";
+    import { ItemStack } from "$lib/items";
 
     export let itemStack = undefined;
-    $: itemStack = itemStack || getAir();
+    $: itemStack = itemStack || new ItemStack(null);
     $: itemStack = itemStack instanceof Array ? itemStack : [itemStack];
-    $: currentItemStack = itemStack[$tickTime % itemStack.length] || getAir();
-    $: air = currentItemStack?.item.id === "air";
+    $: currentItemStack = itemStack[$tickTime % itemStack.length] || new ItemStack(null);
+    $: air = currentItemStack?.item === null;
 </script>
 
 <button
@@ -36,7 +37,7 @@
     on:contextmenu={(e) => e.preventDefault()}
 >
     {#each itemStack as subitemStack, index}
-        {#await subitemStack.item.getImage() then image}
+        {#await subitemStack.getImage() then image}
             <img
                 src={image}
                 alt={subitemStack.name}
