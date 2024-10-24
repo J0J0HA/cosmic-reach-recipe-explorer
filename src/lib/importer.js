@@ -151,10 +151,10 @@ function blobToDataURL(blob) {
 }
 
 const V2 = {
-    version: /^0\.3\.\d+$/,
+    version: /(?:^0\.3\.\d+$)|(?:^0\.3\.2-pre[1,2,5,6,7,8,9]$)/,
     name: "V2",
     async loadFiles(source, files) {
-        // await db.transaction("rw", [db.textures, db.models], async () => {
+        // await db.transaction("rw", db.textures, db.models, async () => {
         // Textures
         await db.textures.where("source").equals(source).delete();
         await db.textures.bulkPut(
@@ -271,6 +271,7 @@ const V2 = {
                             modId: entry[0].split("/")[0],
                             source,
                             ...recipe,
+                            usedItemsFullIds: recipe.usedItems.map(usedItem => usedItem.fullId)
                         }));
                     }
                 ))

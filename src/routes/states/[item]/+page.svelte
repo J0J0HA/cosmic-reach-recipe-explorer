@@ -1,41 +1,47 @@
 <script>
     import Header from "../../Header.svelte";
-    import { items, blocks } from "$lib/stores";
-    import { getItemStack } from "$lib/utils";
+    import { ItemStack } from "$lib/items";
+    import { makeItemStack, getTakeable } from "$lib/utils";
     import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
     import { page } from "$app/stores";
     import SearchableItemList from "../../SearchableItemList.svelte";
     import Body from "../../Body.svelte";
-    $: filtered = Object.keys(
-        Object.fromEntries(
-            Object.entries($items)
-                .concat(Object.entries($blocks))
-                .filter(
-                    (item) =>
-                        item[1].id.split("[")[0] ==
-                            $page.params.item.split("[")[0] &&
-                        item[1].id != $page.params.item,
-                ),
-        ),
-    );
-    $: itemStack = getItemStack($page.params.item);
+    import { liveQuery } from "dexie";
+
+    const itemStack = liveQuery(async () => {
+        return await makeItemStack(await getTakeable($page.params.item));
+    });
+
+    const states = liveQuery(() => {
+        return db.blockstates
+            .where({ blockId: $page.params.item.split("[")[0] })
+            .and((blockState) => blockState.fullId !== $page.params.item)
+            .toArray();
+    });
+
+    $: A = console.log(787, $states);
 </script>
 
 <svelte:head>
-    <title>Blockstates of {itemStack.getName()} - CR Recipes</title>
+    <title
+        >Other blockstates of {$itemStack?.name || $page.params.item} - CR Recipes</title
+    >
 </svelte:head>
 
 <Header />
 <Body>
     <a href="/">Back to item list</a>
+    <br /><br />
 
     <h2>Other blockstates of</h2>
-    <ItemStackDetailDisplay {itemStack} />
+    <ItemStackDetailDisplay
+        itemStack={$itemStack || new ItemStack($page.params.item, 1)}
+    />
 
     <div class="center">
-        <SearchableItemList itemIds={filtered} />
-        {#if filtered.length <= 0}
+        <SearchableItemList takeables={$states || []} />
+        {#if !$states?.length}
             <p>{$page.params.item} has no other blockstates.</p>
         {/if}
     </div>

@@ -33,7 +33,7 @@
             <a href="/use/{takeable.fullId}">Uses</a>
             {#if takeable.state}
                 &nbsp;|&nbsp;
-                <a href="/states/{takeable.blockId}">Other states</a>
+                <a href="/states/{takeable.fullId}">Other states</a>
             {/if}
         </ItemStackDetailDisplay>
     {/each}

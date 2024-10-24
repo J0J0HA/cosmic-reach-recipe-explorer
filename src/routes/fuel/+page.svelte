@@ -1,11 +1,21 @@
 <script>
     import Header from "../Header.svelte";
-    import { getFuels } from "$lib/utils";
+    import { ItemStack } from "$lib/items";
     import Body from "../Body.svelte";
     import SearchableItemList from "../SearchableItemList.svelte";
 
-    const items = getFuels();
-    console.log(1, 1, 1, items);
+    import { liveQuery } from "dexie";
+    import { db } from "$lib/db";
+
+    const fuels = liveQuery(async () => {
+        const items = (await db.items.toArray()) || [];
+        const blockStates = (await db.blockstates.toArray()) || [];
+        const takeables = items.concat(blockStates)
+        const fuels = takeables.filter((takeable) => takeable.isFuel);
+        return fuels;
+    });
+
+    $: A = console.log($fuels)
 </script>
 
 <svelte:head>
@@ -15,12 +25,13 @@
 <Header />
 <Body>
     <a href="/">Back to item list</a>
+    <br /><br />
 
     <h2>Fuels</h2>
 
     <div class="center">
-        <SearchableItemList itemIds={items} />
-        {#if items.length <= 0}
+        <SearchableItemList takeables={$fuels || []} />
+        {#if !$fuels?.length}
             <p>There are no fuels.</p>
         {/if}
     </div>
