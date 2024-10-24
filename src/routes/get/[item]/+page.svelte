@@ -7,25 +7,16 @@
     import { page } from "$app/stores";
     import FurnaceRecipe from "../../FurnaceRecipe.svelte";
     import { db } from "$lib/db";
-    import { ItemStack } from "$lib/items";
+    import { makeItemStack, getTakeable } from "$lib/utils";
     import { liveQuery } from "dexie";
 
     import Body from "../../Body.svelte";
     import ItemStackDisplay from "../../ItemStackDisplay.svelte";
 
     // $: filtered = getWaysToGet($page.params.item);
-    const item = liveQuery(
-        () => db.items.where({ fullId: $page.params.item }).first(),
-        { initialValue: null },
-    );
-    const block = liveQuery(
-        () => db.blockstates.where({ fullId: $page.params.item }).first(),
-        { initialValue: null },
-    );
-    $: itemStack =
-        $item || $block
-            ? new ItemStack($item || $block, 1, {})
-            : new ItemStack(null);
+    const itemStack = liveQuery(async () => {
+        return await makeItemStack(await getTakeable($page.params.item))
+    })
 
     const craftingRecipes = liveQuery(() =>
         db.craftingRecipes
@@ -45,23 +36,24 @@
 </script>
 
 <svelte:head>
-    <title>How to make {itemStack?.name} - CR Recipes</title>
+    <title>How to make {$itemStack?.name || $page.params.item} - CR Recipes</title>
 </svelte:head>
 
 <Header />
-<a href="/">Back to item list</a>
 <Body>
-    {#if !itemStack}
+    <a href="/">Back to item list</a>
+    <br><br>
+    {#if !$itemStack}
         <p>Loading...</p>
     {:else}
         <h2>How to get</h2>
-        <ItemStackDetailDisplay {itemStack} />
+        <ItemStackDetailDisplay itemStack={$itemStack} />
 
         <div class="center">
-            {#each $furnaceRecipes || [] as recipe (recipe.id)}
+            {#each $furnaceRecipes || [] as recipe (recipe)} <!-- not recipe.id to refresh when db refetched. -->
                 <FurnaceRecipe {recipe} />
             {/each}
-            {#each $craftingRecipes || [] as recipe (recipe.id)}
+            {#each $craftingRecipes || [] as recipe (recipe)} <!-- not recipe.id to refresh when db refetched. -->
                 <CraftingRecipe {recipe} />
             {/each}
             {#if !$craftingRecipes?.length && !$furnaceRecipes?.length}
