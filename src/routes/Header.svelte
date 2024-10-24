@@ -21,8 +21,16 @@
     import { downloadVersion, getVersionList, setVersion } from "$lib/versions";
     import { version } from "$app/environment";
     import { get, writable } from "svelte/store";
+    import { onMount } from "svelte";
 
     const loadingJar = writable(false);
+
+    let versionListPromise = writable(null);
+
+    function refetchVersionList() {
+        versionListPromise.set(getVersionList());
+    }
+    onMount(refetchVersionList);
 </script>
 
 <div style="position: absolute; top:10px; left: 12.5px; font-size: 0.7rem;">
@@ -34,67 +42,84 @@
         <h2>To get started:</h2>
     {/if}
     <div>
-        {#await getVersionList()}
-            <select value=":" id="version-chooser" disabled key="version-chooser">
-                <option value=":" key=":" disabled selected> Wait... </option>
-                <option value=":spacer" key=":spacer" disabled>
-                    Choose a Version
-                </option>
-            </select>
-        {:then versions}
-            <select
-                disabled={!$loadedStore || $loadingJar}
-                value={$loadingJar ? ":LOAD" : ($loadedVersion || ":")}
-                id="version-chooser"
-                key="version-chooser"
-                on:change={(e) => {
-                    loadingJar.set(true);
-                    setVersion(versions.filter(
-                            (version) => version.id == e.target.value,
-                        )[0]).then(() => {
-                        loadingJar.set(false);
-                    });
-                    // downloadVersion(
-                    //     versions.filter(
-                    //         (version) => version.id == e.target.value,
-                    //     )[0],
-                    // ).then((file) => {
-                    //     // crVersion.set(e.target.value);
-                    //     getZipFiles(file).then((files) => {
-                    //         getLoader($crVersion)
-                    //             .loadJarFiles(files)
-                    //             .then(() => {
-                    //                 loadingJar.set(false);
-                    //                 console.log(getLoader($crVersion));
-                    //                 console.log(
-                    //                     getLoader(
-                    //                         $crVersion,
-                    //                     ).getFilesCombined(),
-                    //                 );
-                    //             });
-                    //     });
-                    // });
-
-                    // document.querySelector("#version-chooser").value = ":";
-                }}
-            >
-                <option value=":" key=":" disabled selected>
-                    Choose a Version
-                </option>
-                {#if $loadingJar}
-                    <option value=":LOAD" key=":LOAD" disabled>
-                        Loading...
+        {#if $versionListPromise === null}
+            <p>Loading...</p>
+        {:else}
+            {#await $versionListPromise}
+                <select
+                    value=":"
+                    id="version-chooser"
+                    disabled
+                    key="version-chooser"
+                >
+                    <option value=":" key=":" disabled selected>
+                        Wait...
                     </option>
-                {/if}
-                {#each versions as version}
-                    <option value={version.id} key={version.id}
-                        >{version.id} ({version.type})</option
-                    >
-                {/each}
-            </select>
-        {/await}
+                    <option value=":spacer" key=":spacer" disabled>
+                        Choose a Version
+                    </option>
+                </select>
+            {:then versions}
+                <select
+                    disabled={!$loadedStore || $loadingJar}
+                    value={$loadingJar ? ":LOAD" : $loadedVersion || ":"}
+                    id="version-chooser"
+                    key="version-chooser"
+                    on:change={(e) => {
+                        loadingJar.set(true);
+                        setVersion(
+                            versions.filter(
+                                (version) => version.id == e.target.value,
+                            )[0],
+                        ).then(() => {
+                            loadingJar.set(false);
+                        });
+                        // downloadVersion(
+                        //     versions.filter(
+                        //         (version) => version.id == e.target.value,
+                        //     )[0],
+                        // ).then((file) => {
+                        //     // crVersion.set(e.target.value);
+                        //     getZipFiles(file).then((files) => {
+                        //         getLoader($crVersion)
+                        //             .loadJarFiles(files)
+                        //             .then(() => {
+                        //                 loadingJar.set(false);
+                        //                 console.log(getLoader($crVersion));
+                        //                 console.log(
+                        //                     getLoader(
+                        //                         $crVersion,
+                        //                     ).getFilesCombined(),
+                        //                 );
+                        //             });
+                        //     });
+                        // });
+
+                        // document.querySelector("#version-chooser").value = ":";
+                    }}
+                >
+                    <option value=":" key=":" disabled selected>
+                        Choose a Version
+                    </option>
+                    {#if $loadingJar}
+                        <option value=":LOAD" key=":LOAD" disabled>
+                            Loading...
+                        </option>
+                    {/if}
+                    {#each versions as version}
+                        <option value={version.id} key={version.id}
+                            >{version.id} ({version.type})</option
+                        >
+                    {/each}
+                </select>
+            {:catch}
+                <p>Failed to load verisons.</p>
+                <button on:click={refetchVersionList}>Retry</button>
+            {/await}
+        {/if}
     </div>
-    {#if $loadedVersion && false} <!-- No data mods atm -->
+    {#if $loadedVersion && false}
+        <!-- No data mods atm -->
         <hr />
         To load your data mods,
         <input
