@@ -8,18 +8,10 @@
 
     import { db } from "$lib/db";
     import { liveQuery } from "dexie";
-    import { get } from "svelte/store";
 
-    const resultItem = liveQuery(
-        () => db.items.where({ fullId: recipe.result.fullId }).first(),
-        { initialValue: null },
-    );
-    const resultBlock = liveQuery(
-        () => db.blockstates.where({ fullId: recipe.result.fullId }).first(),
-        { initialValue: null },
-    );
-
-    $: result = resultItem || resultBlock;
+    const resultTakeable = liveQuery(async () => {
+        return await makeItemStack(await getTakeable(recipe.result.fullId))
+    })
 
     const progressArrow = liveQuery(
         () =>
@@ -44,40 +36,34 @@
                 ),
         ),
     );
-
-    $: a = setTimeout(async () => await transformedGrid, 0)
 </script>
 
 <div class="before-after bordered">
-    {#if $result}
-        <div class="table">
-            {#await transformedGrid}
-                <p>Loading...</p>
-            {:then transformedGrid}
-                <InventoryDisplay grid={transformedGrid} />
-            {:catch error}
-                <p>{error.message}</p>
-            {/await}
-            <!-- grid -->
-        </div>
-        <img
-            src={$progressArrow?.data || ""}
-            alt="makes"
-            class="arrow"
-            draggable="false"
-        />
-        <p class="note">
-            {#if recipe.patternless}
-                (shapeless)
-            {/if}
-        </p>
-        <InventoryDisplay
-            grid={[[new ItemStack($result, recipe.result.count)]]}
-            out={true}
-        />
-    {:else}
-        <p>Loading...</p>
-    {/if}
+    <div class="table">
+        {#await transformedGrid}
+            <p>Loading... (debug: cg{recipe.id})</p>
+        {:then transformedGrid}
+            <InventoryDisplay grid={transformedGrid} />
+        {:catch error}
+            <p>{error.message}</p>
+        {/await}
+        <!-- grid -->
+    </div>
+    <img
+        src={$progressArrow?.data || ""}
+        alt="makes"
+        class="arrow"
+        draggable="false"
+    />
+    <p class="note">
+        {#if recipe.patternless}
+            (shapeless)
+        {/if}
+    </p>
+    <InventoryDisplay
+        grid={[[new ItemStack($resultTakeable || recipe.result.fullId, recipe.result.count || 1)]]}
+        out={true}
+    />
 </div>
 
 <style>

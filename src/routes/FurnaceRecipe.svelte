@@ -4,25 +4,18 @@
     import { makeItemStack, getTakeable } from "$lib/utils";
     import Furnace from "./Furnace.svelte";
 
-    $: inputItem = (async () => {
-        return await makeItemStack(await getTakeable(recipe.usedItem.fullId));
-    })();
-    $: outputItem = (async () => {
-        return await makeItemStack(await getTakeable(recipe.result.fullId));
-    })();
-    $: fuelItem = (async () => {
-        return await makeItemStack(
-            await getTakeable({ __require__: "isFuel" }),
-        );
-    })();
+    import { liveQuery } from "dexie";
 
-    $: promise = Promise.all([inputItem, outputItem, fuelItem]);
+    const inputItem = liveQuery(async () => {
+        return await makeItemStack(await getTakeable(recipe.result.fullId))
+    })
+    const outputItem = liveQuery(async () => {
+        return await makeItemStack(await getTakeable(recipe.usedItem.fullId))
+    })
+    const fuelItem = liveQuery(async () => {
+        return await makeItemStack(await getTakeable({ __require__: "isFuel" }))
+    });
 </script>
 
-{#await promise}
-    <p>Loading...</p>
-{:then [input, output, fuel]}
-    <Furnace {input} {fuel} {output} />
-{:catch error}
-    <p>{error.message}</p>
-{/await}
+<Furnace input={$inputItem} fuel={$fuelItem} output={$outputItem} />
+
