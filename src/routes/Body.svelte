@@ -1,6 +1,16 @@
+<script>
+    import { loadedStore, loadedVersion } from "$lib/stores";
+</script>
+
 <div class="wrapper">
     <main>
-        <slot />
+        {#if !$loadedStore}
+            <p>Loading...</p>
+        {:else if !$loadedVersion}
+            <p>No version loaded</p>
+        {:else}
+            <slot />
+        {/if}
     </main>
 </div>
 
