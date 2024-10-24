@@ -5,7 +5,7 @@ import { getLoader, getZipFiles } from "./importer";
 export async function getVersionList() {
     const response = await fetch("https://raw.githubusercontent.com/CRModders/CosmicArchive/main/versions.json");
     const data = await response.json();
-    return data.versions.filter(version => version.client !== undefined);
+    return data.versions.filter(version => !!version.client);
 }
 
 export async function downloadVersion(version) {

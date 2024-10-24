@@ -1,3 +1,4 @@
+import { db } from "./db";
 import { textures, translations } from "./stores";
 import { get } from 'svelte/store';
 
@@ -50,6 +51,18 @@ export class Item {
 
 export class ItemStack {
     constructor(item, count, properties) {
+        if (typeof item === 'string') item = {
+            async getImage() {
+                return (await db.textures.where({ subPath: "textures/blocks/debug.png", modId: "base" }).first())?.data;
+            },
+            fullId: item,
+            isFuel: false,
+            burnTime: 0,
+            name: item,
+            lore: [
+                "Unknown"
+            ],
+        };
         this.item = item;
         this.count = count;
         this.properties = properties || {};

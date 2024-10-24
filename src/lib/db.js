@@ -7,7 +7,7 @@ db.version(3).stores({
   //   blocks: '&id, source',
   textures: '&path, source, modId, subPath, &[modId+subPath]',
   models: '&path, source, modId, subPath, &[modId+subPath]',
-  craftingRecipes: '++id, source, modId, *usedItems.fullId, result.fullId',
+  craftingRecipes: '++id, source, modId, *usedItemsFullIds, result.fullId',
   furnaceRecipes: '++id, source, modId, usedItem.fullId, result.fullId',
   items: '&fullId, source, modId, subId, &[modId+subId]',
   blockstates: '&fullId, blockId, source, modId, subId, state, [modId+subId], &[modId+subId+state], showInCatalog, *data.tags',
