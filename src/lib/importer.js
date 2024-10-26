@@ -40,8 +40,8 @@ export async function getZipFiles(file) {
 };
 
 export async function getFolderFiles(files) {
-    return Object.fromEntries(files.map((ifile) => {
-        return [ifile.webkitRelativePath, {
+    return Object.fromEntries(Array.prototype.map.call(files, (ifile) => {
+        return [ifile.webkitRelativePath.split("/").slice(1).join("/"), {
             readBlob: async () => {
                 return ifile;
             },
@@ -227,11 +227,7 @@ const V2 = {
     transformFilePath(path) {
         return path;
     },
-    async loadFiles(source, files) {
-        // await db.transaction("rw", db.textures, db.models, async () => {
-
-        // Unload
-        await db.metadata.clear();
+    async unloadFiles(source) {
         await db.translations.where("source").equals(source).delete();
         await db.textures.where("source").equals(source).delete();
         await db.models.where("source").equals(source).delete();
@@ -239,6 +235,12 @@ const V2 = {
         await db.blockstates.where("source").equals(source).delete();
         await db.craftingRecipes.where("source").equals(source).delete();
         await db.furnaceRecipes.where("source").equals(source).delete();
+    },
+    async loadFiles(source, files) {
+        // await db.transaction("rw", db.textures, db.models, async () => {
+
+        // Unload
+        await this.unloadFiles(source);
 
         // Translations
         const translations = {};
@@ -265,7 +267,8 @@ const V2 = {
                 })
             );
         }
-        await db.metadata.put({
+
+        if (source === "jar") await db.metadata.put({
             key: "languages",
             value: Object.entries(translations).map(([key, value]) => ({
                 key,

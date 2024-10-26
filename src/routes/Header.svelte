@@ -169,71 +169,53 @@
                     {/each}
                 </select></span
             >
+            <button
+                id="dir-chooser-trigger"
+                on:click={() => {
+                    document.querySelector("#dir-chooser").click();
+                }}
+            >
+                Select your mod folder
+            </button>
+            <button
+                id="dir-unload"
+                on:click={() => {
+                    // dataModFiles.set({});
+                    getLoader($crVersion).unloadFiles("datamod");
+                }}
+            >
+                Unload data mods
+            </button>
         {/if}
     </div>
-    {#if $crVersion && false}
-        <!-- No data mods atm -->
-        <hr />
-        To load your data mods,
-        <input
-            id="dir-chooser"
-            type="file"
-            directory
-            mozdirectory
-            webkitdirectory
-            multiple
-            hidden
-            on:change={(event) => {
-                document.querySelector("#dir-chooser-trigger").disabled = true;
-                getFolderFiles(event.target.files).then((files) => {
-                    getLoader($crVersion)
-                        .loadDataModFiles(files)
-                        .then(() => {
-                            document.querySelector(
-                                "#dir-chooser-trigger",
-                            ).disabled = false;
-                        });
-                });
-            }}
-        />
-        <div>
-            {#if false || Object.keys("$dataModFiles").length > 0}
-                <button
-                    id="dir-chooser-trigger"
-                    on:click={() => {
-                        document.querySelector("#dir-chooser").click();
-                    }}
-                >
-                    Select a different data mod folder
-                </button>
-                <button
-                    id="dir-unload"
-                    on:click={() => {
-                        // dataModFiles.set({});
-                        getLoader($crVersion).unloadDataMods();
-                    }}
-                >
-                    Unload data mods
-                </button>
-            {:else}
-                <button
-                    id="dir-chooser-trigger"
-                    on:click={() => {
-                        document.querySelector("#dir-chooser").click();
-                    }}
-                >
-                    Select your data mod folder
-                </button>
-            {/if}
-        </div>
-        <!-- <hr />
+    <input
+        id="dir-chooser"
+        type="file"
+        directory
+        mozdirectory
+        webkitdirectory
+        multiple
+        hidden
+        on:change={(event) => {
+            document.querySelector("#dir-chooser-trigger").disabled = true;
+            getFolderFiles(event.target.files).then((files) => {
+                getLoader($crVersion)
+                    .loadFiles("datamod", files)
+                    .then(() => {
+                        document.querySelector(
+                            "#dir-chooser-trigger",
+                        ).disabled = false;
+                    });
+            });
+        }}
+    />
+    <!-- <hr />
         Loaded {Object.keys($blocks).length} blockstates, {Object.keys($items)
             .length} items, {Object.keys($craftingRecipes).length +
             Object.keys($furnaceRecipes).length}
         recipes, and {Object.keys($textures).length} textures in
         {Math.round($loadTime * 10) / 10}s with loader
         {$loader.name} for version {$loadedVersion}. -->
-    {/if}
 
     {#if $updated}
         <hr />

@@ -3,15 +3,15 @@ import { renderBlockModel } from './rendering';
 import { get } from 'svelte/store';
 
 export const db = new Dexie('CosmicReachStore');
-db.version(1).stores({
+db.version(2).stores({
   metadata: '&key',
   translations: '++id, langKey, translationKey, source, [langKey+translationKey]',
-  textures: '&path, source, modId, subPath, &[modId+subPath]',
-  models: '&path, source, modId, subPath, &[modId+subPath]',
+  textures: '&[source+path], source, modId, subPath, [modId+subPath]',
+  models: '&[source+path], source, modId, subPath, [modId+subPath]',
   craftingRecipes: '++id, source, modId, *usedItemsFullIds, result.fullId',
   furnaceRecipes: '++id, source, modId, usedItem.fullId, result.fullId',
-  items: '&fullId, source, modId, subId, &[modId+subId]',
-  blockstates: '&fullId, blockId, source, modId, subId, state, [modId+subId], &[modId+subId+state], showInCatalog, *data.tags'
+  items: '&[source+path], fullId, source, modId, subId, [modId+subId]',
+  blockstates: '&[source+path+state], fullId, blockId, source, modId, subId, state, [modId+subId], [modId+subId+state], showInCatalog, *data.tags'
 });
 
 export class BlockStateTakeableAdapter {
