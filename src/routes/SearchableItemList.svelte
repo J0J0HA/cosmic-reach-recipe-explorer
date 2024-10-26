@@ -5,20 +5,11 @@
 
     export let takeables = [];
 
-    $: names = takeables.map((takeable) => takeable.fullId);
-
-    $: {
-        const promises = takeables.map((takeable) =>
-            takeable?.getName?.($locale),
-        );
-        promises.map((promise, index) => {
-            if (promise)
-                promise.then((translation) => {
-                    names[index] = translation;
-                });
-        });
-    }
-
+    import { liveQuery } from "dexie";
+    const names = liveQuery(async () => {
+        return await Promise.all(takeables.map(async takeable => await takeable.getName($locale)));
+    });
+   
     let search = "";
     $: cleaned_search = search.trim().toLowerCase().split(" ");
     $: results = takeables
@@ -26,7 +17,7 @@
             cleaned_search.every(
                 (word) =>
                     takeable.subId.toLowerCase().includes(word) ||
-                    names[index].toLowerCase().includes(word),
+                    $names[index]?.toLowerCase().includes(word),
             ),
         )
         .map((takeable) => takeable.fullId);

@@ -33,19 +33,13 @@
         { initialValue: [] },
     );
 
-    let name = $page.params.item;
-
-    $: {
-        const promise = $itemStack?.getName?.($locale);
-        if (promise)
-            promise.then((translation) => {
-                name = translation;
-            });
-    }
+    const name = liveQuery(async () => {
+        return await $itemStack.getName($locale);
+    });
 </script>
 
 <svelte:head>
-    <title>Uses of {name} - CR Recipes</title>
+    <title>Uses of {$name} - CR Recipes</title>
 </svelte:head>
 
 <Header />
@@ -71,7 +65,7 @@
                 <CraftingRecipe {recipe} />
             {/each}
             {#if !$craftingRecipes?.length && !$furnaceRecipes?.length && !$itemStack?.isFuel}
-                <p>{name} has no uses.</p>
+                <p>{$name} has no uses.</p>
             {/if}
         </div>
     {/if}

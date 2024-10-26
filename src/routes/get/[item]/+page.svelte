@@ -32,15 +32,10 @@
         { initialValue: [] },
     );
 
-    let name = $page.params.item;
-
-    $: {
-        const promise = $itemStack?.getName?.($locale);
-        if (promise)
-            promise.then((translation) => {
-                name = translation;
-            });
-    }
+    
+    const name = liveQuery(async () => {
+        return await $itemStack.getName($locale);
+    });
 </script>
 
 <svelte:head>

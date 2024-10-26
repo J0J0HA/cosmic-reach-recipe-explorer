@@ -3,22 +3,17 @@
     import { locale } from "$lib/stores";
     export let itemStack;
 
-    let name = itemStack.fullId;
-
-    $: {
-        const promise = itemStack?.getName?.($locale);
-        if (promise)
-            promise.then((translation) => {
-                name = translation;
-            });
-    }
+    import { liveQuery } from "dexie";
+    const name = liveQuery(async () => {
+        return await itemStack.getName($locale);
+    });
 </script>
 
 <div class="item bordered">
     <div class="leftmost">
         <InventoryDisplay grid={[[itemStack]]} />
         <div class="details">
-            <div class="name">{name}</div>
+            <div class="name">{$name}</div>
             <div class="lore">{@html itemStack.lore.join("<br />")}</div>
         </div>
     </div>

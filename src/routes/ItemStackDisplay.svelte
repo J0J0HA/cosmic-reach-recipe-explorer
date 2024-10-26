@@ -3,6 +3,7 @@
     import { tickTime } from "$lib/stores";
     import { ItemStack } from "$lib/items";
     import { locale } from "$lib/stores";
+    import { liveQuery } from "dexie";
 
     export let itemStack = undefined;
     $: itemStack = itemStack || new ItemStack(null);
@@ -10,22 +11,38 @@
     $: currentItemStack =
         itemStack[$tickTime % itemStack.length] || new ItemStack(null);
     $: air = currentItemStack?.item === null;
-    $: currentItemStackName = names[$tickTime % itemStack.length] || "";
-    $: names = itemStack.map((subItemStack) => subItemStack.fullId);
+    // $: names = itemStack.map((subItemStack) => subItemStack.fullId);
 
-    $: {
-        const promises = itemStack.map((subItemStack) =>
-            subItemStack?.getName?.($locale),
+    
+    $: names = liveQuery(async () => {
+        return await Promise.all(
+            itemStack.map(async (subItemStack) => {
+                return await subItemStack?.getName?.();
+            }),
         );
-        promises.map((promise, index) => {
-            if (promise)
-                promise.then((translation) => {
-                    names[index] = translation;
-                });
-        });
-    }
+    });
+    $: currentItemStackName = names?.[$tickTime % itemStack.length] || "";
+    // $: {
+    //     const promises = itemStack.map((subItemStack) =>
+    //         subItemStack?.getName?.($locale),
+    //     );
+    //     promises.map((promise, index) => {
+    //         if (promise)
+    //             promise.then((translation) => {
+    //                 names[index] = translation;
+    //             });
+    //     });
+    // }
 
     let startedTouch = 0;
+
+    $: images = liveQuery(async () => {
+        return await Promise.all(
+            itemStack.map(async (subItemStack) => {
+                return await subItemStack?.getImage?.();
+            }),
+        );
+    });
 </script>
 
 <button
@@ -63,17 +80,17 @@
     }}
     on:contextmenu={(e) => e.preventDefault()}
 >
-    {#each itemStack as subitemStack, index}
-        {#await subitemStack.getImage() then image}
+    {#each itemStack as subItemStack, index}
+        <!-- {#await subitemStack.getImage() then image} -->
             <img
-                src={image}
-                alt={names[index]}
+                src={$images?.[index] || "null"}
+                alt={$names?.[index] || subItemStack.fullId}
                 draggable="false"
                 style:display={index === $tickTime % itemStack.length
                     ? "block"
                     : "none"}
             />
-        {/await}
+        <!-- {/await} -->
     {/each}
     {#if !air}
         <div class="count">
