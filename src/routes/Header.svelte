@@ -175,7 +175,9 @@
             >
             <button
                 id="dir-chooser-trigger"
-                disabled={["extract", "parse", "delete"].includes($loadingDataModState)}
+                disabled={["extract", "parse", "delete"].includes(
+                    $loadingDataModState,
+                )}
                 on:click={() => {
                     document.querySelector("#dir-chooser").click();
                 }}
@@ -191,6 +193,9 @@
                 {/if}
             </button>
             <button
+                disabled={["extract", "parse", "delete"].includes(
+                    $loadingDataModState,
+                )}
                 id="dir-unload"
                 on:click={async () => {
                     stateCallbackDataMod("delete");
