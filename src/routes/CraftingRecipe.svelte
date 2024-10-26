@@ -9,7 +9,7 @@
     import { db } from "$lib/db";
     import { liveQuery } from "dexie";
 
-    const resultTakeable = liveQuery(async () => {
+    $: resultTakeable = liveQuery(async () => {
         return await makeItemStack(await getTakeable(recipe.result.fullId))
     })
 
@@ -31,7 +31,7 @@
                     row.map(async (cell) =>
                         cell === null
                             ? null
-                            : await makeItemStack(await getTakeable(cell)),
+                            : await makeItemStack(await getTakeable(cell.fullId || cell, cell.count || 1)),
                     ),
                 ),
         ),
@@ -41,7 +41,7 @@
 <div class="before-after bordered">
     <div class="table">
         {#await transformedGrid}
-            <p>Loading... (debug: cg{recipe.id})</p>
+            <p>Loading... ({recipe.id})</p>
         {:then transformedGrid}
             <InventoryDisplay grid={transformedGrid} />
         {:catch error}

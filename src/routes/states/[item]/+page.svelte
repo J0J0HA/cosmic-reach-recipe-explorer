@@ -3,6 +3,7 @@
     import { ItemStack } from "$lib/items";
     import { makeItemStack, getTakeable } from "$lib/utils";
     import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
+    import { locale } from "$lib/stores";
 
     import { page } from "$app/stores";
     import SearchableItemList from "../../SearchableItemList.svelte";
@@ -22,10 +23,10 @@
     let name = $page.params.item;
 
     $: {
-        const promise = $itemStack?.getName?.();
+        const promise = $itemStack?.getName?.($locale);
         if (promise)
             promise.then((translation) => {
-                name = translation.value;
+                name = translation;
             });
     }
 </script>

@@ -1,14 +1,15 @@
 <script>
     import InventoryDisplay from "./InventoryDisplay.svelte";
+    import { locale } from "$lib/stores";
     export let itemStack;
     
     let name = itemStack.fullId;
 
     $: {
-        const promise = itemStack?.getName?.();
+        const promise = itemStack?.getName?.($locale);
         if (promise)
             promise.then((translation) => {
-                name = translation.value;
+                name = translation;
             });
     }
 </script>

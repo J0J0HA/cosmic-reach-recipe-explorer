@@ -3,6 +3,7 @@
     import CraftingRecipe from "../../CraftingRecipe.svelte";
     import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
     import { getTakeable, makeItemStack } from "$lib/utils";
+    import { locale } from "$lib/stores";
 
     import { page } from "$app/stores";
     import FurnaceRecipe from "../../FurnaceRecipe.svelte";
@@ -35,10 +36,10 @@
     let name = $page.params.item;
 
     $: {
-        const promise = $itemStack?.getName?.();
+        const promise = $itemStack?.getName?.($locale);
         if (promise)
             promise.then((translation) => {
-                name = translation.value;
+                name = translation;
             });
     }
 </script>

@@ -39,9 +39,10 @@ export class ItemStack {
         return this.item.burnTime;
     }
 
-    async getName() {
+    async getName(locale) {
         if (this.item === null) return "";
-        return this.properties.name || await this.item.getName();
+        if (!this.item.getName) return "Whut?";
+        return this.properties.name || await this.item.getName(locale);
     }
 
     get lore() {

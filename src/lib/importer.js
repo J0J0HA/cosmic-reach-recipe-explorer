@@ -231,7 +231,8 @@ const V2 = {
         // await db.transaction("rw", db.textures, db.models, async () => {
 
         // Unload
-        // await db.renderedModels.clear();
+        await db.metadata.clear();
+        await db.translations.where("source").equals(source).delete();
         await db.textures.where("source").equals(source).delete();
         await db.models.where("source").equals(source).delete();
         await db.items.where("source").equals(source).delete();
@@ -240,13 +241,13 @@ const V2 = {
         await db.furnaceRecipes.where("source").equals(source).delete();
 
         // Translations
-
         const translations = {};
         await Promise.all(Object.entries(files).filter(
             entry => entry[0].split("/")[1] === "lang" && entry[0].endsWith(".json")
         ).map(
             async entry => {
                 const language = entry[0].split("/")[2];
+                if (language.endsWith(".schema.json")) return null;
                 const data = await entry[1].readJson();
                 translations[language] = Object.assign(translations[language] || {}, data);
             }
@@ -264,6 +265,13 @@ const V2 = {
                 })
             );
         }
+        await db.metadata.put({
+            key: "languages",
+            value: Object.entries(translations).map(([key, value]) => ({
+                key,
+                name: value?.metadata?.name || key,
+            })),
+        })
 
 
 
@@ -332,8 +340,6 @@ const V2 = {
         );
 
         // Blocks
-        // await db.blocks.where("source").equals(source).delete();
-        let a;
         await db.blockstates.bulkPut(
             (await Promise.all(Object.entries(files).filter(
                 entry => entry[0].split("/")[1] === "blocks" && entry[0].endsWith(".json")

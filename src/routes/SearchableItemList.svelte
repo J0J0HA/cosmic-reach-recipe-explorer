@@ -1,17 +1,34 @@
 <script>
     import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
     import { ItemStack } from "$lib/items";
+    import { locale } from "$lib/stores";
 
     export let takeables = [];
+
+    $: names = takeables.map((takeable) => takeable.fullId);
+
+    $: {
+        const promises = takeables.map((takeable) =>
+            takeable?.getName?.($locale),
+        );
+        promises.map((promise, index) => {
+            if (promise)
+                promise.then((translation) => {
+                    names[index] = translation;
+                });
+        });
+    }
 
     let search = "";
     $: cleaned_search = search.trim().toLowerCase().split(" ");
     $: results = takeables
-        .filter((takeable) =>
-            cleaned_search.every((word) =>
-                takeable.subId.toLowerCase().includes(word),
+        .filter((takeable, index) =>
+            cleaned_search.every(
+                (word) =>
+                    takeable.subId.toLowerCase().includes(word) ||
+                    names[index].toLowerCase().includes(word),
             ),
-        ) // https://discord.com/channels/1198501071363002408/1198501071363002410/1299698359111647263
+        )
         .map((takeable) => takeable.fullId);
 </script>
 
@@ -29,11 +46,9 @@
 
 <div class="results">
     {#each takeables as takeable (takeable.fullId)}
-    <!-- This span beacause we don't need to rerender Images then. -->
+        <!-- This span beacause we don't need to rerender Images then. -->
         <span
-            style:display={results.includes(takeable.fullId)
-                ? "block"
-                : "none"}
+            style:display={results.includes(takeable.fullId) ? "block" : "none"}
         >
             <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
                 <a href="/get/{takeable.fullId}">How to get</a>

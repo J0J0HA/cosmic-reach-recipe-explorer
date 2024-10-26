@@ -1,5 +1,5 @@
 import { store } from "./serializer";
-import { crVersion } from "./stores";
+import { crVersion, locale } from "./stores";
 import { getLoader, getZipFiles } from "./importer";
 import axios from "axios";
 

@@ -2,6 +2,7 @@
     import { goto } from "$app/navigation";
     import { tickTime } from "$lib/stores";
     import { ItemStack } from "$lib/items";
+    import { locale } from "$lib/stores";
 
     export let itemStack = undefined;
     $: itemStack = itemStack || new ItemStack(null);
@@ -14,12 +15,12 @@
 
     $: {
         const promises = itemStack.map((subItemStack) =>
-            subItemStack?.getName?.(),
+            subItemStack?.getName?.($locale),
         );
         promises.map((promise, index) => {
             if (promise)
                 promise.then((translation) => {
-                    names[index] = translation.value;
+                    names[index] = translation;
                 });
         });
     }

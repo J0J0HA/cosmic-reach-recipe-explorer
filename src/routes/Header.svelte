@@ -2,10 +2,13 @@
     import { loaded, crVersion } from "$lib/stores";
     import { getFolderFiles, getLoader } from "$lib/importer";
     import { updated } from "$app/stores";
+    import { locale } from "$lib/stores";
     import { getVersionList, setVersion } from "$lib/versions";
     import { version } from "$app/environment";
     import { writable } from "svelte/store";
     import { onMount } from "svelte";
+    import { liveQuery } from "dexie";
+    import { db } from "$lib/db";
 
     const loadingJar = writable(false);
     const loadingState = writable("idle");
@@ -24,6 +27,10 @@
         versionListPromise.set(getVersionList());
     }
     onMount(refetchVersionList);
+
+    const languages = liveQuery(() => {
+        return db.metadata.where({ key: "languages" }).first();
+    });
 </script>
 
 <div style="position: absolute; top:10px; left: 12.5px; font-size: 0.7rem;">
@@ -31,10 +38,16 @@
 </div>
 
 <div class="jar-chooser-box bordered">
-    {#if $loaded && !$crVersion}
-        <h2>To get started:</h2>
-    {/if}
-    <div style:width="20%" style:min-width="fit-content">
+    <div
+        style:width="20%"
+        style:min-width="fit-content"
+        style:display="flex"
+        style:flex-direction="column"
+        style:gap="10px"
+    >
+        {#if $loaded && !$crVersion}
+            <h2>To get started:</h2>
+        {/if}
         {#if $versionListPromise === null}
             <p>Loading...</p>
         {:else}
@@ -123,9 +136,13 @@
                 </select>
                 {#if $loadingJar && $loadingState === "download"}
                     <br />
-                    <div class="progress-bar">
-                        <progress max={$downloadTotal} value={$downloadDone} />
-                        <span class="progress-percentage"
+                    <div class="bar">
+                        <progress
+                            max={$downloadTotal}
+                            value={$downloadDone}
+                            class="fill"
+                        />
+                        <span class="static"
                             >{Math.round(
                                 ($downloadDone / $downloadTotal) * 100,
                             ) || 0}%</span
@@ -136,6 +153,22 @@
                 <p>Failed to load verisons.</p>
                 <button on:click={refetchVersionList}>Retry</button>
             {/await}
+        {/if}
+        {#if !!crVersion && !$loadingJar}
+            <span class="bar">
+                <label for="lang-select" class="static">Locale: </label>
+                <select
+                    id="lang-select"
+                    key="lang-select"
+                    value={$locale}
+                    class="fill"
+                    on:change={(event) => locale.set(event.target.value)}
+                >
+                    {#each $languages?.value || [] as language (language.key)}
+                        <option value={language.key}>{language.name}</option>
+                    {/each}
+                </select></span
+            >
         {/if}
     </div>
     {#if $crVersion && false}

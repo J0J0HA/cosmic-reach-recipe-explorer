@@ -1,10 +1,10 @@
 import Dexie from 'dexie';
 import { renderBlockModel } from './rendering';
-import { locale } from './stores';
 import { get } from 'svelte/store';
 
-export const db = new Dexie('FileStore');
-db.version(4).stores({
+export const db = new Dexie('CosmicReachStore');
+db.version(1).stores({
+  metadata: '&key',
   translations: '++id, langKey, translationKey, source, [langKey+translationKey]',
   textures: '&path, source, modId, subPath, &[modId+subPath]',
   models: '&path, source, modId, subPath, &[modId+subPath]',
@@ -15,13 +15,13 @@ db.version(4).stores({
 });
 
 export class BlockStateTakeableAdapter {
-  async getName() {
+  async getName(locale) {
     const langKey = this.data.langKey || this.blockId;
     const translation = await db.translations.where({
-      langKey: get(locale),
+      langKey: locale,
       translationKey: langKey,
     }).first()
-    return translation || this.fullId;
+    return translation?.value || this.fullId;
   }
 
   get isFuel() {
@@ -65,12 +65,12 @@ export class ItemTakeableAdapter {
     return this.data.fuelTicks && this.data.fuelTicks >= 0;
   }
 
-  async getName() {
+  async getName(locale) {
     const translation = await db.translations.where({
-      langKey: get(locale),
+      langKey: locale,
       translationKey: this.fullId,
-    }).first()
-    return translation || this.fullId;
+    }).first();
+    return translation?.value || this.fullId;
   }
 
   get burnTime() {
