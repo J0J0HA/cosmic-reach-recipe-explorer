@@ -501,7 +501,7 @@ const V2 = {
     },
 };
 
-const loaders = [V1, V2];
+const loaders = [/*V1, */V2];
 
 
 export function getLoader(version) {
