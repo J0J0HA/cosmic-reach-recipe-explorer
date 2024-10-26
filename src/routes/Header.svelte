@@ -11,14 +11,18 @@
     import { db } from "$lib/db";
 
     const loadingJar = writable(false);
-    const loadingState = writable("idle");
+    const loadingJarState = writable("idle");
+    const loadingDataModState = writable("idle");
     const downloadTotal = writable(0);
     const downloadDone = writable(0);
 
-    const stateCallback = (state, done, total) => {
-        loadingState.set(state);
+    const stateCallbackJar = (state, done, total) => {
+        loadingJarState.set(state);
         downloadDone.set(done);
         downloadTotal.set(total);
+    };
+    const stateCallbackDataMod = (state) => {
+        loadingDataModState.set(state);
     };
 
     let versionListPromise = writable(null);
@@ -69,7 +73,7 @@
                 <select
                     disabled={!$loaded || $loadingJar}
                     value={$loadingJar
-                        ? ":LOAD-" + $loadingState
+                        ? ":LOAD-" + $loadingJarState
                         : $crVersion || ":"}
                     id="version-chooser"
                     key="version-chooser"
@@ -79,7 +83,7 @@
                             versions.filter(
                                 (version) => version.id == e.target.value,
                             )[0],
-                            stateCallback,
+                            stateCallbackJar,
                         ).then(() => {
                             loadingJar.set(false);
                         });
@@ -134,7 +138,7 @@
                         >
                     {/each}
                 </select>
-                {#if $loadingJar && $loadingState === "download"}
+                {#if $loadingJar && $loadingJarState === "download"}
                     <br />
                     <div class="bar">
                         <progress
@@ -171,17 +175,27 @@
             >
             <button
                 id="dir-chooser-trigger"
+                disabled={["extract", "parse", "delete"].includes($loadingDataModState)}
                 on:click={() => {
                     document.querySelector("#dir-chooser").click();
                 }}
             >
-                Select your mod folder
+                {#if $loadingDataModState === "extract"}
+                    Extracting...
+                {:else if $loadingDataModState === "parse"}
+                    Parsing...
+                {:else if $loadingDataModState === "delete"}
+                    Removing...
+                {:else}
+                    Select your mod folder
+                {/if}
             </button>
             <button
                 id="dir-unload"
-                on:click={() => {
-                    // dataModFiles.set({});
-                    getLoader($crVersion).unloadFiles("datamod");
+                on:click={async () => {
+                    stateCallbackDataMod("delete");
+                    await getLoader($crVersion).unloadFiles("datamod");
+                    stateCallbackDataMod("idle");
                 }}
             >
                 Unload data mods
@@ -196,17 +210,17 @@
         webkitdirectory
         multiple
         hidden
-        on:change={(event) => {
-            document.querySelector("#dir-chooser-trigger").disabled = true;
-            getFolderFiles(event.target.files).then((files) => {
-                getLoader($crVersion)
-                    .loadFiles("datamod", files)
-                    .then(() => {
-                        document.querySelector(
-                            "#dir-chooser-trigger",
-                        ).disabled = false;
-                    });
-            });
+        on:change={async (event) => {
+            stateCallbackDataMod("extract");
+            const files = await getFolderFiles(event.target.files);
+
+            stateCallbackDataMod("parse");
+            await getLoader($crVersion).loadFiles(
+                "datamod",
+                files,
+                stateCallbackDataMod,
+            );
+            stateCallbackDataMod("done");
         }}
     />
     <!-- <hr />
