@@ -1,6 +1,6 @@
 import { writable, readable } from 'svelte/store';
 import { load, store } from './serializer';
-import { browser } from "$app/environment"
+import { browser } from "$app/environment";
 
 export const crVersion = writable(null);
 export const locale = writable("en_us");

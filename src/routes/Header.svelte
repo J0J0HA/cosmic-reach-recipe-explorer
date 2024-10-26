@@ -9,6 +9,12 @@
     import { onMount } from "svelte";
     import { liveQuery } from "dexie";
     import { db } from "$lib/db";
+    import { browser } from "$app/environment";
+
+    let canLoadFolders = false;
+    if (browser) {
+        canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
+    }
 
     const loadingJar = writable(false);
     const loadingJarState = writable("idle");
@@ -173,38 +179,40 @@
                     {/each}
                 </select></span
             >
-            <button
-                id="dir-chooser-trigger"
-                disabled={["extract", "parse", "delete"].includes(
-                    $loadingDataModState,
-                )}
-                on:click={() => {
-                    document.querySelector("#dir-chooser").click();
-                }}
-            >
-                {#if $loadingDataModState === "extract"}
-                    Extracting...
-                {:else if $loadingDataModState === "parse"}
-                    Parsing...
-                {:else if $loadingDataModState === "delete"}
-                    Removing...
-                {:else}
-                    Select your mod folder
-                {/if}
-            </button>
-            <button
-                disabled={["extract", "parse", "delete"].includes(
-                    $loadingDataModState,
-                )}
-                id="dir-unload"
-                on:click={async () => {
-                    stateCallbackDataMod("delete");
-                    await getLoader($crVersion).unloadFiles("datamod");
-                    stateCallbackDataMod("idle");
-                }}
-            >
-                Unload data mods
-            </button>
+            {#if canLoadFolders}
+                <button
+                    id="dir-chooser-trigger"
+                    disabled={["extract", "parse", "delete"].includes(
+                        $loadingDataModState,
+                    )}
+                    on:click={() => {
+                        document.querySelector("#dir-chooser").click();
+                    }}
+                >
+                    {#if $loadingDataModState === "extract"}
+                        Extracting...
+                    {:else if $loadingDataModState === "parse"}
+                        Parsing...
+                    {:else if $loadingDataModState === "delete"}
+                        Removing...
+                    {:else}
+                        Select your mod folder
+                    {/if}
+                </button>
+                <button
+                    disabled={["extract", "parse", "delete"].includes(
+                        $loadingDataModState,
+                    )}
+                    id="dir-unload"
+                    on:click={async () => {
+                        stateCallbackDataMod("delete");
+                        await getLoader($crVersion).unloadFiles("datamod");
+                        stateCallbackDataMod("idle");
+                    }}
+                >
+                    Unload data mods
+                </button>
+            {/if}
         {/if}
     </div>
     <input
