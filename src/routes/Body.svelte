@@ -29,6 +29,12 @@
         flex-grow: 0;
         flex-shrink: 0;
         width: 60%;
-        min-width: 30rem;
+        max-width: 100dvw;
+    }
+
+    @media (width < 450px) {
+        main {
+            width: calc(100% - 20px);
+        }
     }
 </style>

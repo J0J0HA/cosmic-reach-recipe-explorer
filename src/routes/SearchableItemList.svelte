@@ -52,10 +52,14 @@
         >
             <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
                 <a href="/get/{takeable.fullId}">How to get</a>
-                &nbsp;|&nbsp;
+                <!-- &nbsp;|&nbsp; -->
+                <!-- <br>
+                <br> -->
                 <a href="/use/{takeable.fullId}">Uses</a>
                 {#if takeable.state}
-                    &nbsp;|&nbsp;
+                    <!-- &nbsp;|&nbsp; -->
+                    <!-- <br>
+                    <br> -->
                     <a href="/states/{takeable.fullId}">Other states</a>
                 {/if}
             </ItemStackDetailDisplay></span
@@ -83,5 +87,6 @@
     .results {
         display: flex;
         flex-direction: column;
+        gap: 10px;
     }
 </style>
