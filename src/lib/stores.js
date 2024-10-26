@@ -8,7 +8,7 @@ export const loaded = writable(false);
 
 if (browser) {
     load("locale").then((value) => {
-        locale.set(value)
+        locale.set(value || "en_us")
     })
     load("loadedVersion").then((value) => {
         crVersion.set(value);
