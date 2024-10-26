@@ -67,3 +67,28 @@ a:active {
     text-decoration: underline;
     color: transparent;
 }
+
+select {
+    width: 100%;
+}
+
+.progress-bar {
+    max-width: 100%;
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+    gap: 10px;
+}
+
+.progress-bar progress {
+    flex-grow: 1;
+    flex-shrink: 1;
+    background-color: inherit;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+}
+
+.progress-bar .progress-percentage {
+    flex-grow: 0;
+    flex-shrink: 0;
+}

@@ -1,12 +1,12 @@
 <script>
-    import { loadedStore, loadedVersion } from "$lib/stores";
+    import { loaded, crVersion } from "$lib/stores";
 </script>
 
 <div class="wrapper">
     <main>
-        {#if !$loadedStore}
+        {#if !$loaded}
             <p>Loading...</p>
-        {:else if !$loadedVersion}
+        {:else if !$crVersion}
             <p>No version loaded</p>
         {:else}
             <slot />

@@ -1,29 +1,22 @@
 <script>
-    import {
-        loadedStore,
-        items,
-        textures,
-        craftingRecipes,
-        furnaceRecipes,
-        blocks,
-        loadedVersion,
-        loader,
-        loadTime,
-    } from "$lib/stores";
-    // import {
-    //     dataModFiles,
-    //     jarFiles,
-    //     getFilesFromFileList,
-    //     getFilesFromJar,
-    // } from "$lib/unzipjar";
-    import { getZipFiles, getFolderFiles, getLoader } from "$lib/importer";
+    import { loaded, crVersion } from "$lib/stores";
+    import { getFolderFiles, getLoader } from "$lib/importer";
     import { updated } from "$app/stores";
-    import { downloadVersion, getVersionList, setVersion } from "$lib/versions";
+    import { getVersionList, setVersion } from "$lib/versions";
     import { version } from "$app/environment";
-    import { get, writable } from "svelte/store";
+    import { writable } from "svelte/store";
     import { onMount } from "svelte";
 
     const loadingJar = writable(false);
+    const loadingState = writable("idle");
+    const downloadTotal = writable(0);
+    const downloadDone = writable(0);
+
+    const stateCallback = (state, done, total) => {
+        loadingState.set(state);
+        downloadDone.set(done);
+        downloadTotal.set(total);
+    };
 
     let versionListPromise = writable(null);
 
@@ -38,10 +31,10 @@
 </div>
 
 <div class="jar-chooser-box bordered">
-    {#if $loadedStore && !$loadedVersion}
+    {#if $loaded && !$crVersion}
         <h2>To get started:</h2>
     {/if}
-    <div>
+    <div style:width="20%" style:min-width="fit-content">
         {#if $versionListPromise === null}
             <p>Loading...</p>
         {:else}
@@ -61,8 +54,10 @@
                 </select>
             {:then versions}
                 <select
-                    disabled={!$loadedStore || $loadingJar}
-                    value={$loadingJar ? ":LOAD" : $loadedVersion || ":"}
+                    disabled={!$loaded || $loadingJar}
+                    value={$loadingJar
+                        ? ":LOAD-" + $loadingState
+                        : $crVersion || ":"}
                     id="version-chooser"
                     key="version-chooser"
                     on:change={(e) => {
@@ -71,6 +66,7 @@
                             versions.filter(
                                 (version) => version.id == e.target.value,
                             )[0],
+                            stateCallback,
                         ).then(() => {
                             loadingJar.set(false);
                         });
@@ -102,23 +98,47 @@
                         Choose a Version
                     </option>
                     {#if $loadingJar}
-                        <option value=":LOAD" key=":LOAD" disabled>
+                        <option value=":LOAD-download" key=":LOAD" disabled>
+                            Downloading...
+                        </option>
+                        <option value=":LOAD-extract" key=":LOAD" disabled>
+                            Extracting...
+                        </option>
+                        <option value=":LOAD-parse" key=":LOAD" disabled>
+                            Parsing...
+                        </option>
+                        <option value=":LOAD-init" key=":LOAD" disabled>
                             Loading...
                         </option>
+                        <option value=":LOAD-idle" key=":LOAD" disabled>
+                            Idle
+                        </option>
                     {/if}
+
                     {#each versions as version}
                         <option value={version.id} key={version.id}
                             >{version.id} ({version.type})</option
                         >
                     {/each}
                 </select>
+                {#if $loadingJar && $loadingState === "download"}
+                    <br />
+                    <div class="progress-bar">
+                        <progress max={$downloadTotal} value={$downloadDone} />
+                        <span class="progress-percentage"
+                            >{Math.round(
+                                ($downloadDone / $downloadTotal) * 100,
+                            ) || 0}%</span
+                        >
+                    </div>
+                {/if}
             {:catch}
                 <p>Failed to load verisons.</p>
                 <button on:click={refetchVersionList}>Retry</button>
             {/await}
         {/if}
     </div>
-    {#if $loadedVersion && false}
+    {#if $crVersion && false}
         <!-- No data mods atm -->
         <hr />
         To load your data mods,
@@ -133,7 +153,7 @@
             on:change={(event) => {
                 document.querySelector("#dir-chooser-trigger").disabled = true;
                 getFolderFiles(event.target.files).then((files) => {
-                    getLoader($loadedVersion)
+                    getLoader($crVersion)
                         .loadDataModFiles(files)
                         .then(() => {
                             document.querySelector(
@@ -157,7 +177,7 @@
                     id="dir-unload"
                     on:click={() => {
                         // dataModFiles.set({});
-                        getLoader($loadedVersion).unloadDataMods();
+                        getLoader($crVersion).unloadDataMods();
                     }}
                 >
                     Unload data mods
@@ -173,13 +193,13 @@
                 </button>
             {/if}
         </div>
-        <hr />
+        <!-- <hr />
         Loaded {Object.keys($blocks).length} blockstates, {Object.keys($items)
             .length} items, {Object.keys($craftingRecipes).length +
             Object.keys($furnaceRecipes).length}
         recipes, and {Object.keys($textures).length} textures in
         {Math.round($loadTime * 10) / 10}s with loader
-        {$loader.name} for version {$loadedVersion}.
+        {$loader.name} for version {$loadedVersion}. -->
     {/if}
 
     {#if $updated}

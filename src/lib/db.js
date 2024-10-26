@@ -1,16 +1,14 @@
 import Dexie from 'dexie';
-import { dataModFiles } from './stores';
 import { renderBlockModel } from './rendering';
 
 export const db = new Dexie('FileStore');
 db.version(3).stores({
-  //   blocks: '&id, source',
   textures: '&path, source, modId, subPath, &[modId+subPath]',
   models: '&path, source, modId, subPath, &[modId+subPath]',
   craftingRecipes: '++id, source, modId, *usedItemsFullIds, result.fullId',
   furnaceRecipes: '++id, source, modId, usedItem.fullId, result.fullId',
   items: '&fullId, source, modId, subId, &[modId+subId]',
-  blockstates: '&fullId, blockId, source, modId, subId, state, [modId+subId], &[modId+subId+state], showInCatalog, *data.tags',
+  blockstates: '&fullId, blockId, source, modId, subId, state, [modId+subId], &[modId+subId+state], showInCatalog, *data.tags'
 });
 
 export class BlockStateTakeableAdapter {
@@ -27,10 +25,9 @@ export class BlockStateTakeableAdapter {
   }
 
   async getImage() {
-    const blob = await renderBlockModel(this.data.modelName);
-    if (!blob) return null;
-    return URL.createObjectURL(blob);
-    // return null;
+    const URI = await renderBlockModel(this.data.modelName);
+    if (!URI) return null;
+    return URI;
   }
 
   get lore() {

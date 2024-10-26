@@ -19,8 +19,6 @@
             .and((blockState) => blockState.fullId !== $page.params.item)
             .toArray();
     });
-
-    $: A = console.log(787, $states);
 </script>
 
 <svelte:head>

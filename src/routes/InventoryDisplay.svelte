@@ -1,6 +1,5 @@
 <script>
     import ItemStackDisplay from "./ItemStackDisplay.svelte";
-    import { getTexture } from "$lib/utils";
     import { db } from "$lib/db";
     import { liveQuery } from "dexie";
 

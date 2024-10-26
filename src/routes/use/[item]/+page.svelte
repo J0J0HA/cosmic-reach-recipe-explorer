@@ -1,6 +1,5 @@
 <script>
     import Header from "../../Header.svelte";
-    import { ItemStack } from "$lib/items";
     import CraftingRecipe from "../../CraftingRecipe.svelte";
     import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
     import { getTakeable, makeItemStack } from "$lib/utils";
@@ -12,9 +11,6 @@
 
     import { liveQuery } from "dexie";
     import { db } from "$lib/db";
-
-    // $: filtered = getUsesOf($page.params.item);
-    // $: itemStack = getItemStack($page.params.item);
 
     const itemStack = liveQuery(async () => {
         return await makeItemStack(await getTakeable($page.params.item))

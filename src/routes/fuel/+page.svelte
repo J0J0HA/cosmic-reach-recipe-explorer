@@ -1,6 +1,5 @@
 <script>
     import Header from "../Header.svelte";
-    import { ItemStack } from "$lib/items";
     import Body from "../Body.svelte";
     import SearchableItemList from "../SearchableItemList.svelte";
 
@@ -14,8 +13,6 @@
         const fuels = takeables.filter((takeable) => takeable.isFuel);
         return fuels;
     });
-
-    $: A = console.log($fuels)
 </script>
 
 <svelte:head>

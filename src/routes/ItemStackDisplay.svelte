@@ -1,6 +1,5 @@
 <script>
     import { goto } from "$app/navigation";
-    import { getAir } from "$lib/utils";
     import { tickTime } from "$lib/stores";
     import { ItemStack } from "$lib/items";
 

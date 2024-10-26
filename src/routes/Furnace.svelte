@@ -1,6 +1,5 @@
 <script>
     import InventoryDisplay from "./InventoryDisplay.svelte";
-    import { goto } from "$app/navigation";
 
     export let input;
     export let fuel;

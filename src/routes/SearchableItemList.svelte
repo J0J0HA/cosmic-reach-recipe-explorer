@@ -6,11 +6,13 @@
 
     let search = "";
     $: cleaned_search = search.trim().toLowerCase().split(" ");
-    $: results = takeables.filter((takeable) =>
-        cleaned_search.every((word) =>
-            takeable.subId.toLowerCase().includes(word),
-        ),
-    );
+    $: results = takeables
+        .filter((takeable) =>
+            cleaned_search.every((word) =>
+                takeable.subId.toLowerCase().includes(word),
+            ),
+        ) // https://discord.com/channels/1198501071363002408/1198501071363002410/1299698359111647263
+        .map((takeable) => takeable.fullId);
 </script>
 
 <input
@@ -26,16 +28,23 @@
 />
 
 <div class="results">
-    {#each results as takeable (takeable.fullId)}
-        <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
-            <a href="/get/{takeable.fullId}">How to get</a>
-            &nbsp;|&nbsp;
-            <a href="/use/{takeable.fullId}">Uses</a>
-            {#if takeable.state}
+    {#each takeables as takeable (takeable.fullId)}
+    <!-- This span beacause we don't need to rerender Images then. -->
+        <span
+            style:display={results.includes(takeable.fullId)
+                ? "block"
+                : "none"}
+        >
+            <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
+                <a href="/get/{takeable.fullId}">How to get</a>
                 &nbsp;|&nbsp;
-                <a href="/states/{takeable.fullId}">Other states</a>
-            {/if}
-        </ItemStackDetailDisplay>
+                <a href="/use/{takeable.fullId}">Uses</a>
+                {#if takeable.state}
+                    &nbsp;|&nbsp;
+                    <a href="/states/{takeable.fullId}">Other states</a>
+                {/if}
+            </ItemStackDetailDisplay></span
+        >
     {/each}
 </div>
 
