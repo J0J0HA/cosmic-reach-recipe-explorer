@@ -1,8 +1,11 @@
 import Dexie from 'dexie';
 import { renderBlockModel } from './rendering';
+import { locale } from './stores';
+import { get } from 'svelte/store';
 
 export const db = new Dexie('FileStore');
-db.version(3).stores({
+db.version(4).stores({
+  translations: '++id, langKey, translationKey, source, [langKey+translationKey]',
   textures: '&path, source, modId, subPath, &[modId+subPath]',
   models: '&path, source, modId, subPath, &[modId+subPath]',
   craftingRecipes: '++id, source, modId, *usedItemsFullIds, result.fullId',
@@ -12,8 +15,13 @@ db.version(3).stores({
 });
 
 export class BlockStateTakeableAdapter {
-  get name() {
-    return this.fullId // get(translations)[this.data.langKey || this.id.split("[")[0]] || this.id;
+  async getName() {
+    const langKey = this.data.langKey || this.blockId;
+    const translation = await db.translations.where({
+      langKey: get(locale),
+      translationKey: langKey,
+    }).first()
+    return translation || this.fullId;
   }
 
   get isFuel() {
@@ -57,8 +65,12 @@ export class ItemTakeableAdapter {
     return this.data.fuelTicks && this.data.fuelTicks >= 0;
   }
 
-  get name() {
-    return this.fullId;
+  async getName() {
+    const translation = await db.translations.where({
+      langKey: get(locale),
+      translationKey: this.fullId,
+    }).first()
+    return translation || this.fullId;
   }
 
   get burnTime() {
@@ -87,7 +99,7 @@ export class ItemTakeableAdapter {
 
   async getImage() {
     // if (this.data.__texture_override) return this.data.__texture_override;
-    const texture = (await db.textures.where({modId: this.modId, subPath: this.data.texture}).toArray())[0]?.data;
+    const texture = (await db.textures.where({ modId: this.modId, subPath: this.data.texture }).toArray())[0]?.data;
     return texture ? texture : null;
   }
 }

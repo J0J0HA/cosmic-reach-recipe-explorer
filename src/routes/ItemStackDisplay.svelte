@@ -6,8 +6,23 @@
     export let itemStack = undefined;
     $: itemStack = itemStack || new ItemStack(null);
     $: itemStack = itemStack instanceof Array ? itemStack : [itemStack];
-    $: currentItemStack = itemStack[$tickTime % itemStack.length] || new ItemStack(null);
+    $: currentItemStack =
+        itemStack[$tickTime % itemStack.length] || new ItemStack(null);
     $: air = currentItemStack?.item === null;
+    $: currentItemStackName = names[$tickTime % itemStack.length] || "";
+    $: names = itemStack.map((subItemStack) => subItemStack.fullId);
+
+    $: {
+        const promises = itemStack.map((subItemStack) =>
+            subItemStack?.getName?.(),
+        );
+        promises.map((promise, index) => {
+            if (promise)
+                promise.then((translation) => {
+                    names[index] = translation.value;
+                });
+        });
+    }
 </script>
 
 <button
@@ -39,7 +54,7 @@
         {#await subitemStack.getImage() then image}
             <img
                 src={image}
-                alt={subitemStack.name}
+                alt={names[index]}
                 draggable="false"
                 style:display={index === $tickTime % itemStack.length
                     ? "block"
@@ -55,7 +70,7 @@
             {#if currentItemStack.count !== 1}
                 {currentItemStack.count}x
             {/if}
-            {currentItemStack.name}<br />
+            {currentItemStackName}<br />
             <div class="tooltip-lore">
                 {@html currentItemStack.lore.join("<br />")}
             </div>

@@ -231,13 +231,41 @@ const V2 = {
         // await db.transaction("rw", db.textures, db.models, async () => {
 
         // Unload
-        await db.renderedModels.clear();
+        // await db.renderedModels.clear();
         await db.textures.where("source").equals(source).delete();
         await db.models.where("source").equals(source).delete();
         await db.items.where("source").equals(source).delete();
         await db.blockstates.where("source").equals(source).delete();
         await db.craftingRecipes.where("source").equals(source).delete();
         await db.furnaceRecipes.where("source").equals(source).delete();
+
+        // Translations
+
+        const translations = {};
+        await Promise.all(Object.entries(files).filter(
+            entry => entry[0].split("/")[1] === "lang" && entry[0].endsWith(".json")
+        ).map(
+            async entry => {
+                const language = entry[0].split("/")[2];
+                const data = await entry[1].readJson();
+                translations[language] = Object.assign(translations[language] || {}, data);
+            }
+        ));
+
+        for (const [langKey, data] of Object.entries(translations)) {
+            await db.translations.bulkPut(
+                Object.entries(data).map(([translationKey, value]) => {
+                    return {
+                        langKey,
+                        translationKey,
+                        source,
+                        value,
+                    }
+                })
+            );
+        }
+
+
 
         // Textures
         await db.textures.bulkPut(
@@ -382,11 +410,11 @@ const V2 = {
         const result = [];
         for (let recipe of Object.entries(data)) {
             const input = {
-                fullId: recipe[0],
+                fullId: recipe[1],
                 count: 1
             };
             const output = {
-                fullId: recipe[1],
+                fullId: recipe[0],
                 count: 1
             };
             result.push({

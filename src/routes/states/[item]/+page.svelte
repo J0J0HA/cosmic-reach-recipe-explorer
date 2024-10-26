@@ -9,21 +9,30 @@
     import Body from "../../Body.svelte";
     import { liveQuery } from "dexie";
 
-    const itemStack = liveQuery(async () => {
+    $: itemStack = liveQuery(async () => {
         return await makeItemStack(await getTakeable($page.params.item));
     });
 
-    const states = liveQuery(() => {
+    $: states = liveQuery(() => {
         return db.blockstates
             .where({ blockId: $page.params.item.split("[")[0] })
             .and((blockState) => blockState.fullId !== $page.params.item)
             .toArray();
     });
+    let name = $page.params.item;
+
+    $: {
+        const promise = $itemStack?.getName?.();
+        if (promise)
+            promise.then((translation) => {
+                name = translation.value;
+            });
+    }
 </script>
 
 <svelte:head>
     <title
-        >Other blockstates of {$itemStack?.name || $page.params.item} - CR Recipes</title
+        >Other blockstates of {name} - CR Recipes</title
     >
 </svelte:head>
 
@@ -40,7 +49,7 @@
     <div class="center">
         <SearchableItemList takeables={$states || []} />
         {#if !$states?.length}
-            <p>{$page.params.item} has no other blockstates.</p>
+            <p>{name} has no other blockstates.</p>
         {/if}
     </div>
 </Body>

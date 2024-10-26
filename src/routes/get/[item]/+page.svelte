@@ -11,18 +11,18 @@
 
     import Body from "../../Body.svelte";
 
-    const itemStack = liveQuery(async () => {
-        return await makeItemStack(await getTakeable($page.params.item))
-    })
+    $: itemStack = liveQuery(async () => {
+        return await makeItemStack(await getTakeable($page.params.item));
+    });
 
-    const craftingRecipes = liveQuery(() =>
+    $: craftingRecipes = liveQuery(() =>
         db.craftingRecipes
             .where("result.fullId")
             .equals($page.params.item)
             .toArray(),
     );
 
-    const furnaceRecipes = liveQuery(
+    $: furnaceRecipes = liveQuery(
         () =>
             db.furnaceRecipes
                 .where("result.fullId")
@@ -30,16 +30,26 @@
                 .toArray(),
         { initialValue: [] },
     );
+
+    let name = $page.params.item;
+
+    $: {
+        const promise = $itemStack?.getName?.();
+        if (promise)
+            promise.then((translation) => {
+                name = translation.value;
+            });
+    }
 </script>
 
 <svelte:head>
-    <title>How to make {$itemStack?.name || $page.params.item} - CR Recipes</title>
+    <title>How to make {name} - CR Recipes</title>
 </svelte:head>
 
 <Header />
 <Body>
     <a href="/">Back to item list</a>
-    <br><br>
+    <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>
     {:else}
@@ -47,14 +57,16 @@
         <ItemStackDetailDisplay itemStack={$itemStack} />
 
         <div class="center">
-            {#each $furnaceRecipes || [] as recipe (recipe)} <!-- not recipe.id to refresh when db refetched. -->
+            {#each $furnaceRecipes || [] as recipe (recipe)}
+                <!-- not recipe.id to refresh when db refetched. -->
                 <FurnaceRecipe {recipe} />
             {/each}
-            {#each $craftingRecipes || [] as recipe (recipe)} <!-- not recipe.id to refresh when db refetched. -->
+            {#each $craftingRecipes || [] as recipe (recipe)}
+                <!-- not recipe.id to refresh when db refetched. -->
                 <CraftingRecipe {recipe} />
             {/each}
             {#if !$craftingRecipes?.length && !$furnaceRecipes?.length}
-                <p>{$page.params.item} has no recipes.</p>
+                <p>{name} has no recipes.</p>
             {/if}
         </div>
     {/if}

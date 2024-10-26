@@ -12,18 +12,18 @@
     import { liveQuery } from "dexie";
     import { db } from "$lib/db";
 
-    const itemStack = liveQuery(async () => {
-        return await makeItemStack(await getTakeable($page.params.item))
-    })
+    $: itemStack = liveQuery(async () => {
+        return await makeItemStack(await getTakeable($page.params.item));
+    });
 
-    const craftingRecipes = liveQuery(() =>
+    $: craftingRecipes = liveQuery(() =>
         db.craftingRecipes
             .where("usedItemsFullIds")
             .equals($page.params.item)
             .toArray(),
     );
 
-    const furnaceRecipes = liveQuery(
+    $: furnaceRecipes = liveQuery(
         () =>
             db.furnaceRecipes
                 .where("usedItem.fullId")
@@ -31,17 +31,26 @@
                 .toArray(),
         { initialValue: [] },
     );
+
+    let name = $page.params.item;
+
+    $: {
+        const promise = $itemStack?.getName?.();
+        if (promise)
+            promise.then((translation) => {
+                name = translation.value;
+            });
+    }
 </script>
 
 <svelte:head>
-    <title>Uses of {$itemStack?.name || $page.params.item} - CR Recipes</title>
+    <title>Uses of {name} - CR Recipes</title>
 </svelte:head>
-
 
 <Header />
 <Body>
     <a href="/">Back to item list</a>
-    <br><br>
+    <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>
     {:else}
@@ -49,6 +58,9 @@
         <ItemStackDetailDisplay itemStack={$itemStack} />
 
         <div class="center">
+            {#if $itemStack?.isFuel}
+                <FuelRecipe fuel={$itemStack} />
+            {/if}
             {#each $furnaceRecipes || [] as recipe (recipe)}
                 <!-- not recipe.id to refresh when db refetched. -->
                 <FurnaceRecipe {recipe} />
@@ -57,11 +69,8 @@
                 <!-- not recipe.id to refresh when db refetched. -->
                 <CraftingRecipe {recipe} />
             {/each}
-            {#if $itemStack?.isFuel}
-                <FuelRecipe fuel={$itemStack} />
-            {/if}
             {#if !$craftingRecipes?.length && !$furnaceRecipes?.length && !$itemStack?.isFuel}
-                <p>{$page.params.item} has no uses.</p>
+                <p>{name} has no uses.</p>
             {/if}
         </div>
     {/if}

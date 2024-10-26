@@ -1,13 +1,23 @@
 <script>
     import InventoryDisplay from "./InventoryDisplay.svelte";
     export let itemStack;
+    
+    let name = itemStack.fullId;
+
+    $: {
+        const promise = itemStack?.getName?.();
+        if (promise)
+            promise.then((translation) => {
+                name = translation.value;
+            });
+    }
 </script>
 
 <div class="item bordered">
     <div class="leftmost">
         <InventoryDisplay grid={[[itemStack]]} />
         <div>
-            <div class="name">{itemStack.name}</div>
+            <div class="name">{name}</div>
             <div class="lore">{@html itemStack.lore.join("<br />")}</div>
         </div>
     </div>
