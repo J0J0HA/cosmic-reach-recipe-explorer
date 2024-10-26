@@ -100,6 +100,10 @@
             align-items: start;
         }
 
+        .leftmost {
+            width: 100%;
+        }
+
         .rightmost {
             align-self: flex-end;
         }
