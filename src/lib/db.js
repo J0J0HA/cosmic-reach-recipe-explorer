@@ -3,7 +3,7 @@ import { renderBlockModel } from './rendering';
 import { get } from 'svelte/store';
 
 export const db = new Dexie('CosmicReachStore');
-db.version(2).stores({
+db.version(3).stores({
   metadata: '&key',
   translations: '++id, langKey, translationKey, source, [langKey+translationKey]',
   textures: '&[source+path], source, modId, subPath, [modId+subPath]',
