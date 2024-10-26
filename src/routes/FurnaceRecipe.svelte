@@ -7,10 +7,10 @@
     import { liveQuery } from "dexie";
 
     const inputItem = liveQuery(async () => {
-        return await makeItemStack(await getTakeable(recipe.result.fullId))
+        return await makeItemStack(await getTakeable(recipe.usedItem.fullId))
     })
     const outputItem = liveQuery(async () => {
-        return await makeItemStack(await getTakeable(recipe.usedItem.fullId))
+        return await makeItemStack(await getTakeable(recipe.result.fullId))
     })
     const fuelItem = liveQuery(async () => {
         return await makeItemStack(await getTakeable({ __require__: "isFuel" }))

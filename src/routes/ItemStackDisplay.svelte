@@ -24,10 +24,22 @@
                 });
         });
     }
+
+    let startedTouch = 0;
 </script>
 
 <button
     class="img-wrapper{air ? ' nohover' : ''}"
+    on:touchstart={(e) => (startedTouch = Date.now())}
+    on:touchend={(e) => {
+        const touchedFor = Date.now() - startedTouch;
+
+        if (touchedFor > 250) {
+            goto(`/use/${currentItemStack.item.fullId}`);
+        } else {
+            goto(`/get/${currentItemStack.item.fullId}`);
+        }
+    }}
     on:mouseup={(e) => {
         e.preventDefault();
         if (air) return false;

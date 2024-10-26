@@ -419,11 +419,11 @@ const V2 = {
         const result = [];
         for (let recipe of Object.entries(data)) {
             const input = {
-                fullId: recipe[1],
+                fullId: recipe[0],
                 count: 1
             };
             const output = {
-                fullId: recipe[0],
+                fullId: recipe[1],
                 count: 1
             };
             result.push({
