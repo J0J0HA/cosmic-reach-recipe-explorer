@@ -34,12 +34,12 @@
 
     
     const name = liveQuery(async () => {
-        return await $itemStack.getName($locale);
+        return await $itemStack?.getName($locale);
     });
 </script>
 
 <svelte:head>
-    <title>How to make {name} - CR Recipes</title>
+    <title>How to make {$name || $itemStack?.fullId} - CR Recipes</title>
 </svelte:head>
 
 <Header />
@@ -62,7 +62,7 @@
                 <CraftingRecipe {recipe} />
             {/each}
             {#if !$craftingRecipes?.length && !$furnaceRecipes?.length}
-                <p>{name} has no recipes.</p>
+                <p>{$name || $itemStack?.fullId} has no recipes.</p>
             {/if}
         </div>
     {/if}

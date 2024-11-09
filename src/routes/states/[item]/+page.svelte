@@ -22,13 +22,13 @@
     });
    
     const name = liveQuery(async () => {
-        return await $itemStack.getName($locale);
+        return await $itemStack?.getName($locale);
     });
 </script>
 
 <svelte:head>
     <title
-        >Other blockstates of {name} - CR Recipes</title
+        >Other blockstates of {$name || $itemStack?.fullId} - CR Recipes</title
     >
 </svelte:head>
 
@@ -45,7 +45,7 @@
     <div class="center">
         <SearchableItemList takeables={$states || []} />
         {#if !$states?.length}
-            <p>{name} has no other blockstates.</p>
+            <p>{$name || $itemStack?.fullId} has no other blockstates.</p>
         {/if}
     </div>
 </Body>
