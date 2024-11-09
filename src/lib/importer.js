@@ -3,6 +3,7 @@ import { writable } from "svelte/store";
 import * as Hjson from "hjson-devvit";
 import { db } from "./db";
 import { browser } from "$app/environment"
+import { patch_files } from "./patches";
 
 export function fileNamesToTree(files) {
     let result = {};
@@ -241,6 +242,7 @@ const V1 = {
         await db.blockstates.where("source").equals(source).delete();
         await db.craftingRecipes.where("source").equals(source).delete();
         await db.furnaceRecipes.where("source").equals(source).delete();
+        await db.ores.where("source").equals(source).delete();
     },
     async parseFurnaceRecipe(data) {
         const result = [];
@@ -329,6 +331,9 @@ const V1 = {
         }
         return result;
     },
+    async activate() {
+        await this.unloadFiles("static_patch");
+    },
 };
 
 
@@ -338,6 +343,7 @@ const V0 = {
     name: "V0",
     async loadFiles(source, files) {
         alert("Loading pre 0.1.0 versions will result in no textures displayed, as the game used a uv map which is not implemented here.\n\nImplementation of uv support is planned but low priority.")
+        V1.loadFiles(source, files);
     },
 }
 
@@ -345,9 +351,6 @@ const V0 = {
 const V2 = {
     version: /(?:^0\.3\.\d+$)|(?:^0\.3\.2-pre(1|2|5|6|7|8|9|10)$)/,
     name: "0.3 (V2)",
-    transformFilePath(path) {
-        return path;
-    },
     async unloadFiles(source) {
         await db.translations.where("source").equals(source).delete();
         await db.textures.where("source").equals(source).delete();
@@ -356,6 +359,10 @@ const V2 = {
         await db.blockstates.where("source").equals(source).delete();
         await db.craftingRecipes.where("source").equals(source).delete();
         await db.furnaceRecipes.where("source").equals(source).delete();
+        await db.ores.where("source").equals(source).delete();
+    },
+    async activate() {
+        await this.loadFiles("static_patch", patch_files);
     },
     async loadFiles(source, files) {
         // await db.transaction("rw", db.textures, db.models, async () => {
@@ -532,6 +539,28 @@ const V2 = {
                     }
                 ))
             ).flat()
+        );
+
+        // Oreloader ores
+        await db.ores.bulkPut(
+            (
+                await Promise.all(Object.entries(files).filter(
+                    entry => entry[0].split("/")[1] === "worldgen" && entry[0].split("/")[2] === "ores" && entry[0].endsWith(".json")
+                ).map(
+                    async entry => {
+                        const data = await entry[1].readJson();
+                        return {
+                            path: entry[0],
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                            modId: entry[0].split("/")[0],
+                            source,
+                            blockId: data?.ore?.blockId,
+                            tagsOfBlocksToReplace: data?.ore?.tagsOfBlocksToReplace,
+                            data,
+                        }
+                    }
+                ))
+            )
         );
 
         // });

@@ -43,7 +43,7 @@
     });
 </script>
 
-<div style="position: absolute; top:10px; left: 12.5px; font-size: 0.7rem;">
+<div style="position: fixed; top:10px; left: 12.5px; font-size: 0.7rem;">
     {version.slice(0, 6)}
 </div>
 
@@ -55,7 +55,7 @@
         style:flex-direction="column"
         style:gap="10px"
     >
-        {#if $loaded && !$crVersion}
+        {#if $loaded && !$crVersion && !$loadingJar}
             <h2>To get started:</h2>
         {/if}
         {#if $versionListPromise === null}

@@ -18,10 +18,10 @@ export async function getTakeable(fullId) {
     return item || blockState;
 }
 
-export async function makeItemStack(takeable) {
+export async function makeItemStack(takeable, count) {
     if (!takeable) return new ItemStack(null, 0);
     if (takeable instanceof Array) {
-        return takeable.map((item) => new ItemStack(item, 1));
+        return takeable.map((item) => new ItemStack(item, count || 1));
     }
-    return new ItemStack(takeable, 1);
+    return new ItemStack(takeable, count || 1);
 }

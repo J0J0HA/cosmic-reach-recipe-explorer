@@ -144,6 +144,7 @@
         font-size: 1.2em;
         font-weight: bold;
         position: absolute;
+        z-index: 9988;
         translate: 25px 22.5px;
     }
 
@@ -159,6 +160,7 @@
         border-radius: 5px;
         width: fit-content;
         text-wrap: nowrap;
+        z-index: 9999;
     }
 
     .tooltip:hover {

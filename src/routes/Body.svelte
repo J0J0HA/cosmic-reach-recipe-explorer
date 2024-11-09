@@ -7,7 +7,7 @@
         {#if !$loaded}
             <p>Loading...</p>
         {:else if !$crVersion}
-            <p>No version loaded</p>
+            <p>No active version</p>
         {:else}
             <slot />
         {/if}

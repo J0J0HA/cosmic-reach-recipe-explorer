@@ -11,6 +11,7 @@
     import { liveQuery } from "dexie";
 
     import Body from "../../Body.svelte";
+    import OreDistribution from "../../OreDistribution.svelte";
 
     $: itemStack = liveQuery(async () => {
         return await makeItemStack(await getTakeable($page.params.item));
@@ -32,7 +33,15 @@
         { initialValue: [] },
     );
 
-    
+    $: ores = liveQuery(() =>
+        $page.params.item.split("[")[1] == "default]"
+            ? db.ores
+                  .where("blockId")
+                  .equals($page.params.item.split("[")[0])
+                  .toArray()
+            : [],
+    );
+
     const name = liveQuery(async () => {
         return await $itemStack?.getName($locale);
     });
@@ -53,6 +62,9 @@
         <ItemStackDetailDisplay itemStack={$itemStack} />
 
         <div class="center">
+            {#each $ores || [] as ore (ore)}
+                <OreDistribution {ore} />
+            {/each}
             {#each $furnaceRecipes || [] as recipe (recipe)}
                 <!-- not recipe.id to refresh when db refetched. -->
                 <FurnaceRecipe {recipe} />
@@ -61,8 +73,8 @@
                 <!-- not recipe.id to refresh when db refetched. -->
                 <CraftingRecipe {recipe} />
             {/each}
-            {#if !$craftingRecipes?.length && !$furnaceRecipes?.length}
-                <p>{$name || $itemStack?.fullId} has no recipes.</p>
+            {#if !$ores?.length && !$craftingRecipes?.length && !$furnaceRecipes?.length}
+                <p>There are no ways to get {$name || $itemStack?.fullId}.</p>
             {/if}
         </div>
     {/if}

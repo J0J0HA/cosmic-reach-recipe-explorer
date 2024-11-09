@@ -1,4 +1,4 @@
-import { store } from "./serializer";
+import { load, store } from "./serializer";
 import { crVersion, locale } from "./stores";
 import { getLoader, getZipFiles } from "./importer";
 import axios from "axios";
@@ -18,7 +18,11 @@ export async function downloadVersion(version, stateCallback) {
 
 export async function setVersion(version, stateCallback) {
     stateCallback?.("init")
+
+    store("loadedVersion", null);
+    crVersion.set(null);
     const loader = getLoader(version.id);
+    await loader.activate();
 
     if (!loader) {
         alert("No loader found for version " + version.id + "! This version is either invalid/unknown or not yet supported.\n\nTarget is to support all versions, so you might succeed by coming back later.");
@@ -33,7 +37,6 @@ export async function setVersion(version, stateCallback) {
 
     stateCallback?.("parse")
 
-    store("loadedVersion", null);
     await loader.loadFiles("jar", files);
     crVersion.set(version.id);
     store("loadedVersion", version.id);
