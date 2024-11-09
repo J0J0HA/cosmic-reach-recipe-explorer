@@ -14,7 +14,11 @@ function resolveTexture(model, side) {
     for (let key of textureMapping[side]) {
         if (model.textures[key]) {
             const fileName = model.textures[key].fileName;
-            const [modId, subPath] = fileName.split(":");
+            let [modId, subPath] = fileName.split(":");
+            if (subPath == undefined) {
+              subPath = modId;
+              modId = "base";
+            }
 
             // if (current_loader.name === "V1") {
             //     fileName = "textures/blocks/" + fileName;

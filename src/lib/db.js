@@ -99,6 +99,11 @@ export class ItemTakeableAdapter {
 
   async getImage() {
     // if (this.data.__texture_override) return this.data.__texture_override;
+    let [modId, subPath] = this.data.texture.split(":");
+    if (subPath == undefined) {
+      subPath = modId;
+      modId = "base";
+    }
     const texture = (await db.textures.where({ modId: this.modId, subPath: this.data.texture }).toArray())[0]?.data;
     return texture ? texture : null;
   }
