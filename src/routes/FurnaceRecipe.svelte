@@ -1,13 +1,21 @@
 <script>
     export let recipe;
 
-    import { getItemStack } from "$lib/utils";
+    import { makeItemStack, getTakeable } from "$lib/utils";
     import Furnace from "./Furnace.svelte";
-    import { reload } from "$lib/stores"; // recieve changes to data
+
+    import { liveQuery } from "dexie";
+
+    const inputItem = liveQuery(async () => {
+        return await makeItemStack(await getTakeable(recipe.usedItem.fullId))
+    })
+    const outputItem = liveQuery(async () => {
+        return await makeItemStack(await getTakeable(recipe.result.fullId))
+    })
+    const fuelItem = liveQuery(async () => {
+        return await makeItemStack(await getTakeable({ __require__: "isFuel" }))
+    });
 </script>
 
-<Furnace
-    input={recipe.input}
-    fuel={getItemStack({ __require__: "isFuel" }) || ($reload && false)}
-    output={recipe.output}
-/>
+<Furnace input={$inputItem} fuel={$fuelItem} output={$outputItem} />
+

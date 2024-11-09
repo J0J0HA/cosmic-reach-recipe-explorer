@@ -1,19 +1,5 @@
 import * as THREE from 'three';
-import { models, textures, loader } from "./stores";
-
-let current_models = {};
-let current_textures = {};
-let current_loader;
-
-models.subscribe((value) => {
-    current_models = value;
-})
-textures.subscribe((value) => {
-    current_textures = value;
-})
-loader.subscribe((value) => {
-    current_loader = value;
-})
+import { db } from "./db";
 
 const textureMapping = {
     front: ["side", "all"],
@@ -27,13 +13,16 @@ const textureMapping = {
 function resolveTexture(model, side) {
     for (let key of textureMapping[side]) {
         if (model.textures[key]) {
-            let fileName = model.textures[key].fileName;
+            const fileName = model.textures[key].fileName;
+            const [modId, subPath] = fileName.split(":");
 
-            if (current_loader.name === "V1") {
-                fileName = "textures/blocks/" + fileName;
-            }
+            // if (current_loader.name === "V1") {
+            //     fileName = "textures/blocks/" + fileName;
+            // }
 
-            return fileName;
+            return {
+                modId, subPath
+            };
         };
     }
     if (model.parent) {
@@ -42,11 +31,12 @@ function resolveTexture(model, side) {
     return null;
 }
 
-function isCube(model) {
-    if (model.parent === "base:models/blocks/cube.json" || model.parent === "base:models/blocks/cube_no_ao.json" || model.parent === "cube" || model.parent === "cube_no_ao") {
+async function originatesFrom(model, origins) {
+    if (origins.includes(model.parent)) {
         return true;
     } else if (model.parent) {
-        return isCube(current_models[model.parent]);
+        const [modId, subPath] = model.parent.split(":");
+        return await originatesFrom((await db.models.where({ modId, subPath }).first()).data, origins);
     }
     return false;
 }
@@ -77,16 +67,20 @@ function getRenderingCache() {
 }
 
 export async function renderBlockModel(modelName) {
-    const model = current_models[modelName];
-    if (!model) return null;
-    if (isCube(model)) {
-        const top = current_textures[resolveTexture(model, "top")];
-        const bottom = current_textures[resolveTexture(model, "bottom")];
-        const front = current_textures[resolveTexture(model, "front")];
-        const back = current_textures[resolveTexture(model, "back")];
-        const right = current_textures[resolveTexture(model, "right")];
-        const left = current_textures[resolveTexture(model, "left")];
+    // I hope .last means the last added, because then I wont need to implement "search for overrides" stuff
+    const [modId, subPath] = modelName.split(":");
+    // const renderedModel = await db.renderedModels.where({ modId, subPath }).first();
+    // if (renderedModel?.data) return renderedModel.data;
 
+    const model = (await db.models.where({ modId, subPath }).first())?.data;
+    if (!model) return null;
+    if (await originatesFrom(model, ["base:models/blocks/cube.json", "base:models/blocks/cube_no_ao.json", "cube", "cube_no_ao"])) {
+        const top = await db.textures.where(resolveTexture(model, "top")).first();
+        const bottom = await db.textures.where(resolveTexture(model, "bottom")).first();
+        const front = await db.textures.where(resolveTexture(model, "front")).first();
+        const back = await db.textures.where(resolveTexture(model, "back")).first();
+        const right = await db.textures.where(resolveTexture(model, "right")).first();
+        const left = await db.textures.where(resolveTexture(model, "left")).first();
         const { scene, camera, renderer, geometry, loader } = getRenderingCache();
 
         const textures = [
@@ -98,12 +92,12 @@ export async function renderBlockModel(modelName) {
             left,
         ];
 
-        const loadedTextures = await Promise.all(textures.map(blob => new Promise((resolve) => {
+        const loadedTextures = await Promise.all(textures.map(textureRow => new Promise((resolve) => {
             let texture;
-            if (!blob) {
+            if (!textureRow?.data) {
                 resolve(null);
             }
-            texture = loader.load(URL.createObjectURL(blob), () => resolve(texture));
+            texture = loader.load(textureRow.data, () => resolve(texture));
         })))
         const materials = loadedTextures.map(texture => new THREE.MeshBasicMaterial({ map: texture })).map((material) => {
             material.map.minFilter = THREE.NearestFilter;
@@ -121,11 +115,17 @@ export async function renderBlockModel(modelName) {
 
         return new Promise((resolve, reject) => {
             renderer.domElement.toBlob((blob) => {
-                resolve(blob);
+                // db.renderedModel.put({modId, subPath, data: dataUri})
+                resolve(URL.createObjectURL(blob));
             })
             materials.forEach((material) => {
                 material.dispose();
             });
         });
+    }
+    else if (originatesFrom(model, ["base:models/blocks/empty.json", "empty"])) {
+        return "https://placehold.co/64/0000/0000";
+    } else {
+        return null;
     }
 }

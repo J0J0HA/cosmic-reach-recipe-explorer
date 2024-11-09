@@ -1,20 +1,24 @@
-import { derived, writable, readable } from 'svelte/store';
+import { writable, readable } from 'svelte/store';
+import { load, store } from './serializer';
+import { browser } from "$app/environment";
 
-export const lang = writable({});
-export const loader = writable({ name: "VX" });
-export const items = writable({});
-export const blocks = writable({});
-export const craftingRecipes = writable([]);
-export const furnaceRecipes = writable([]);
-export const textures = writable({});
-export const models = writable({});
-export const loadedVersion = writable("none");
-export const loadTime = writable(0);
+export const crVersion = writable(null);
 export const locale = writable("en_us");
+export const loaded = writable(false);
 
-export const translations = derived([lang, locale], ([$lang, $locale]) => {
-    return $lang[$locale] || {};
-}, {});
+if (browser) {
+    load("locale").then((value) => {
+        locale.set(value || "en_us")
+    })
+    load("loadedVersion").then((value) => {
+        crVersion.set(value);
+        loaded.set(true);
+    });
+    locale.subscribe((value) => {
+        store("locale", value)
+    })
+}
+
 
 export const tickTime = readable(0, function start(set) {
     let counter = 0;
@@ -27,5 +31,3 @@ export const tickTime = readable(0, function start(set) {
         clearInterval(interval);
     };
 });
-
-export const reload = writable(0);

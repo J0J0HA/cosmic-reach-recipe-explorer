@@ -1,17 +1,26 @@
 <script>
     import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
-    import { getItemStack } from "$lib/utils";
-    import { BlockState } from "$lib/blocks";
+    import { ItemStack } from "$lib/items";
+    import { locale } from "$lib/stores";
 
-    export let itemIds = [];
+    export let takeables = [];
 
+    import { liveQuery } from "dexie";
+    const names = liveQuery(async () => {
+        return await Promise.all(takeables.map(async takeable => await takeable.getName($locale)));
+    });
+   
     let search = "";
-    import { reload } from "$lib/stores"; // recieve changes to data
-
     $: cleaned_search = search.trim().toLowerCase().split(" ");
-    $: filtered_items = itemIds.filter((itemId) =>
-        cleaned_search.every((word) => itemId.toLowerCase().includes(word)),
-    );
+    $: results = takeables
+        .filter((takeable, index) =>
+            cleaned_search.every(
+                (word) =>
+                    takeable.subId.toLowerCase().includes(word) ||
+                    $names[index]?.toLowerCase().includes(word),
+            ),
+        )
+        .map((takeable) => takeable.fullId);
 </script>
 
 <input
@@ -27,16 +36,25 @@
 />
 
 <div class="results">
-    {#each filtered_items as itemId (itemId)}
-        <ItemStackDetailDisplay itemStack={getItemStack(itemId)  || ($reload && false)}>
-            <a href="/get/{itemId}">How to get</a>
-            &nbsp;|&nbsp;
-            <a href="/use/{itemId}">Uses</a>
-            {#if getItemStack(itemId).item instanceof BlockState}
-                &nbsp;|&nbsp;
-                <a href="/states/{itemId}">Other states</a>
-            {/if}
-        </ItemStackDetailDisplay>
+    {#each takeables as takeable (takeable.fullId)}
+        <!-- This span beacause we don't need to rerender Images then. -->
+        <span
+            style:display={results.includes(takeable.fullId) ? "block" : "none"}
+        >
+            <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
+                <a href="/get/{takeable.fullId}">How to get</a>
+                <!-- &nbsp;|&nbsp; -->
+                <!-- <br>
+                <br> -->
+                <a href="/use/{takeable.fullId}">Uses</a>
+                {#if takeable.state}
+                    <!-- &nbsp;|&nbsp; -->
+                    <!-- <br>
+                    <br> -->
+                    <a href="/states/{takeable.fullId}">Other states</a>
+                {/if}
+            </ItemStackDetailDisplay></span
+        >
     {/each}
 </div>
 
@@ -60,5 +78,6 @@
     .results {
         display: flex;
         flex-direction: column;
+        gap: 10px;
     }
 </style>

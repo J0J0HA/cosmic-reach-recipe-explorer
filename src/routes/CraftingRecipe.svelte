@@ -3,26 +3,67 @@
 
     export let recipe;
 
-    import { getTexture } from "$lib/utils";
-    import { reload } from "$lib/stores"; // recieve changes to data
+    import { getTakeable, makeItemStack } from "$lib/utils";
+    import { ItemStack } from "$lib/items";
+
+    import { db } from "$lib/db";
+    import { liveQuery } from "dexie";
+
+    $: resultTakeable = liveQuery(async () => {
+        return await makeItemStack(await getTakeable(recipe.result.fullId))
+    })
+
+    const progressArrow = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: "textures/ui/progress-arrow-full.png",
+                })
+                .first(),
+        { initialValue: null },
+    );
+
+    const transformedGrid = Promise.all(
+        recipe.grid.map(
+            async (row) =>
+                await Promise.all(
+                    row.map(async (cell) =>
+                        cell === null
+                            ? null
+                            : await makeItemStack(await getTakeable(cell.fullId || cell, cell.count || 1)),
+                    ),
+                ),
+        ),
+    );
 </script>
 
 <div class="before-after bordered">
     <div class="table">
-        <InventoryDisplay grid={recipe.grid} />
+        {#await transformedGrid}
+            <p>Loading... ({recipe.id})</p>
+        {:then transformedGrid}
+            <InventoryDisplay grid={transformedGrid} />
+        {:catch error}
+            <p>{error.message}</p>
+        {/await}
+        <!-- grid -->
     </div>
     <img
-        src={getTexture("textures/ui/progress-arrow-full.png") || ($reload && false)}
+        src={$progressArrow?.data || ""}
         alt="makes"
         class="arrow"
         draggable="false"
     />
     <p class="note">
-        {#if !recipe.ordered}
+        {#if recipe.patternless}
             (shapeless)
         {/if}
     </p>
-    <InventoryDisplay grid={[[recipe.output]]} out={true} />
+    <InventoryDisplay
+        grid={[[new ItemStack($resultTakeable || recipe.result.fullId, recipe.result.count || 1)]]}
+        out={true}
+    />
 </div>
 
 <style>

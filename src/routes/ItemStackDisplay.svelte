@@ -1,30 +1,75 @@
 <script>
     import { goto } from "$app/navigation";
-    import { getAir } from "$lib/utils";
     import { tickTime } from "$lib/stores";
+    import { ItemStack } from "$lib/items";
+    import { locale } from "$lib/stores";
+    import { liveQuery } from "dexie";
 
-    import { reload } from "$lib/stores"; // recieve changes to data
     export let itemStack = undefined;
-    $: itemStack = itemStack || getAir();
+    $: itemStack = itemStack || new ItemStack(null);
     $: itemStack = itemStack instanceof Array ? itemStack : [itemStack];
-    $: currentItemStack = itemStack[$tickTime % itemStack.length] || getAir();
-    $: air = currentItemStack?.item.id === "air";
+    $: currentItemStack =
+        itemStack[$tickTime % itemStack.length] || new ItemStack(null);
+    $: air = currentItemStack?.item === null;
+    // $: names = itemStack.map((subItemStack) => subItemStack.fullId);
+
+    
+    $: names = liveQuery(async () => {
+        return await Promise.all(
+            itemStack.map(async (subItemStack) => {
+                return await subItemStack?.getName?.($locale);
+            }),
+        );
+    });
+    // $: {console.log($names, $tickTime % itemStack.length)}
+    $: currentItemStackName = $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
+    // $: {
+    //     const promises = itemStack.map((subItemStack) =>
+    //         subItemStack?.getName?.($locale),
+    //     );
+    //     promises.map((promise, index) => {
+    //         if (promise)
+    //             promise.then((translation) => {
+    //                 names[index] = translation;
+    //             });
+    //     });
+    // }
+
+    let startedTouch = 0;
+
+    $: images = liveQuery(async () => {
+        return await Promise.all(
+            itemStack.map(async (subItemStack) => {
+                return await subItemStack?.getImage?.();
+            }),
+        );
+    });
 </script>
 
 <button
     class="img-wrapper{air ? ' nohover' : ''}"
+    on:touchstart={(e) => (startedTouch = Date.now())}
+    on:touchend={(e) => {
+        const touchedFor = Date.now() - startedTouch;
+
+        if (touchedFor > 250) {
+            goto(`/use/${currentItemStack.item.fullId}`);
+        } else {
+            goto(`/get/${currentItemStack.item.fullId}`);
+        }
+    }}
     on:mouseup={(e) => {
         e.preventDefault();
         if (air) return false;
         switch (e.button) {
             case 0:
-                goto(`/get/${currentItemStack.item.id}`);
+                goto(`/get/${currentItemStack.item.fullId}`);
                 break;
             case 1:
-                goto(`/states/${currentItemStack.item.id}`);
+                goto(`/states/${currentItemStack.item.fullId}`);
                 break;
             case 2:
-                goto(`/use/${currentItemStack.item.id}`);
+                goto(`/use/${currentItemStack.item.fullId}`);
                 break;
             default:
                 console.warn("How many mouse buttons do you have???");
@@ -36,17 +81,17 @@
     }}
     on:contextmenu={(e) => e.preventDefault()}
 >
-    {#each itemStack as subitemStack, index}
-        {#await subitemStack.item.getImage() then image}
+    {#each itemStack as subItemStack, index}
+        <!-- {#await subitemStack.getImage() then image} -->
             <img
-                src={image}
-                alt={subitemStack.getName()}
+                src={$images?.[index]}
+                alt={$names?.[index] || subItemStack.fullId}
                 draggable="false"
                 style:display={index === $tickTime % itemStack.length
                     ? "block"
                     : "none"}
             />
-        {/await}
+        <!-- {/await} -->
     {/each}
     {#if !air}
         <div class="count">
@@ -56,9 +101,9 @@
             {#if currentItemStack.count !== 1}
                 {currentItemStack.count}x
             {/if}
-            {currentItemStack.getName()}<br />
+            {currentItemStackName}<br />
             <div class="tooltip-lore">
-                {@html currentItemStack.getLore().join("<br />")}
+                {@html currentItemStack.lore.join("<br />")}
             </div>
         </div>
     {/if}
