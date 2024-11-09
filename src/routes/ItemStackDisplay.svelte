@@ -17,11 +17,12 @@
     $: names = liveQuery(async () => {
         return await Promise.all(
             itemStack.map(async (subItemStack) => {
-                return await subItemStack?.getName?.();
+                return await subItemStack?.getName?.($locale);
             }),
         );
     });
-    $: currentItemStackName = names?.[$tickTime % itemStack.length] || "";
+    // $: {console.log($names, $tickTime % itemStack.length)}
+    $: currentItemStackName = $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
     // $: {
     //     const promises = itemStack.map((subItemStack) =>
     //         subItemStack?.getName?.($locale),
@@ -83,7 +84,7 @@
     {#each itemStack as subItemStack, index}
         <!-- {#await subitemStack.getImage() then image} -->
             <img
-                src={$images?.[index] || "null"}
+                src={$images?.[index]}
                 alt={$names?.[index] || subItemStack.fullId}
                 draggable="false"
                 style:display={index === $tickTime % itemStack.length
