@@ -104,7 +104,8 @@ export class ItemTakeableAdapter {
       subPath = modId;
       modId = "base";
     }
-    const texture = (await db.textures.where({ modId: this.modId, subPath: this.data.texture }).toArray())[0]?.data;
+
+    const texture = (await db.textures.where({ modId, subPath }).toArray())[0]?.data;
     return texture ? texture : null;
   }
 }
