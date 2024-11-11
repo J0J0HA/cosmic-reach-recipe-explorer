@@ -42,16 +42,16 @@
             style:display={results.includes(takeable.fullId) ? "block" : "none"}
         >
             <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
-                <a href="/get/{takeable.fullId}">How to get</a>
+                <a href="/get/{takeable.fullId}{window?.location?.search||""}">How to get</a>
                 <!-- &nbsp;|&nbsp; -->
                 <!-- <br>
                 <br> -->
-                <a href="/use/{takeable.fullId}">Uses</a>
+                <a href="/use/{takeable.fullId}{window?.location?.search||""}">Uses</a>
                 {#if takeable.state}
                     <!-- &nbsp;|&nbsp; -->
                     <!-- <br>
                     <br> -->
-                    <a href="/states/{takeable.fullId}">Other states</a>
+                    <a href="/states/{takeable.fullId}{window?.location?.search||""}">Other states</a>
                 {/if}
             </ItemStackDetailDisplay></span
         >

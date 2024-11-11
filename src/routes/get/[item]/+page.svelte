@@ -53,7 +53,7 @@
 
 <Header />
 <Body>
-    <a href="/">Back to item list</a>
+    <a href="/{window?.location?.search||""}">Back to item list</a>
     <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>

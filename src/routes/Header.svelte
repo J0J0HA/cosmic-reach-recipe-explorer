@@ -1,4 +1,5 @@
 <script>
+    import { readURLParams } from "$lib/urlset.js";
     import { loaded, crVersion } from "$lib/stores";
     import { getFolderFiles, getLoader } from "$lib/importer";
     import { updated } from "$app/stores";
@@ -17,12 +18,13 @@
     }
 
     const loadingJar = writable(false);
-    const loadingJarState = writable("idle");
+    const loadingJarState = writable("reading");
     const loadingDataModState = writable("idle");
     const downloadTotal = writable(0);
     const downloadDone = writable(0);
 
     const stateCallbackJar = (state, done, total) => {
+        loadingJar.set(state != "idle");
         loadingJarState.set(state);
         downloadDone.set(done);
         downloadTotal.set(total);
@@ -37,6 +39,8 @@
         versionListPromise.set(getVersionList());
     }
     onMount(refetchVersionList);
+
+    onMount(() => readURLParams(stateCallbackJar));
 
     const languages = liveQuery(() => {
         return db.metadata.where({ key: "languages" }).first();
@@ -58,7 +62,7 @@
         {#if $loaded && !$crVersion && !$loadingJar}
             <h2>To get started:</h2>
         {/if}
-        {#if $versionListPromise === null}
+        {#if $versionListPromise === null || $loadingJarState == "reading"}
             <p>Loading...</p>
         {:else}
             {#await $versionListPromise}
@@ -164,7 +168,7 @@
                 <button on:click={refetchVersionList}>Retry</button>
             {/await}
         {/if}
-        {#if !!crVersion && !$loadingJar}
+        {#if $crVersion && !$loadingJar && $loaded}
             <span class="bar">
                 <label for="lang-select" class="static">Locale: </label>
                 <select

@@ -63,13 +63,13 @@
         if (air) return false;
         switch (e.button) {
             case 0:
-                goto(`/get/${currentItemStack.item.fullId}`);
+                goto(`/get/${currentItemStack.item.fullId}${window?.location?.search||""}`);
                 break;
             case 1:
-                goto(`/states/${currentItemStack.item.fullId}`);
+                goto(`/states/${currentItemStack.item.fullId}${window?.location?.search||""}`);
                 break;
             case 2:
-                goto(`/use/${currentItemStack.item.fullId}`);
+                goto(`/use/${currentItemStack.item.fullId}${window?.location?.search||""}`);
                 break;
             default:
                 console.warn("How many mouse buttons do you have???");

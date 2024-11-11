@@ -1,6 +1,7 @@
 import { load, store } from "./serializer";
 import { crVersion, locale } from "./stores";
 import { getLoader, getZipFiles } from "./importer";
+import { setURLParam } from "./urlset";
 import axios from "axios";
 
 export async function getVersionList() {
@@ -40,4 +41,6 @@ export async function setVersion(version, stateCallback) {
     await loader.loadFiles("jar", files);
     crVersion.set(version.id);
     store("loadedVersion", version.id);
+    setURLParam("version", version.id);
+    stateCallback?.("idle")
 }
