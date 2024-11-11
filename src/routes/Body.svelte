@@ -1,5 +1,5 @@
 <script>
-    import { loaded, crVersion } from "$lib/stores";
+    import { crVersion, loaded } from "$lib/stores";
 </script>
 
 <div class="wrapper">

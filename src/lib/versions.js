@@ -1,8 +1,8 @@
-import { load, store } from "./serializer";
-import { crVersion, locale } from "./stores";
-import { getLoader, getZipFiles } from "./importer";
-import { setURLParam } from "./urlset";
 import axios from "axios";
+import { getLoader, getZipFiles } from "./importer";
+import { store } from "./serializer";
+import { crVersion } from "./stores";
+import { setURLParam } from "./urlset";
 
 export async function getVersionList() {
     const response = await axios.get("https://raw.githubusercontent.com/CRModders/CosmicArchive/main/versions.json", { responseType: "json" });

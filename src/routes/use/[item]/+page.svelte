@@ -1,17 +1,17 @@
 <script>
-    import Header from "../../Header.svelte";
-    import CraftingRecipe from "../../CraftingRecipe.svelte";
-    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
-    import { getTakeable, makeItemStack } from "$lib/utils";
     import { locale } from "$lib/stores";
+    import { getTakeable, makeItemStack } from "$lib/utils";
+    import CraftingRecipe from "../../CraftingRecipe.svelte";
+    import Header from "../../Header.svelte";
+    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
     import { page } from "$app/stores";
-    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
-    import FuelRecipe from "../../FuelRecipe.svelte";
     import Body from "../../Body.svelte";
+    import FuelRecipe from "../../FuelRecipe.svelte";
+    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
-    import { liveQuery } from "dexie";
     import { db } from "$lib/db";
+    import { liveQuery } from "dexie";
 
     $: itemStack = liveQuery(async () => {
         return await makeItemStack(await getTakeable($page.params.item));
@@ -44,7 +44,7 @@
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search||""}">Back to item list</a>
+    <a href="/{window?.location?.search || ''}">Back to item list</a>
     <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>

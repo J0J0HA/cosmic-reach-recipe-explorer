@@ -1,14 +1,14 @@
 <script>
-    import Header from "../../Header.svelte";
     import { ItemStack } from "$lib/items";
-    import { makeItemStack, getTakeable } from "$lib/utils";
-    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
     import { locale } from "$lib/stores";
+    import { getTakeable, makeItemStack } from "$lib/utils";
+    import Header from "../../Header.svelte";
+    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
     import { page } from "$app/stores";
-    import SearchableItemList from "../../SearchableItemList.svelte";
-    import Body from "../../Body.svelte";
     import { liveQuery } from "dexie";
+    import Body from "../../Body.svelte";
+    import SearchableItemList from "../../SearchableItemList.svelte";
 
     $: itemStack = liveQuery(async () => {
         return await makeItemStack(await getTakeable($page.params.item));
@@ -20,7 +20,7 @@
             .and((blockState) => blockState.fullId !== $page.params.item)
             .toArray();
     });
-   
+
     const name = liveQuery(async () => {
         return await $itemStack?.getName($locale);
     });
@@ -34,7 +34,7 @@
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search||""}">Back to item list</a>
+    <a href="/{window?.location?.search || ''}">Back to item list</a>
     <br /><br />
 
     <h2>Other blockstates of</h2>

@@ -1,8 +1,8 @@
+import { browser } from "$app/environment";
 import * as zip from "@zip.js/zip.js";
-import { writable } from "svelte/store";
 import * as Hjson from "hjson-devvit";
+import { writable } from "svelte/store";
 import { db } from "./db";
-import { browser } from "$app/environment"
 import { patch_files } from "./patches";
 
 export function fileNamesToTree(files) {

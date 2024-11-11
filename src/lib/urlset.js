@@ -1,9 +1,8 @@
-import { loaded, crVersion, locale } from "./stores";
-import { get } from "svelte/store";
-import { getVersionList, setVersion } from "./versions";
-import { store } from "./serializer";
-import { db } from "./db";
 import { browser } from "$app/environment";
+import { get } from "svelte/store";
+import { db } from "./db";
+import { crVersion, loaded, locale } from "./stores";
+import { getVersionList, setVersion } from "./versions";
 
 export function removeURLParam(key) {
     const params = new URLSearchParams(window.location.search);

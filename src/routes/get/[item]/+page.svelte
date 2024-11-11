@@ -1,14 +1,14 @@
 <script>
-    import Header from "../../Header.svelte";
-    import CraftingRecipe from "../../CraftingRecipe.svelte";
-    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
     import { locale } from "$lib/stores";
+    import CraftingRecipe from "../../CraftingRecipe.svelte";
+    import Header from "../../Header.svelte";
+    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
     import { page } from "$app/stores";
-    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
     import { db } from "$lib/db";
-    import { makeItemStack, getTakeable } from "$lib/utils";
+    import { getTakeable, makeItemStack } from "$lib/utils";
     import { liveQuery } from "dexie";
+    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
     import Body from "../../Body.svelte";
     import OreDistribution from "../../OreDistribution.svelte";
@@ -53,7 +53,7 @@
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search||""}">Back to item list</a>
+    <a href="/{window?.location?.search || ''}">Back to item list</a>
     <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>

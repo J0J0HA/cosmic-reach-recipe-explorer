@@ -1,16 +1,14 @@
 <script>
-    import { readURLParams } from "$lib/urlset.js";
-    import { loaded, crVersion } from "$lib/stores";
-    import { getFolderFiles, getLoader } from "$lib/importer";
+    import { browser, version } from "$app/environment";
     import { updated } from "$app/stores";
-    import { locale } from "$lib/stores";
-    import { getVersionList, setVersion } from "$lib/versions";
-    import { version } from "$app/environment";
-    import { writable } from "svelte/store";
-    import { onMount } from "svelte";
-    import { liveQuery } from "dexie";
     import { db } from "$lib/db";
-    import { browser } from "$app/environment";
+    import { getFolderFiles, getLoader } from "$lib/importer";
+    import { crVersion, loaded, locale } from "$lib/stores";
+    import { readURLParams } from "$lib/urlset.js";
+    import { getVersionList, setVersion } from "$lib/versions";
+    import { liveQuery } from "dexie";
+    import { onMount } from "svelte";
+    import { writable } from "svelte/store";
 
     let canLoadFolders = false;
     if (browser) {

@@ -1,7 +1,7 @@
 <script>
-    import ItemStackDisplay from "./ItemStackDisplay.svelte";
     import { db } from "$lib/db";
     import { liveQuery } from "dexie";
+    import ItemStackDisplay from "./ItemStackDisplay.svelte";
 
     export let grid = [];
     export let out = false;

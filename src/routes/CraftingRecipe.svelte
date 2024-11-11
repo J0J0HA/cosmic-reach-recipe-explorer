@@ -3,15 +3,15 @@
 
     export let recipe;
 
-    import { getTakeable, makeItemStack } from "$lib/utils";
     import { ItemStack } from "$lib/items";
+    import { getTakeable, makeItemStack } from "$lib/utils";
 
     import { db } from "$lib/db";
     import { liveQuery } from "dexie";
 
     $: resultTakeable = liveQuery(async () => {
-        return await makeItemStack(await getTakeable(recipe.result.fullId))
-    })
+        return await makeItemStack(await getTakeable(recipe.result.fullId));
+    });
 
     const progressArrow = liveQuery(
         () =>
@@ -31,7 +31,12 @@
                     row.map(async (cell) =>
                         cell === null
                             ? null
-                            : await makeItemStack(await getTakeable(cell.fullId || cell, cell.count || 1)),
+                            : await makeItemStack(
+                                  await getTakeable(
+                                      cell.fullId || cell,
+                                      cell.count || 1,
+                                  ),
+                              ),
                     ),
                 ),
         ),
@@ -61,7 +66,14 @@
         {/if}
     </p>
     <InventoryDisplay
-        grid={[[new ItemStack($resultTakeable || recipe.result.fullId, recipe.result.count || 1)]]}
+        grid={[
+            [
+                new ItemStack(
+                    $resultTakeable || recipe.result.fullId,
+                    recipe.result.count || 1,
+                ),
+            ],
+        ]}
         out={true}
     />
 </div>

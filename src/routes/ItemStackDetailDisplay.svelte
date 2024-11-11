@@ -1,6 +1,6 @@
 <script>
-    import InventoryDisplay from "./InventoryDisplay.svelte";
     import { locale } from "$lib/stores";
+    import InventoryDisplay from "./InventoryDisplay.svelte";
     export let itemStack;
 
     import { liveQuery } from "dexie";

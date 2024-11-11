@@ -1,8 +1,7 @@
 <script>
     import { goto } from "$app/navigation";
-    import { tickTime } from "$lib/stores";
     import { ItemStack } from "$lib/items";
-    import { locale } from "$lib/stores";
+    import { locale, tickTime } from "$lib/stores";
     import { liveQuery } from "dexie";
 
     export let itemStack = undefined;
@@ -13,7 +12,6 @@
     $: air = currentItemStack?.item === null;
     // $: names = itemStack.map((subItemStack) => subItemStack.fullId);
 
-    
     $: names = liveQuery(async () => {
         return await Promise.all(
             itemStack.map(async (subItemStack) => {
@@ -22,7 +20,8 @@
         );
     });
     // $: {console.log($names, $tickTime % itemStack.length)}
-    $: currentItemStackName = $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
+    $: currentItemStackName =
+        $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
     // $: {
     //     const promises = itemStack.map((subItemStack) =>
     //         subItemStack?.getName?.($locale),
@@ -63,13 +62,19 @@
         if (air) return false;
         switch (e.button) {
             case 0:
-                goto(`/get/${currentItemStack.item.fullId}${window?.location?.search||""}`);
+                goto(
+                    `/get/${currentItemStack.item.fullId}${window?.location?.search || ""}`,
+                );
                 break;
             case 1:
-                goto(`/states/${currentItemStack.item.fullId}${window?.location?.search||""}`);
+                goto(
+                    `/states/${currentItemStack.item.fullId}${window?.location?.search || ""}`,
+                );
                 break;
             case 2:
-                goto(`/use/${currentItemStack.item.fullId}${window?.location?.search||""}`);
+                goto(
+                    `/use/${currentItemStack.item.fullId}${window?.location?.search || ""}`,
+                );
                 break;
             default:
                 console.warn("How many mouse buttons do you have???");
@@ -83,14 +88,14 @@
 >
     {#each itemStack as subItemStack, index}
         <!-- {#await subitemStack.getImage() then image} -->
-            <img
-                src={$images?.[index]}
-                alt={$names?.[index] || subItemStack.fullId}
-                draggable="false"
-                style:display={index === $tickTime % itemStack.length
-                    ? "block"
-                    : "none"}
-            />
+        <img
+            src={$images?.[index]}
+            alt={$names?.[index] || subItemStack.fullId}
+            draggable="false"
+            style:display={index === $tickTime % itemStack.length
+                ? "block"
+                : "none"}
+        />
         <!-- {/await} -->
     {/each}
     {#if !air}

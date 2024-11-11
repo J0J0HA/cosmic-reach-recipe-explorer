@@ -1,8 +1,8 @@
 <script>
-    import InventoryDisplay from "./InventoryDisplay.svelte";
-    export let ore;
     import { getTakeable, makeItemStack } from "$lib/utils";
-    import { ItemStack } from "$lib/items";
+    import InventoryDisplay from "./InventoryDisplay.svelte";
+
+    export let ore;
 
     import { db } from "$lib/db";
     import { liveQuery } from "dexie";
@@ -79,7 +79,7 @@
                 Data for this ore was not fetched from game data but supplied by
                 a patch defined by us. The data might be incorrect.
                 <br />
-                The patches are using the format of the 
+                The patches are using the format of the
                 <a href="https://www.crmm.tech/mod/oreloader">OreLoader</a> mod.
             {:else}
                 This is was loaded from a non-standard datamod file which can be

@@ -1,6 +1,6 @@
-import { writable, readable } from 'svelte/store';
-import { load, store } from './serializer';
 import { browser } from "$app/environment";
+import { readable, writable } from 'svelte/store';
+import { load, store } from './serializer';
 
 export const crVersion = writable(null);
 export const locale = writable("en_us");
@@ -9,14 +9,14 @@ export const loaded = writable(false);
 if (browser) {
     load("locale").then((value) => {
         locale.set(value || "en_us")
-    })
+    });
     load("loadedVersion").then((value) => {
         crVersion.set(value);
         loaded.set(true);
     });
     locale.subscribe((value) => {
-        store("locale", value)
-    })
+        store("locale", value);
+    });
 }
 
 

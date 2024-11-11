@@ -1,6 +1,5 @@
 import Dexie from 'dexie';
 import { renderBlockModel } from './rendering';
-import { get } from 'svelte/store';
 
 export const db = new Dexie('CosmicReachStore');
 db.version(4).stores({

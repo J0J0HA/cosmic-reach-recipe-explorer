@@ -16,8 +16,8 @@ function resolveTexture(model, side) {
             const fileName = model.textures[key].fileName;
             let [modId, subPath] = fileName.split(":");
             if (subPath == undefined) {
-              subPath = modId;
-              modId = "base";
+                subPath = modId;
+                modId = "base";
             }
 
             // if (current_loader.name === "V1") {

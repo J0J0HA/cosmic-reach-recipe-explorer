@@ -1,9 +1,9 @@
 <script>
+    import { db } from "$lib/db.js";
+    import { liveQuery } from "dexie";
+    import Body from "./Body.svelte";
     import Header from "./Header.svelte";
     import SearchableItemList from "./SearchableItemList.svelte";
-    import Body from "./Body.svelte";
-    import { liveQuery } from "dexie";
-    import { db } from "$lib/db.js";
 
     const items = liveQuery(() => db.items.toArray());
     const blockStates = liveQuery(() =>
