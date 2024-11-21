@@ -4,7 +4,7 @@
     export let itemStack;
 
     import { liveQuery } from "dexie";
-    const name = liveQuery(async () => {
+    $: name = liveQuery(async () => {
         return await itemStack.getName($locale);
     });
 </script>
