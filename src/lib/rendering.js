@@ -129,6 +129,25 @@ function rotOfDir(dir) {
     throw new Error("Huh?")
 }
 
+function colorOfDir(dir) {
+    switch (dir) {
+        case "localNegX":
+            return 0x000000;
+        case "localPosX":
+            return 0xCCCCCC;
+        case "localNegY":
+            return 0x000000;
+        case "localPosY":
+            return 0xFFFFFF;
+        case "localNegZ":
+            return 0x000000;
+        case "localPosZ":
+            return 0xAAAAAA;
+    }
+    console.error("Huh?")
+    throw new Error("Huh?")
+}
+
 export async function renderBlockModel(modelName) {
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-14, 14, 14, -14, 1, 1000);
@@ -158,26 +177,42 @@ export async function renderBlockModel(modelName) {
         fetchedTextures[path] = file;
     }
 
-    const loadedTextures = await Promise.all(Object.entries(fetchedTextures).map(([path, textureRow]) => new Promise((resolve, reject) => {
+    const loadedTextures = Object.fromEntries(await Promise.all(Object.entries(fetchedTextures).map(([path, textureRow]) => new Promise((resolve, reject) => {
         let texture;
         if (!textureRow?.data) {
             resolve([path, null]);
         }
-        texture = loader.load(textureRow.data, () => resolve([path, texture]), () => { }, reject);
-    })))
+        texture = loader.load(textureRow.data, () => {
+            texture.minFilter = THREE.NearestFilter;
+            texture.magFilter = THREE.NearestFilter;
+            resolve([path, texture])
+        }, () => { }, reject);
+    }))));
 
-    const materials = Object.fromEntries(loadedTextures.map(([path, texture]) => [path, new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide })]).map(([path, material]) => {
-        material.map.minFilter = THREE.NearestFilter;
-        material.map.magFilter = THREE.NearestFilter;
-        material.transparent = true;
-        return [path, material];
-    }));
+    // const materials = Object.fromEntries(loadedTextures.map(([path, texture]) => [path, new THREE.MeshBasicMaterial({ color: 0xFFFFFF, map: texture, side: THREE.DoubleSide })]).map(([path, material]) => {
+    //     material.color = 0xFFFFFF;
+    //     material.map.minFilter = THREE.NearestFilter;
+    //     material.map.magFilter = THREE.NearestFilter;
+    //     material.transparent = true;
+    //     return [path, material];
+    // }));
 
-    const materialFor = {
-        side: materials[textureSide],
-        top: materials[textureTop],
-        bottom: materials[textureBottom],
+    const makeMaterial = (texture, tint) => {
+        const material = new THREE.MeshBasicMaterial({ color: tint, map: texture, side: THREE.DoubleSide, transparent: true });
+        return material;
     }
+
+    const textureFor = {
+        side: loadedTextures[textureSide],
+        top: loadedTextures[textureTop],
+        bottom: loadedTextures[textureBottom],
+    }
+
+    // const materialFor = {
+    //     side: (materials[textureSide]),
+    //     top: materials[textureTop],
+    //     bottom: materials[textureBottom],
+    // }
 
     // faces
 
@@ -189,7 +224,7 @@ export async function renderBlockModel(modelName) {
             faceGeo.rotateX(rotX);
             faceGeo.rotateY(rotY);
             faceGeo.rotateZ(rotZ);
-            const faceMat = materialFor[face.texture];
+            const faceMat = makeMaterial(textureFor[face.texture], colorOfDir(direction));
             const faceMesh = new THREE.Mesh(faceGeo, faceMat);
             faceMesh.position.set(...geoOfDir(direction, cube.localBounds));
             scene.add(faceMesh);
