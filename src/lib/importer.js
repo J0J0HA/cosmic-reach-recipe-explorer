@@ -352,6 +352,7 @@ const V2 = {
     version: /(?:^0\.3\.\d+$)|(?:^0\.3\.2-pre(1|2|5|6|7|8|9|10)$)/,
     name: "0.3 (V2)",
     async unloadFiles(source) {
+        await db.renderedModels.clear();
         await db.translations.where("source").equals(source).delete();
         await db.textures.where("source").equals(source).delete();
         await db.models.where("source").equals(source).delete();
