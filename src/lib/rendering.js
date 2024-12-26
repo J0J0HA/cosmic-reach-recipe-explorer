@@ -138,12 +138,14 @@ function colorOfDir(dir) {
     throw new Error("Huh?")
 }
 
-export async function renderBlockModel(modelName) {
+export async function renderBlockModel(modelName, highQual = false) {
     const [modId, subPath] = modelName.split(":");
 
-    const renderedModel = await db.renderedModels.where({ modId, subPath }).first();
-    if (renderedModel?.data) return new Promise(resolve => resolve(renderedModel.data));
-
+    console.log(modelName, highQual)
+    if (!highQual) {
+        const renderedModel = await db.renderedModels.where({ modId, subPath }).first();
+        if (renderedModel?.data) return new Promise(resolve => resolve(renderedModel.data));
+    }
     const model = (await db.models.where({ modId, subPath }).first())?.data;
 
     const { scene, camera, renderer, loader } = getRenderingStuff();
@@ -223,13 +225,16 @@ export async function renderBlockModel(modelName) {
         }
     }
 
-    camera.position.set(16, 16, 16)
+    camera.position.set(16, 16, 16);
+    camera.aspect = 1;
     camera.lookAt(0, 0, 0);
+    renderer.setPixelRatio(1);
+    renderer.setSize(highQual ? 8000 : 300, highQual ? 8000 : 300);
     renderer.render(scene, camera);
 
     return new Promise((resolve, reject) => {
         renderer.domElement.toBlob((blob) => {
-            db.renderedModels.put({ modId, subPath, data: renderer.domElement.toDataURL() })
+            db.renderedModels.put({ modId, subPath, data: renderer.domElement.toDataURL("image/png") })
             resolve(URL.createObjectURL(blob));
         })
     });

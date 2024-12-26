@@ -19,9 +19,9 @@ export class ItemStack {
         this.properties = properties || {};
     }
 
-    async getImage() {
+    async getImage(highQual) {
         if (this.item === null) return "https://placehold.co/64/0000/0000";
-        return await this.item.getImage();
+        return await this.item.getImage(highQual);
     }
 
     get fullId() {

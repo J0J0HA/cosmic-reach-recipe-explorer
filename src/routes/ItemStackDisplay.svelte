@@ -108,7 +108,8 @@
             {/if}
             {currentItemStackName}<br />
             <div class="tooltip-lore">
-                {@html currentItemStack.lore.join("<br />")}
+                {@html currentItemStack.lore.join("<br />")}<br>
+                <a href="/image/{currentItemStack.item.fullId}{window?.location?.search || ""}">Generate image</a>
             </div>
         </div>
     {/if}

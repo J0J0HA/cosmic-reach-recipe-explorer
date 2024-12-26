@@ -33,8 +33,8 @@ export class BlockStateTakeableAdapter {
     return this.data.intProperties?.fuelTicks;
   }
 
-  async getImage() {
-    const URI = await renderBlockModel(this.data.modelName);
+  async getImage(highQual = false) {
+    const URI = await renderBlockModel(this.data.modelName, highQual);
     if (!URI) return null;
     return URI;
   }
@@ -98,7 +98,7 @@ export class ItemTakeableAdapter {
 
   }
 
-  async getImage() {
+  async getImage(highQual = false) {
     // if (this.data.__texture_override) return this.data.__texture_override;
     let [modId, subPath] = this.data.texture.split(":");
     if (subPath == undefined) {
