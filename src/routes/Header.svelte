@@ -1,19 +1,15 @@
 <script>
-    import { browser, version } from "$app/environment";
     import { updated } from "$app/stores";
     import { db } from "$lib/db";
-    import { getFolderFiles, getLoader } from "$lib/importer";
     import { crVersion, loaded, locale } from "$lib/stores";
+    import { version } from "$app/environment";
     import { readURLParams } from "$lib/urlset.js";
     import { getVersionList, setVersion } from "$lib/versions";
     import { liveQuery } from "dexie";
     import { onMount } from "svelte";
     import { writable } from "svelte/store";
+    import SourceEditor from "./SourceEditor.svelte";
 
-    let canLoadFolders = false;
-    if (browser) {
-        canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
-    }
 
     const loadingJar = writable(false);
     const loadingJarState = writable("reading");
@@ -181,63 +177,10 @@
                     {/each}
                 </select></span
             >
-            {#if canLoadFolders}
-                <button
-                    id="dir-chooser-trigger"
-                    disabled={["extract", "parse", "delete"].includes(
-                        $loadingDataModState,
-                    )}
-                    on:click={() => {
-                        document.querySelector("#dir-chooser").click();
-                    }}
-                >
-                    {#if $loadingDataModState === "extract"}
-                        Extracting...
-                    {:else if $loadingDataModState === "parse"}
-                        Parsing...
-                    {:else if $loadingDataModState === "delete"}
-                        Removing...
-                    {:else}
-                        Select your mod folder
-                    {/if}
-                </button>
-                <button
-                    disabled={["extract", "parse", "delete"].includes(
-                        $loadingDataModState,
-                    )}
-                    id="dir-unload"
-                    on:click={async () => {
-                        stateCallbackDataMod("delete");
-                        await getLoader($crVersion).unloadFiles("datamod");
-                        stateCallbackDataMod("idle");
-                    }}
-                >
-                    Unload data mods
-                </button>
-            {/if}
+            <SourceEditor />
         {/if}
     </div>
-    <input
-        id="dir-chooser"
-        type="file"
-        directory
-        mozdirectory
-        webkitdirectory
-        multiple
-        hidden
-        on:change={async (event) => {
-            stateCallbackDataMod("extract");
-            const files = await getFolderFiles(event.target.files);
 
-            stateCallbackDataMod("parse");
-            await getLoader($crVersion).loadFiles(
-                "datamod",
-                files,
-                stateCallbackDataMod,
-            );
-            stateCallbackDataMod("done");
-        }}
-    />
     <!-- <hr />
         Loaded {Object.keys($blocks).length} blockstates, {Object.keys($items)
             .length} items, {Object.keys($craftingRecipes).length +

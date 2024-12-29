@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { renderBlockModel } from './rendering';
 
 export const db = new Dexie('CosmicReachStore');
-db.version(5).stores({
+db.version(6).stores({
   metadata: '&key',
   translations: '++id, langKey, translationKey, source, [langKey+translationKey]',
   textures: '&[source+path], source, modId, subPath, [modId+subPath]',
@@ -13,6 +13,7 @@ db.version(5).stores({
   blockstates: '&[source+path+state], fullId, blockId, source, modId, subId, state, [modId+subId], [modId+subId+state], showInCatalog, *data.tags',
   ores: '&[source+path], fullId, blockId, tagsOfBlocksToReplace, modId, subId, [modId+subId]',
   renderedModels: '&[modId+subPath], modId, subPath',
+  loadedSources: '&sourceId',
 });
 
 export class BlockStateTakeableAdapter {
