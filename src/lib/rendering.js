@@ -101,15 +101,16 @@ function geoOfDir(dir, bounds) {
 
 function rotOfDir(dir) {
     const d90 = THREE.MathUtils.degToRad(90);
+    const d180 = THREE.MathUtils.degToRad(180);
     switch (dir) {
         case "localNegX":
             return new THREE.Euler(0, d90, 0);
         case "localPosX":
             return new THREE.Euler(0, d90, 0);
         case "localNegY":
-            return new THREE.Euler(d90, 0, 0);
+            return new THREE.Euler(-d90, d90, 0);
         case "localPosY":
-            return new THREE.Euler(d90, 0, 0);
+            return new THREE.Euler(-d90, d90, 0);
         case "localNegZ":
             return new THREE.Euler(0, 0, 0);
         case "localPosZ":
@@ -140,8 +141,6 @@ function colorOfDir(dir) {
 
 export async function renderBlockModel(modelName, highQual = false) {
     const [modId, subPath] = modelName.split(":");
-
-    console.log(modelName, highQual)
     if (!highQual) {
         const renderedModel = await db.renderedModels.where({ modId, subPath }).first();
         if (renderedModel?.data) return new Promise(resolve => resolve(renderedModel.data));
