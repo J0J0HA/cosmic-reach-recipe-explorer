@@ -146,7 +146,7 @@
         </button>
     </div>
     <div class="container">
-        {#each $sources || [] as source}
+        {#each $sources || [] as source (source.sourceId)}
             <Source {source} />
         {/each}
     </div>
