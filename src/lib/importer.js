@@ -603,11 +603,12 @@ const V2 = {
                             });
                     }
                 }
+                const usedItemsCopy = usedItems.concat();
                 const grid = []
                 for (let x = 0; x < 3; x++) {
                     const gridRow = [];
                     for (let y = 0; y < 3; y++) {
-                        gridRow.push(usedItems.shift() || null);
+                        gridRow.push(usedItemsCopy.shift() || null);
                     }
                     grid.push(gridRow);
                 }
