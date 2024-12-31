@@ -3,5 +3,22 @@
 		"lineWidth": 140,
 		"indentWidth": 4,
 		"indentStyle": "space"
-	}
+	},
+	"overrides": [
+		{
+			"include": [
+				"*.svelte",
+				"*.astro",
+				"*.vue"
+			],
+			"linter": {
+				"rules": {
+					"style": {
+						"useConst": "off",
+						"useImportType": "off"
+					}
+				}
+			}
+		}
+	]
 }
