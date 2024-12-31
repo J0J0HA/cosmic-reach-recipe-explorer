@@ -1,24 +1,29 @@
 {
-	"formatter": {
-		"lineWidth": 140,
-		"indentWidth": 4,
-		"indentStyle": "space"
-	},
-	"overrides": [
-		{
-			"include": [
-				"*.svelte",
-				"*.astro",
-				"*.vue"
-			],
-			"linter": {
-				"rules": {
-					"style": {
-						"useConst": "off",
-						"useImportType": "off"
-					}
-				}
-			}
-		}
-	]
+    "formatter": {
+        "lineWidth": 140,
+        "indentWidth": 4,
+        "indentStyle": "space"
+    },
+    "overrides": [
+        {
+            "include": ["*.svelte", "*.astro", "*.vue"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "useConst": "off",
+                        "useImportType": "off"
+                    }
+                }
+            }
+        }
+    ],
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true,
+        "defaultBranch": "master"
+    },
+    "organizeImports": {
+        "enabled": true
+    }
 }
