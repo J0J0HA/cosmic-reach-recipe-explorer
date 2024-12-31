@@ -11,7 +11,8 @@
 
     --border: black;
 
-    --link-color: rgb(84, 84, 255);
+    --link-color: #1e40af;
+    --link-hover: #2563eb;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,7 +27,8 @@
 
         --border: white;
 
-        --link-color: rgb(84, 84, 255);
+        --link-color: #60a5fa;
+        --link-hover: #93c5fd;
     }
 }
 
@@ -60,12 +62,11 @@ a:visited {
 }
 
 a:hover {
-    text-decoration: dashed underline;
+    color: var(--link-hover);
 }
 
 a:active {
-    text-decoration: underline;
-    color: transparent;
+    color: var(--link-hover);
 }
 
 select {
@@ -80,12 +81,12 @@ select {
     gap: 10px;
 }
 
-.bar > .static {
+.bar>.static {
     flex-grow: 0;
     flex-shrink: 0;
 }
 
-.bar > .fill {
+.bar>.fill {
     flex-grow: 1;
     flex-shrink: 1;
 }
@@ -94,4 +95,12 @@ progress {
     background-color: inherit;
     border: 1px solid var(--border);
     border-radius: 5px;
+}
+
+
+/* Accessibilty */
+a:focus-visible {
+    outline: 2px solid var(--outline);
+    outline-offset: 2px;
+    text-decoration: none;
 }

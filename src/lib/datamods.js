@@ -1,11 +1,11 @@
-import { getFolderFiles, getLoader, getZipFiles } from "./importer";
 import { get } from "svelte/store";
-import { crVersion } from "./stores";
 import { db } from "./db";
+import { getFolderFiles, getLoader, getZipFiles } from "./importer";
+import { crVersion } from "./stores";
 
 export async function loadDatamodsFromFolder(folder) {
     const name = folder[0].webkitRelativePath.split("/")[0];
-    const createdAt = Date.now()
+    const createdAt = Date.now();
     const sourceId = "folder:" + name + "@" + createdAt;
     const files = await getFolderFiles(folder);
 
@@ -16,10 +16,7 @@ export async function loadDatamodsFromFolder(folder) {
         createdAt,
     });
 
-    await getLoader(get(crVersion)).loadFiles(
-        sourceId,
-        files,
-    );
+    await getLoader(get(crVersion)).loadFiles(sourceId, files);
 }
 
 export async function loadDatamodFromZIP(zip) {
@@ -35,15 +32,12 @@ export async function loadDatamodFromZIP(zip) {
         createdAt,
     });
 
-    await getLoader(get(crVersion)).loadFiles(
-        sourceId,
-        files,
-    );
+    await getLoader(get(crVersion)).loadFiles(sourceId, files);
 }
 
-
 export async function loadDatamodFromCRMM(id) {
-    const metadata = await fetch(`https://api.crmm.tech/api/project/${id}`);
+    const res = await fetch(`https://api.crmm.tech/api/project/${id}`);
+    const metadata = await res.json();
 
     if (!metadata.success) alert(`Failed loading mod: ${metadata.message}`);
 
@@ -60,20 +54,18 @@ export async function loadDatamodFromCRMM(id) {
         createdAt,
     });
 
-    await getLoader(get(crVersion)).loadFiles(
-        sourceId,
-        files,
-    );
+    await getLoader(get(crVersion)).loadFiles(sourceId, files);
 }
 
 export async function listCRMMmods(query) {
     const urlparams = new URLSearchParams("type=datamod");
     if (query) urlparams.set("q", query);
-    const results = await fetch(`https://api.crmm.tech/api/search?` + urlparams.toString());
+    const res = await fetch(`https://api.crmm.tech/api/search?` + urlparams.toString());
+    const data = await res.json();
 
-    if (!results.success) alert(`Failed loading mods: ${results.message}`);
+    if (data?.hits === undefined) alert(`Failed loading mods: ${data.message}`);
 
-    return results.hits;
+    return data.hits;
 }
 
 export async function unloadSource(source) {
