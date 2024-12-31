@@ -16,6 +16,7 @@
         "three": "^0.168.0"
     },
     "devDependencies": {
+        "@biomejs/biome": "1.9.4",
         "@sveltejs/adapter-auto": "^3.2.4",
         "@sveltejs/kit": "^2.0.0",
         "@sveltejs/vite-plugin-svelte": "^3.0.0",
