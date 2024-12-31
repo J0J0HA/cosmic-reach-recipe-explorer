@@ -1,8 +1,8 @@
 <script>
+import { version } from "$app/environment";
 import { updated } from "$app/stores";
 import { db } from "$lib/db";
-import { crVersion, ready, locale } from "$lib/stores";
-import { version } from "$app/environment";
+import { crVersion, locale, ready } from "$lib/stores";
 import { readURLParams } from "$lib/urlset.js";
 import { getVersionList, setVersion } from "$lib/versions";
 import { liveQuery } from "dexie";

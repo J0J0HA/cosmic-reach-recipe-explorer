@@ -1,8 +1,8 @@
 <script>
+import { listCRMMmods, loadDatamodFromCRMM, loadDatamodFromZIP, loadDatamodsFromFolder } from "$lib/datamods.js";
+import { db } from "$lib/db";
 import { liveQuery } from "dexie";
 import Source from "./Source.svelte";
-import { db } from "$lib/db";
-import { loadDatamodsFromFolder, loadDatamodFromZIP, loadDatamodFromCRMM, listCRMMmods } from "$lib/datamods.js";
 
 import { browser } from "$app/environment";
 import CrmMmod from "./CRMMmod.svelte";

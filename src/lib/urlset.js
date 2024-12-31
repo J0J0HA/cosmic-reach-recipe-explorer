@@ -1,9 +1,9 @@
 import { browser } from "$app/environment";
+import { replaceState } from "$app/navigation";
 import { get } from "svelte/store";
 import { db } from "./db";
-import { crVersion, ready, locale } from "./stores";
+import { crVersion, locale, ready } from "./stores";
 import { getVersionList, setVersion } from "./versions";
-import { replaceState } from "$app/navigation";
 
 export async function readURLParams(stateCallback) {
     const params = new URLSearchParams(window.location.search);
