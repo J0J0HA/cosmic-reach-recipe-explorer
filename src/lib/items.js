@@ -3,7 +3,7 @@ import { db } from "./db";
 export class ItemStack {
     constructor(item, count, properties) {
         if (typeof item === "string")
-            item = {
+            this.item = {
                 async getImage() {
                     return (await db.textures.where({ subPath: "textures/blocks/debug.png", modId: "base" }).first())?.data;
                 },
@@ -13,7 +13,7 @@ export class ItemStack {
                 name: item,
                 lore: ["Unknown"],
             };
-        this.item = item;
+        else this.item = item;
         this.count = count;
         this.properties = properties || {};
     }
@@ -46,7 +46,7 @@ export class ItemStack {
 
     get lore() {
         if (this.item === null) return [""];
-        let lore = this.item?.lore || [];
+        const lore = this.item?.lore || [];
         if (this.properties.blockState) lore.push(`Block State: ${this.properties.blockState}`);
         return lore;
     }

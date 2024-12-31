@@ -9,16 +9,16 @@ import { liveQuery } from "dexie";
 
 function shortNumber(labelValue) {
     return Math.abs(Number(labelValue)) >= 1.0e9
-        ? Math.round(Math.abs(Number(labelValue)) / 1.0e9) + " bn"
+        ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e9)} bn`
         : Math.abs(Number(labelValue)) >= 1.0e6
-          ? Math.round(Math.abs(Number(labelValue)) / 1.0e6) + " m"
+          ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e6)} m`
           : Math.abs(Number(labelValue)) >= 1.0e3
-            ? Math.round(Math.abs(Number(labelValue)) / 1.0e3) + " k"
+            ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e3)} k`
             : Math.round(Math.abs(Number(labelValue)));
 }
 
 const oreBlock = liveQuery(async () => {
-    return await makeItemStack(await getTakeable(ore.blockId + "[default]"), ore.data.ore.MaxOresPerCluster);
+    return await makeItemStack(await getTakeable(`${ore.blockId}[default]`), ore.data.ore.MaxOresPerCluster);
 });
 const oreReplace = liveQuery(async () => {
     return await makeItemStack(await getTakeable({ has_tag: ore.tagsOfBlocksToReplace }), ore.data.ore.AttemptsPerColumn);

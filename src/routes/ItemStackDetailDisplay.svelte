@@ -4,7 +4,7 @@ import InventoryDisplay from "./InventoryDisplay.svelte";
 export let itemStack;
 
 import { liveQuery } from "dexie";
-$: name = liveQuery(async () => {
+$: itemName = liveQuery(async () => {
     return await itemStack.getName($locale);
 });
 </script>
@@ -13,7 +13,7 @@ $: name = liveQuery(async () => {
     <div class="leftmost">
         <InventoryDisplay grid={[[itemStack]]} />
         <div class="details">
-            <div class="name">{$name}</div>
+            <div class="name">{$itemName}</div>
             <div class="lore">{@html itemStack.lore.join("<br />")}</div>
         </div>
     </div>

@@ -17,7 +17,7 @@ $: itemStack = liveQuery(async () => {
     return await makeItemStack(await getTakeable($page.params.item));
 });
 
-$: name = liveQuery(async () => {
+$: itemName = liveQuery(async () => {
     return await $itemStack?.getName($locale);
 });
 $: texture = liveQuery(async () => {
@@ -26,7 +26,7 @@ $: texture = liveQuery(async () => {
 </script>
 
 <svelte:head>
-    <title>Image of {$name || $itemStack?.fullId} - CR Recipes</title>
+    <title>Image of {$itemName || $itemStack?.fullId} - CR Recipes</title>
 </svelte:head>
 
 <Header />
@@ -43,8 +43,8 @@ $: texture = liveQuery(async () => {
             {#if !$texture}
                 <p>Generating Image...</p>
             {:else}
-                <a href={$texture} download="{$name}.png">Download</a>
-                <img src={$texture} alt={$name} style="width: 80%; aspect-ratio: 1;" />
+                <a href={$texture} download="{$itemName}.png">Download</a>
+                <img src={$texture} alt={$itemName} style="width: 80%; aspect-ratio: 1;" />
             {/if}
         </div>
     {/if}

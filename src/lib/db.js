@@ -44,19 +44,19 @@ export class BlockStateTakeableAdapter {
     }
 
     get lore() {
-        let result = [];
+        const result = [];
         result.push(this.fullId);
-        for (let property in this.data) {
-            if (property == "dropId") {
+        for (const property in this.data) {
+            if (property === "dropId") {
                 result.push(`Drops: ${this.data[property]}`);
-            } else if (property == "catalogHidden") {
+            } else if (property === "catalogHidden") {
                 result.push(`Hidden: ${this.data[property]}`);
-            } else if (property == "tags") {
+            } else if (property === "tags") {
                 result.push(`Tags: ${this.data[property].join(", ")}`);
             }
         }
-        for (let property in this.data.intProperties) {
-            if (property == "fuelTicks") {
+        for (const property in this.data.intProperties) {
+            if (property === "fuelTicks") {
                 result.push(`Burns as fuel: ${this.data.intProperties[property]} ticks`);
             }
         }
@@ -84,20 +84,18 @@ export class ItemTakeableAdapter {
     }
 
     get lore() {
-        let result = [];
+        const result = [];
         result.push(this.fullId);
-        for (let property in this.data) {
-            if (property == "stackLimit") {
+        for (const property in this.data) {
+            if (property === "stackLimit") {
                 result.push(`Stack Limit: ${this.data[property]}`);
-            } else if (property == "durability") {
+            } else if (property === "durability") {
                 result.push(`Max Durability: ${this.data[property]}`);
-            } else if (property == "toolSpeed") {
+            } else if (property === "toolSpeed") {
                 result.push(`Tool Speed: ${this.data[property]}`);
-            } else if (property == "fuelTicks") {
+            } else if (property === "fuelTicks") {
                 result.push(`Burns as fuel: ${this.data[property]} ticks`);
-            } //else {
-            //     result += `${property}: ${this.properties[property]}<br>`;
-            // }#
+            }
         }
         return result;
     }
@@ -105,7 +103,7 @@ export class ItemTakeableAdapter {
     async getImage(highQual = false) {
         // if (this.data.__texture_override) return this.data.__texture_override;
         let [modId, subPath] = this.data.texture.split(":");
-        if (subPath == undefined) {
+        if (subPath === undefined) {
             subPath = modId;
             modId = "base";
         }
@@ -117,5 +115,3 @@ export class ItemTakeableAdapter {
 
 db.items.mapToClass(ItemTakeableAdapter);
 db.blockstates.mapToClass(BlockStateTakeableAdapter);
-
-// TODO: Rem: (await window.db.blocks.where({modId:"base", subId:"furnace"}).toArray())[0]

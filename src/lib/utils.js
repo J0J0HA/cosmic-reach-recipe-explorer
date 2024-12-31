@@ -17,7 +17,7 @@ export async function getTakeable(fullId) {
 
 export async function makeItemStack(takeable, count) {
     if (!takeable) return new ItemStack(null, 0);
-    if (takeable instanceof Array) {
+    if (Array.isArray(takeable)) {
         return takeable.map((item) => new ItemStack(item, count || 1));
     }
     return new ItemStack(takeable, count || 1);

@@ -16,7 +16,7 @@ let dialog;
 let crmmDialog;
 let inProgress;
 
-let sources = liveQuery(() => db.loadedSources.toArray());
+const sources = liveQuery(() => db.loadedSources.toArray());
 
 let crmmSearchI;
 let crmmSearchO;
@@ -38,17 +38,6 @@ setInterval(() => {
         if (dialog) dialog.showModal();
     }}>Edit datamod sources</button
 >
-<!-- on:click={(e) => {
-        const rect = dialog.getBoundingClientRect();
-
-        const clickedInDialog =
-            rect.top <= e.clientY &&
-            e.clientY <= rect.top + rect.height &&
-            rect.left <= e.clientX &&
-            e.clientX <= rect.left + rect.width;
-
-        if (clickedInDialog === false) dialog.close();
-    }} -->
 <dialog bind:this={dialog} class="bordered">
     <h1>Edit datamod sources</h1>
 
@@ -106,13 +95,6 @@ setInterval(() => {
             >
                 Load mods from folder
             </button>
-            <!-- <button
-            disabled={inProgress}
-            id="dir-unload"
-            on:click={async () => unloadSource()}
-        >
-            Unload data mods
-        </button> -->
         {/if}
         <button
             disabled={inProgress}

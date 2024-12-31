@@ -16,13 +16,13 @@ const downloadTotal = writable(0);
 const downloadDone = writable(0);
 
 const stateCallbackJar = (state, done, total) => {
-    loadingJar.set(state != "idle");
+    loadingJar.set(state !== "idle");
     loadingJarState.set(state);
     downloadDone.set(done);
     downloadTotal.set(total);
 };
 
-let versionListPromise = writable(null);
+const versionListPromise = writable(null);
 
 function refetchVersionList() {
     versionListPromise.set(getVersionList());

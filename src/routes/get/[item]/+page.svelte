@@ -22,7 +22,7 @@ $: craftingRecipes = liveQuery(() => db.craftingRecipes.where("result.fullId").e
 $: furnaceRecipes = liveQuery(() => db.furnaceRecipes.where("result.fullId").equals($page.params.item).toArray(), { initialValue: [] });
 
 $: ores = liveQuery(() =>
-    $page.params.item.split("[")[1] == "default]" ? db.ores.where("blockId").equals($page.params.item.split("[")[0]).toArray() : [],
+    $page.params.item.split("[")[1] === "default]" ? db.ores.where("blockId").equals($page.params.item.split("[")[0]).toArray() : [],
 );
 
 const name = liveQuery(async () => {

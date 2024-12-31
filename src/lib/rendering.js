@@ -11,18 +11,14 @@ const textureMapping = {
 };
 
 function resolveTexture(model, side) {
-    for (let key of textureMapping[side]) {
+    for (const key of textureMapping[side]) {
         if (model.textures[key]) {
             const fileName = model.textures[key].fileName;
             let [modId, subPath] = fileName.split(":");
-            if (subPath == undefined) {
+            if (subPath === undefined) {
                 subPath = modId;
                 modId = "base";
             }
-
-            // if (current_loader.name === "V1") {
-            //     fileName = "textures/blocks/" + fileName;
-            // }
 
             return {
                 modId,
@@ -39,7 +35,8 @@ function resolveTexture(model, side) {
 async function originatesFrom(model, origins) {
     if (origins.includes(model.parent)) {
         return true;
-    } else if (model.parent) {
+    }
+    if (model.parent) {
         const [modId, subPath] = model.parent.split(":");
         return await originatesFrom((await db.models.where({ modId, subPath }).first()).data, origins);
     }
@@ -172,8 +169,7 @@ export async function renderBlockModel(modelName, highQual = false) {
                 if (!file?.data) return [k, null];
 
                 return await new Promise((resolve, reject) => {
-                    let texture;
-                    texture = loader.load(
+                    const texture = loader.load(
                         file.data,
                         () => {
                             texture.minFilter = THREE.NearestFilter;
@@ -193,14 +189,14 @@ export async function renderBlockModel(modelName, highQual = false) {
         return material;
     };
 
-    for (let cube of merged.cuboids) {
-        for (let [direction, face] of Object.entries(cube.faces)) {
+    for (const cube of merged.cuboids) {
+        for (const [direction, face] of Object.entries(cube.faces)) {
             const faceGeo = new THREE.PlaneGeometry(face.uv[2] - face.uv[0], face.uv[3] - face.uv[1]);
             const [rotX, rotY, rotZ] = rotOfDir(direction);
             faceGeo.rotateX(rotX);
             faceGeo.rotateY(rotY);
             faceGeo.rotateZ(rotZ);
-            const faceMat = makeMaterial(textureFor[face.texture] || textureFor["all"], colorOfDir(direction));
+            const faceMat = makeMaterial(textureFor[face.texture] || textureFor.all, colorOfDir(direction));
             const faceMesh = new THREE.Mesh(faceGeo, faceMat);
             faceMesh.position.set(...geoOfDir(direction, cube.localBounds));
             scene.add(faceMesh);

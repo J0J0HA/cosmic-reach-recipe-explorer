@@ -6,10 +6,9 @@ import { liveQuery } from "dexie";
 
 export let itemStack = undefined;
 $: itemStack = itemStack || new ItemStack(null);
-$: itemStack = itemStack instanceof Array ? itemStack : [itemStack];
+$: itemStack = Array.isArray(itemStack) ? itemStack : [itemStack];
 $: currentItemStack = itemStack[$tickTime % itemStack.length] || new ItemStack(null);
 $: air = currentItemStack?.item === null;
-// $: names = itemStack.map((subItemStack) => subItemStack.fullId);
 
 $: names = liveQuery(async () => {
     return await Promise.all(
@@ -18,19 +17,7 @@ $: names = liveQuery(async () => {
         }),
     );
 });
-// $: {console.log($names, $tickTime % itemStack.length)}
 $: currentItemStackName = $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
-// $: {
-//     const promises = itemStack.map((subItemStack) =>
-//         subItemStack?.getName?.($locale),
-//     );
-//     promises.map((promise, index) => {
-//         if (promise)
-//             promise.then((translation) => {
-//                 names[index] = translation;
-//             });
-//     });
-// }
 
 let startedTouch = 0;
 

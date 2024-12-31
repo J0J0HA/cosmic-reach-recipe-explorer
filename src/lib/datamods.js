@@ -6,7 +6,7 @@ import { crVersion } from "./stores";
 export async function loadDatamodsFromFolder(folder) {
     const name = folder[0].webkitRelativePath.split("/")[0];
     const createdAt = Date.now();
-    const sourceId = "folder:" + name + "@" + createdAt;
+    const sourceId = `folder:${name}@${createdAt}`;
     const files = await getFolderFiles(folder);
 
     await db.loadedSources.put({
@@ -31,7 +31,7 @@ export async function loadDatamodsFromFolder(folder) {
 export async function loadDatamodFromZIP(zip) {
     const name = zip.name.split(".")[0];
     const createdAt = Date.now();
-    const sourceId = "zip:" + zip.name + "@" + createdAt;
+    const sourceId = `zip:${zip.name}@${createdAt}`;
     const files = await getZipFiles(zip);
 
     await db.loadedSources.put({
@@ -57,7 +57,7 @@ export async function loadDatamodFromCRMM(metadata) {
     const createdAt = Date.now();
 
     const name = metadata.name || "Unnamed Project";
-    const sourceId = "crmm:" + metadata.slug;
+    const sourceId = `crmm:${metadata.slug}`;
 
     await db.loadedSources.put({
         sourceId,
@@ -96,11 +96,11 @@ export async function listCRMMmods(query, page) {
     urlparams.set("sortby", "downloads");
     urlparams.set("type", "datamod");
     urlparams.set("limit", "10");
-    const datamodRes = await fetch(`https://api.crmm.tech/api/search?` + urlparams.toString());
+    const datamodRes = await fetch(`https://api.crmm.tech/api/search?${urlparams.toString()}`);
     const datamodData = await datamodRes.json();
     const datamods = datamodData?.hits || [];
     urlparams.set("type", "resource-pack");
-    const respackRes = await fetch(`https://api.crmm.tech/api/search?` + urlparams.toString());
+    const respackRes = await fetch(`https://api.crmm.tech/api/search?${urlparams.toString()}`);
     const respackData = await respackRes.json();
     const respacks = respackData?.hits || [];
 
