@@ -1,37 +1,37 @@
 <script>
-    import { locale } from "$lib/stores";
-    import CraftingRecipe from "../../CraftingRecipe.svelte";
-    import Header from "../../Header.svelte";
-    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
+import { locale } from "$lib/stores";
+import CraftingRecipe from "../../CraftingRecipe.svelte";
+import Header from "../../Header.svelte";
+import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
-    import { page } from "$app/stores";
-    import { db } from "$lib/db";
-    import { getTakeable, makeItemStack } from "$lib/utils";
-    import { liveQuery } from "dexie";
-    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
+import { page } from "$app/stores";
+import { db } from "$lib/db";
+import { getTakeable, makeItemStack } from "$lib/utils";
+import { liveQuery } from "dexie";
+import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
-    import Body from "../../Body.svelte";
-    import OreDistribution from "../../OreDistribution.svelte";
+import Body from "../../Body.svelte";
+import OreDistribution from "../../OreDistribution.svelte";
 
-    $: itemStack = liveQuery(async () => {
-        return await makeItemStack(await getTakeable($page.params.item));
-    });
+$: itemStack = liveQuery(async () => {
+    return await makeItemStack(await getTakeable($page.params.item));
+});
 
-    $: name = liveQuery(async () => {
-        return await $itemStack?.getName($locale);
-    });
-    $: texture = liveQuery(async () => {
-        return await $itemStack?.getImage?.(true);
-    });
+$: name = liveQuery(async () => {
+    return await $itemStack?.getName($locale);
+});
+$: texture = liveQuery(async () => {
+    return await $itemStack?.getImage?.(true);
+});
 </script>
 
 <svelte:head>
-    <title>How to make {$name || $itemStack?.fullId} - CR Recipes</title>
+    <title>Image of {$name || $itemStack?.fullId} - CR Recipes</title>
 </svelte:head>
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search || ''}">Back to item list</a>
+    <a href="/">Back to item list</a>
     <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>

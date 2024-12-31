@@ -1,28 +1,22 @@
 <script>
-    import { ItemStack } from "$lib/items";
-    import { locale } from "$lib/stores";
-    import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
+import { ItemStack } from "$lib/items";
+import { locale } from "$lib/stores";
+import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
 
-    export let takeables = [];
+export let takeables = [];
 
-    import { liveQuery } from "dexie";
-    const names = liveQuery(async () => {
-        return await Promise.all(
-            takeables.map(async (takeable) => await takeable.getName($locale)),
-        );
-    });
+import { liveQuery } from "dexie";
+const names = liveQuery(async () => {
+    return await Promise.all(takeables.map(async (takeable) => await takeable.getName($locale)));
+});
 
-    let search = "";
-    $: cleaned_search = search.trim().toLowerCase().split(" ");
-    $: results = takeables
-        .filter((takeable, index) =>
-            cleaned_search.every(
-                (word) =>
-                    takeable.subId.toLowerCase().includes(word) ||
-                    $names[index]?.toLowerCase().includes(word),
-            ),
-        )
-        .map((takeable) => takeable.fullId);
+let search = "";
+$: cleaned_search = search.trim().toLowerCase().split(" ");
+$: results = takeables
+    .filter((takeable, index) =>
+        cleaned_search.every((word) => takeable.subId.toLowerCase().includes(word) || $names[index]?.toLowerCase().includes(word)),
+    )
+    .map((takeable) => takeable.fullId);
 </script>
 
 <input
@@ -44,23 +38,16 @@
             style:display={results.includes(takeable.fullId) ? "block" : "none"}
         >
             <ItemStackDetailDisplay itemStack={new ItemStack(takeable, 1, {})}>
-                <a href="/get/{takeable.fullId}{window?.location?.search || ''}"
-                    >How to get</a
-                >
+                <a href="/get/{takeable.fullId}">How to get</a>
                 <!-- &nbsp;|&nbsp; -->
                 <!-- <br>
                 <br> -->
-                <a href="/use/{takeable.fullId}{window?.location?.search || ''}"
-                    >Uses</a
-                >
+                <a href="/use/{takeable.fullId}">Uses</a>
                 {#if takeable.state}
                     <!-- &nbsp;|&nbsp; -->
                     <!-- <br>
                     <br> -->
-                    <a
-                        href="/states/{takeable.fullId}{window?.location
-                            ?.search || ''}">Other states</a
-                    >
+                    <a href="/states/{takeable.fullId}">Other states</a>
                 {/if}
             </ItemStackDetailDisplay></span
         >

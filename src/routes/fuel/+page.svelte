@@ -1,18 +1,18 @@
 <script>
-    import Body from "../Body.svelte";
-    import Header from "../Header.svelte";
-    import SearchableItemList from "../SearchableItemList.svelte";
+import Body from "../Body.svelte";
+import Header from "../Header.svelte";
+import SearchableItemList from "../SearchableItemList.svelte";
 
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
 
-    const fuels = liveQuery(async () => {
-        const items = (await db.items.toArray()) || [];
-        const blockStates = (await db.blockstates.toArray()) || [];
-        const takeables = items.concat(blockStates);
-        const fuels = takeables.filter((takeable) => takeable.isFuel);
-        return fuels;
-    });
+const fuels = liveQuery(async () => {
+    const items = (await db.items.toArray()) || [];
+    const blockStates = (await db.blockstates.toArray()) || [];
+    const takeables = items.concat(blockStates);
+    const fuels = takeables.filter((takeable) => takeable.isFuel);
+    return fuels;
+});
 </script>
 
 <svelte:head>
@@ -21,7 +21,7 @@
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search || ''}">Back to item list</a>
+    <a href="/">Back to item list</a>
     <br /><br />
 
     <h2>Fuels</h2>

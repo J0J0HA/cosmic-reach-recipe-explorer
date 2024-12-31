@@ -1,44 +1,39 @@
 <script>
-    import { updated } from "$app/stores";
-    import { db } from "$lib/db";
-    import { crVersion, loaded, locale } from "$lib/stores";
-    import { version } from "$app/environment";
-    import { readURLParams } from "$lib/urlset.js";
-    import { getVersionList, setVersion } from "$lib/versions";
-    import { liveQuery } from "dexie";
-    import { onMount } from "svelte";
-    import { writable } from "svelte/store";
-    import SourceEditor from "./SourceEditor.svelte";
+import { updated } from "$app/stores";
+import { db } from "$lib/db";
+import { crVersion, ready, locale } from "$lib/stores";
+import { version } from "$app/environment";
+import { readURLParams } from "$lib/urlset.js";
+import { getVersionList, setVersion } from "$lib/versions";
+import { liveQuery } from "dexie";
+import { onMount } from "svelte";
+import { writable } from "svelte/store";
+import SourceEditor from "./SourceEditor.svelte";
 
+const loadingJar = writable(false);
+const loadingJarState = writable("idle");
+const downloadTotal = writable(0);
+const downloadDone = writable(0);
 
-    const loadingJar = writable(false);
-    const loadingJarState = writable("reading");
-    const loadingDataModState = writable("idle");
-    const downloadTotal = writable(0);
-    const downloadDone = writable(0);
+const stateCallbackJar = (state, done, total) => {
+    loadingJar.set(state != "idle");
+    loadingJarState.set(state);
+    downloadDone.set(done);
+    downloadTotal.set(total);
+};
 
-    const stateCallbackJar = (state, done, total) => {
-        loadingJar.set(state != "idle");
-        loadingJarState.set(state);
-        downloadDone.set(done);
-        downloadTotal.set(total);
-    };
-    const stateCallbackDataMod = (state) => {
-        loadingDataModState.set(state);
-    };
+let versionListPromise = writable(null);
 
-    let versionListPromise = writable(null);
+function refetchVersionList() {
+    versionListPromise.set(getVersionList());
+}
+onMount(refetchVersionList);
 
-    function refetchVersionList() {
-        versionListPromise.set(getVersionList());
-    }
-    onMount(refetchVersionList);
+onMount(() => readURLParams(stateCallbackJar));
 
-    onMount(() => readURLParams(stateCallbackJar));
-
-    const languages = liveQuery(() => {
-        return db.metadata.where({ key: "languages" }).first();
-    });
+const languages = liveQuery(() => {
+    return db.metadata.where({ key: "languages" }).first();
+});
 </script>
 
 <div style="position: fixed; top:10px; left: 12.5px; font-size: 0.7rem;">
@@ -53,19 +48,14 @@
         style:flex-direction="column"
         style:gap="10px"
     >
-        {#if $loaded && !$crVersion && !$loadingJar}
+        {#if $ready && !$crVersion && !$loadingJar}
             <h2>To get started:</h2>
         {/if}
-        {#if $versionListPromise === null || $loadingJarState == "reading"}
+        {#if $versionListPromise === null}
             <p>Loading...</p>
         {:else}
             {#await $versionListPromise}
-                <select
-                    value=":"
-                    id="version-chooser"
-                    disabled
-                    key="version-chooser"
-                >
+                <select value=":" disabled>
                     <option value=":" key=":" disabled selected>
                         Wait...
                     </option>
@@ -75,12 +65,10 @@
                 </select>
             {:then versions}
                 <select
-                    disabled={!$loaded || $loadingJar}
+                    disabled={!$ready || $loadingJar}
                     value={$loadingJar
                         ? ":LOAD-" + $loadingJarState
                         : $crVersion || ":"}
-                    id="version-chooser"
-                    key="version-chooser"
                     on:change={(e) => {
                         loadingJar.set(true);
                         setVersion(
@@ -91,28 +79,6 @@
                         ).then(() => {
                             loadingJar.set(false);
                         });
-                        // downloadVersion(
-                        //     versions.filter(
-                        //         (version) => version.id == e.target.value,
-                        //     )[0],
-                        // ).then((file) => {
-                        //     // crVersion.set(e.target.value);
-                        //     getZipFiles(file).then((files) => {
-                        //         getLoader($crVersion)
-                        //             .loadJarFiles(files)
-                        //             .then(() => {
-                        //                 loadingJar.set(false);
-                        //                 console.log(getLoader($crVersion));
-                        //                 console.log(
-                        //                     getLoader(
-                        //                         $crVersion,
-                        //                     ).getFilesCombined(),
-                        //                 );
-                        //             });
-                        //     });
-                        // });
-
-                        // document.querySelector("#version-chooser").value = ":";
                     }}
                 >
                     <option value=":" key=":" disabled selected>
@@ -137,9 +103,9 @@
                     {/if}
 
                     {#each versions as version}
-                        <option value={version.id} key={version.id}
-                            >{version.id} ({version.type})</option
-                        >
+                        <option value={version.id} key={version.id}>
+                            {version.id} ({version.type})
+                        </option>
                     {/each}
                 </select>
                 {#if $loadingJar && $loadingJarState === "download"}
@@ -150,19 +116,19 @@
                             value={$downloadDone}
                             class="fill"
                         />
-                        <span class="static"
-                            >{Math.round(
+                        <span class="static">
+                            {Math.round(
                                 ($downloadDone / $downloadTotal) * 100,
-                            ) || 0}%</span
-                        >
+                            ) || 0}%
+                        </span>
                     </div>
                 {/if}
             {:catch}
-                <p>Failed to load verisons.</p>
+                <p>Failed to load versions.</p>
                 <button on:click={refetchVersionList}>Retry</button>
             {/await}
         {/if}
-        {#if $crVersion && !$loadingJar && $loaded}
+        {#if $ready && $crVersion && !$loadingJar}
             <span class="bar">
                 <label for="lang-select" class="static">Locale: </label>
                 <select
@@ -175,19 +141,11 @@
                     {#each $languages?.value || [] as language (language.key)}
                         <option value={language.key}>{language.name}</option>
                     {/each}
-                </select></span
-            >
+                </select>
+            </span>
             <SourceEditor />
         {/if}
     </div>
-
-    <!-- <hr />
-        Loaded {Object.keys($blocks).length} blockstates, {Object.keys($items)
-            .length} items, {Object.keys($craftingRecipes).length +
-            Object.keys($furnaceRecipes).length}
-        recipes, and {Object.keys($textures).length} textures in
-        {Math.round($loadTime * 10) / 10}s with loader
-        {$loader.name} for version {$loadedVersion}. -->
 
     {#if $updated}
         <hr />

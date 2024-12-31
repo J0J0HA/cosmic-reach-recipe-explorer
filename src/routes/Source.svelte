@@ -1,12 +1,11 @@
 <script>
-    import { unloadSource } from "$lib/datamods";
-    import WaitableImg from "./WaitableIMG.svelte";
+import { unloadSource } from "$lib/datamods";
+import WaitableImg from "./WaitableIMG.svelte";
 
-    export let source;
+export let source;
 </script>
 
 <div class:bordered={true} class="dm-box">
-    <!-- {source.editing} -->
     <WaitableImg src={source.icon} alt={source.name} inProgress={source.editing} />
     <div class="side">
         <h3 class="name">{source.name}</h3>

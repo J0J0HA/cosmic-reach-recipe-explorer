@@ -1,50 +1,33 @@
 <script>
-    import { locale } from "$lib/stores";
-    import CraftingRecipe from "../../CraftingRecipe.svelte";
-    import Header from "../../Header.svelte";
-    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
+import { locale } from "$lib/stores";
+import CraftingRecipe from "../../CraftingRecipe.svelte";
+import Header from "../../Header.svelte";
+import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
-    import { page } from "$app/stores";
-    import { db } from "$lib/db";
-    import { getTakeable, makeItemStack } from "$lib/utils";
-    import { liveQuery } from "dexie";
-    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
+import { page } from "$app/stores";
+import { db } from "$lib/db";
+import { getTakeable, makeItemStack } from "$lib/utils";
+import { liveQuery } from "dexie";
+import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
-    import Body from "../../Body.svelte";
-    import OreDistribution from "../../OreDistribution.svelte";
+import Body from "../../Body.svelte";
+import OreDistribution from "../../OreDistribution.svelte";
 
-    $: itemStack = liveQuery(async () => {
-        return await makeItemStack(await getTakeable($page.params.item));
-    });
+$: itemStack = liveQuery(async () => {
+    return await makeItemStack(await getTakeable($page.params.item));
+});
 
-    $: craftingRecipes = liveQuery(() =>
-        db.craftingRecipes
-            .where("result.fullId")
-            .equals($page.params.item)
-            .toArray(),
-    );
+$: craftingRecipes = liveQuery(() => db.craftingRecipes.where("result.fullId").equals($page.params.item).toArray());
 
-    $: furnaceRecipes = liveQuery(
-        () =>
-            db.furnaceRecipes
-                .where("result.fullId")
-                .equals($page.params.item)
-                .toArray(),
-        { initialValue: [] },
-    );
+$: furnaceRecipes = liveQuery(() => db.furnaceRecipes.where("result.fullId").equals($page.params.item).toArray(), { initialValue: [] });
 
-    $: ores = liveQuery(() =>
-        $page.params.item.split("[")[1] == "default]"
-            ? db.ores
-                  .where("blockId")
-                  .equals($page.params.item.split("[")[0])
-                  .toArray()
-            : [],
-    );
+$: ores = liveQuery(() =>
+    $page.params.item.split("[")[1] == "default]" ? db.ores.where("blockId").equals($page.params.item.split("[")[0]).toArray() : [],
+);
 
-    const name = liveQuery(async () => {
-        return await $itemStack?.getName($locale);
-    });
+const name = liveQuery(async () => {
+    return await $itemStack?.getName($locale);
+});
 </script>
 
 <svelte:head>
@@ -53,7 +36,7 @@
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search || ''}">Back to item list</a>
+    <a href="/">Back to item list</a>
     <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>

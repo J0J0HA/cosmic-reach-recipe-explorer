@@ -1,12 +1,12 @@
 <script>
-    import Body from "../Body.svelte";
-    import Header from "../Header.svelte";
+import Body from "../Body.svelte";
+import Header from "../Header.svelte";
 
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
-    import OreDistribution from "../OreDistribution.svelte";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
+import OreDistribution from "../OreDistribution.svelte";
 
-    const ores = liveQuery(async () => db.ores.toArray());
+const ores = liveQuery(async () => db.ores.toArray());
 </script>
 
 <svelte:head>
@@ -15,7 +15,7 @@
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search || ''}">Back to item list</a>
+    <a href="/">Back to item list</a>
     <br /><br />
 
     <h2>Ores</h2>

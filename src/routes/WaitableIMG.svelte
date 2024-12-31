@@ -1,7 +1,7 @@
 <script>
-    export let inProgress = false;
-    export let alt = null;
-    export let src = null;
+export let inProgress = false;
+export let alt = null;
+export let src = null;
 </script>
 
 <div class="imgWrap">

@@ -1,41 +1,29 @@
 <script>
-    import { locale } from "$lib/stores";
-    import { getTakeable, makeItemStack } from "$lib/utils";
-    import CraftingRecipe from "../../CraftingRecipe.svelte";
-    import Header from "../../Header.svelte";
-    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
+import { locale } from "$lib/stores";
+import { getTakeable, makeItemStack } from "$lib/utils";
+import CraftingRecipe from "../../CraftingRecipe.svelte";
+import Header from "../../Header.svelte";
+import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
-    import { page } from "$app/stores";
-    import Body from "../../Body.svelte";
-    import FuelRecipe from "../../FuelRecipe.svelte";
-    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
+import { page } from "$app/stores";
+import Body from "../../Body.svelte";
+import FuelRecipe from "../../FuelRecipe.svelte";
+import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
 
-    $: itemStack = liveQuery(async () => {
-        return await makeItemStack(await getTakeable($page.params.item));
-    });
+$: itemStack = liveQuery(async () => {
+    return await makeItemStack(await getTakeable($page.params.item));
+});
 
-    $: craftingRecipes = liveQuery(() =>
-        db.craftingRecipes
-            .where("usedItemsFullIds")
-            .equals($page.params.item)
-            .toArray(),
-    );
+$: craftingRecipes = liveQuery(() => db.craftingRecipes.where("usedItemsFullIds").equals($page.params.item).toArray());
 
-    $: furnaceRecipes = liveQuery(
-        () =>
-            db.furnaceRecipes
-                .where("usedItem.fullId")
-                .equals($page.params.item)
-                .toArray(),
-        { initialValue: [] },
-    );
+$: furnaceRecipes = liveQuery(() => db.furnaceRecipes.where("usedItem.fullId").equals($page.params.item).toArray(), { initialValue: [] });
 
-    const name = liveQuery(async () => {
-        return await $itemStack?.getName($locale);
-    });
+const name = liveQuery(async () => {
+    return await $itemStack?.getName($locale);
+});
 </script>
 
 <svelte:head>
@@ -44,7 +32,7 @@
 
 <Header />
 <Body>
-    <a href="/{window?.location?.search || ''}">Back to item list</a>
+    <a href="/">Back to item list</a>
     <br /><br />
     {#if !$itemStack}
         <p>Loading...</p>

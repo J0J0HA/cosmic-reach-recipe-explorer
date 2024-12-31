@@ -1,40 +1,35 @@
 <script>
-    import { liveQuery } from "dexie";
-    import Source from "./Source.svelte";
-    import { db } from "$lib/db";
-    import {
-        loadDatamodsFromFolder,
-        loadDatamodFromZIP,
-        loadDatamodFromCRMM,
-        listCRMMmods,
-    } from "$lib/datamods.js";
+import { liveQuery } from "dexie";
+import Source from "./Source.svelte";
+import { db } from "$lib/db";
+import { loadDatamodsFromFolder, loadDatamodFromZIP, loadDatamodFromCRMM, listCRMMmods } from "$lib/datamods.js";
 
-    import { browser } from "$app/environment";
-    import CrmMmod from "./CRMMmod.svelte";
+import { browser } from "$app/environment";
+import CrmMmod from "./CRMMmod.svelte";
 
-    let canLoadFolders = false;
-    if (browser) {
-        canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
+let canLoadFolders = false;
+if (browser) {
+    canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
+}
+
+let dialog;
+let crmmDialog;
+let inProgress;
+
+let sources = liveQuery(() => db.loadedSources.toArray());
+
+let crmmSearchI;
+let crmmSearchO;
+let crmmSearchPage = 1;
+
+let includeVersion;
+
+setInterval(() => {
+    if (crmmSearchI !== crmmSearchO) {
+        crmmSearchPage = 1;
+        crmmSearchO = crmmSearchI;
     }
-
-    let dialog;
-    let crmmDialog;
-    let inProgress;
-
-    let sources = liveQuery(() => db.loadedSources.toArray());
-
-    let crmmSearchI;
-    let crmmSearchO;
-    let crmmSearchPage = 1;
-
-    let includeVersion;
-
-    setInterval(() => {
-        if (crmmSearchI !== crmmSearchO) {
-            crmmSearchPage = 1;
-            crmmSearchO = crmmSearchI;
-        }
-    }, 1000);
+}, 1000);
 </script>
 
 <button
@@ -196,30 +191,5 @@
 
     .bar {
         flex-wrap: wrap;
-    }
-
-    dialog[open] {
-        top: 50dvh;
-        left: 50dvw;
-        position: fixed;
-        transform: translate(-50%, -50%);
-
-        width: 50vw;
-        height: 60vh;
-
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    @media (max-width: 600px) {
-        dialog {
-            width: 80dvw;
-            height: 80vh;
-        }
-    }
-
-    dialog::backdrop {
-        background-color: rgba(0, 0, 0, 0.5);
     }
 </style>

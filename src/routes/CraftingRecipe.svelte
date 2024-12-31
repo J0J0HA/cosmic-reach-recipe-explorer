@@ -1,46 +1,39 @@
 <script>
-    import InventoryDisplay from "./InventoryDisplay.svelte";
+import InventoryDisplay from "./InventoryDisplay.svelte";
 
-    export let recipe;
+export let recipe;
 
-    import { ItemStack } from "$lib/items";
-    import { getTakeable, makeItemStack } from "$lib/utils";
+import { ItemStack } from "$lib/items";
+import { getTakeable, makeItemStack } from "$lib/utils";
 
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
 
-    $: resultTakeable = liveQuery(async () => {
-        return await makeItemStack(await getTakeable(recipe.result.fullId));
-    });
+$: resultTakeable = liveQuery(async () => {
+    return await makeItemStack(await getTakeable(recipe.result.fullId));
+});
 
-    const progressArrow = liveQuery(
-        () =>
-            db.textures
-                .where({
-                    modId: "base",
-                    subPath: "textures/ui/progress-arrow-full.png",
-                })
-                .first(),
-        { initialValue: null },
-    );
+const progressArrow = liveQuery(
+    () =>
+        db.textures
+            .where({
+                modId: "base",
+                subPath: "textures/ui/progress-arrow-full.png",
+            })
+            .first(),
+    { initialValue: null },
+);
 
-    const transformedGrid = Promise.all(
-        recipe.grid.map(
-            async (row) =>
-                await Promise.all(
-                    row.map(async (cell) =>
-                        cell === null
-                            ? null
-                            : await makeItemStack(
-                                  await getTakeable(
-                                      cell.fullId || cell,
-                                      cell.count || 1,
-                                  ),
-                              ),
-                    ),
+const transformedGrid = Promise.all(
+    recipe.grid.map(
+        async (row) =>
+            await Promise.all(
+                row.map(async (cell) =>
+                    cell === null ? null : await makeItemStack(await getTakeable(cell.fullId || cell, cell.count || 1)),
                 ),
-        ),
-    );
+            ),
+    ),
+);
 </script>
 
 <div class="before-after bordered">
@@ -52,7 +45,6 @@
         {:catch error}
             <p>{error.message}</p>
         {/await}
-        <!-- grid -->
     </div>
     <img
         src={$progressArrow?.data || ""}

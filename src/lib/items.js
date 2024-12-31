@@ -2,18 +2,17 @@ import { db } from "./db";
 
 export class ItemStack {
     constructor(item, count, properties) {
-        if (typeof item === 'string') item = {
-            async getImage() {
-                return (await db.textures.where({ subPath: "textures/blocks/debug.png", modId: "base" }).first())?.data;
-            },
-            fullId: item,
-            isFuel: false,
-            burnTime: 0,
-            name: item,
-            lore: [
-                "Unknown"
-            ],
-        };
+        if (typeof item === "string")
+            item = {
+                async getImage() {
+                    return (await db.textures.where({ subPath: "textures/blocks/debug.png", modId: "base" }).first())?.data;
+                },
+                fullId: item,
+                isFuel: false,
+                burnTime: 0,
+                name: item,
+                lore: ["Unknown"],
+            };
         this.item = item;
         this.count = count;
         this.properties = properties || {};
@@ -42,14 +41,13 @@ export class ItemStack {
     async getName(locale) {
         if (this.item === null) return "";
         if (!this.item.getName) return "Whut?";
-        return this.properties.name || await this.item.getName(locale);
+        return this.properties.name || (await this.item.getName(locale));
     }
 
     get lore() {
         if (this.item === null) return [""];
         let lore = this.item?.lore || [];
-        if (this.properties.blockState)
-            lore.push(`Block State: ${this.properties.blockState}`);
+        if (this.properties.blockState) lore.push(`Block State: ${this.properties.blockState}`);
         return lore;
     }
 }

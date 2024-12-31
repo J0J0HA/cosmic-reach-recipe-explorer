@@ -1,10 +1,10 @@
 <script>
-    import { crVersion, loaded } from "$lib/stores";
+import { crVersion, ready } from "$lib/stores";
 </script>
 
 <div class="wrapper">
     <main>
-        {#if !$loaded}
+        {#if !$ready}
             <p>Loading...</p>
         {:else if !$crVersion}
             <p>No active version</p>

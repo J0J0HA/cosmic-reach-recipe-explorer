@@ -1,7 +1,6 @@
 import { getLoader, getZipFiles } from "./importer";
 import { store } from "./serializer";
 import { crVersion } from "./stores";
-import { setURLParam } from "./urlset";
 
 export async function getVersionList() {
     const res = await fetch("https://raw.githubusercontent.com/CRModders/CosmicArchive/main/versions.json");
@@ -58,6 +57,5 @@ export async function setVersion(version, stateCallback) {
     await loader.loadFiles("jar", files);
     crVersion.set(version.id);
     store("loadedVersion", version.id);
-    // setURLParam("version", version.id);
     stateCallback?.("idle");
 }

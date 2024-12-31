@@ -1,48 +1,46 @@
 <script>
-    import { goto } from "$app/navigation";
-    import { ItemStack } from "$lib/items";
-    import { locale, tickTime } from "$lib/stores";
-    import { liveQuery } from "dexie";
+import { goto } from "$app/navigation";
+import { ItemStack } from "$lib/items";
+import { locale, tickTime } from "$lib/stores";
+import { liveQuery } from "dexie";
 
-    export let itemStack = undefined;
-    $: itemStack = itemStack || new ItemStack(null);
-    $: itemStack = itemStack instanceof Array ? itemStack : [itemStack];
-    $: currentItemStack =
-        itemStack[$tickTime % itemStack.length] || new ItemStack(null);
-    $: air = currentItemStack?.item === null;
-    // $: names = itemStack.map((subItemStack) => subItemStack.fullId);
+export let itemStack = undefined;
+$: itemStack = itemStack || new ItemStack(null);
+$: itemStack = itemStack instanceof Array ? itemStack : [itemStack];
+$: currentItemStack = itemStack[$tickTime % itemStack.length] || new ItemStack(null);
+$: air = currentItemStack?.item === null;
+// $: names = itemStack.map((subItemStack) => subItemStack.fullId);
 
-    $: names = liveQuery(async () => {
-        return await Promise.all(
-            itemStack.map(async (subItemStack) => {
-                return await subItemStack?.getName?.($locale);
-            }),
-        );
-    });
-    // $: {console.log($names, $tickTime % itemStack.length)}
-    $: currentItemStackName =
-        $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
-    // $: {
-    //     const promises = itemStack.map((subItemStack) =>
-    //         subItemStack?.getName?.($locale),
-    //     );
-    //     promises.map((promise, index) => {
-    //         if (promise)
-    //             promise.then((translation) => {
-    //                 names[index] = translation;
-    //             });
-    //     });
-    // }
+$: names = liveQuery(async () => {
+    return await Promise.all(
+        itemStack.map(async (subItemStack) => {
+            return await subItemStack?.getName?.($locale);
+        }),
+    );
+});
+// $: {console.log($names, $tickTime % itemStack.length)}
+$: currentItemStackName = $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
+// $: {
+//     const promises = itemStack.map((subItemStack) =>
+//         subItemStack?.getName?.($locale),
+//     );
+//     promises.map((promise, index) => {
+//         if (promise)
+//             promise.then((translation) => {
+//                 names[index] = translation;
+//             });
+//     });
+// }
 
-    let startedTouch = 0;
+let startedTouch = 0;
 
-    $: images = liveQuery(async () => {
-        return await Promise.all(
-            itemStack.map(async (subItemStack) => {
-                return await subItemStack?.getImage?.();
-            }),
-        );
-    });
+$: images = liveQuery(async () => {
+    return await Promise.all(
+        itemStack.map(async (subItemStack) => {
+            return await subItemStack?.getImage?.();
+        }),
+    );
+});
 </script>
 
 <button
@@ -63,17 +61,17 @@
         switch (e.button) {
             case 0:
                 goto(
-                    `/get/${currentItemStack.item.fullId}${window?.location?.search || ""}`,
+                    `/get/${currentItemStack.item.fullId}`,
                 );
                 break;
             case 1:
                 goto(
-                    `/states/${currentItemStack.item.fullId}${window?.location?.search || ""}`,
+                    `/states/${currentItemStack.item.fullId}`,
                 );
                 break;
             case 2:
                 goto(
-                    `/use/${currentItemStack.item.fullId}${window?.location?.search || ""}`,
+                    `/use/${currentItemStack.item.fullId}`,
                 );
                 break;
             default:
@@ -109,7 +107,7 @@
             {currentItemStackName}<br />
             <div class="tooltip-lore">
                 {@html currentItemStack.lore.join("<br />")}<br>
-                <a href="/image/{currentItemStack.item.fullId}{window?.location?.search || ""}">Generate image</a>
+                <a href="/image/{currentItemStack.item.fullId}">Generate image</a>
             </div>
         </div>
     {/if}

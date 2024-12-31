@@ -24,38 +24,48 @@ export function fileNamesToTree(files) {
 export async function getZipFiles(file) {
     const zipReader = new zip.ZipReader(new zip.BlobReader(file));
     let entries = await zipReader.getEntries();
-    return Object.fromEntries(entries.map((ifile) => {
-        return [ifile.filename, {
-            readBlob: async () => {
-                return await ifile.getData(new zip.BlobWriter());
-            },
-            readText: async () => {
-                return await ifile.getData(new zip.TextWriter());
-            },
-            readJson: async () => {
-                const text = await ifile.getData(new zip.TextWriter());
-                return Hjson.parse(text);
-            }
-        }];
-    }))
-};
+    return Object.fromEntries(
+        entries.map((ifile) => {
+            return [
+                ifile.filename,
+                {
+                    readBlob: async () => {
+                        return await ifile.getData(new zip.BlobWriter());
+                    },
+                    readText: async () => {
+                        return await ifile.getData(new zip.TextWriter());
+                    },
+                    readJson: async () => {
+                        const text = await ifile.getData(new zip.TextWriter());
+                        return Hjson.parse(text);
+                    },
+                },
+            ];
+        }),
+    );
+}
 
 export async function getFolderFiles(files) {
-    return Object.fromEntries(Array.prototype.map.call(files, (ifile) => {
-        return [ifile.webkitRelativePath.split("/").slice(1).join("/"), {
-            readBlob: async () => {
-                return ifile;
-            },
-            readText: async () => {
-                return await ifile.text();
-            },
-            readJson: async () => {
-                let text = await ifile.text();
-                return Hjson.parse(text);
-            },
-        }]
-    }))
-};
+    return Object.fromEntries(
+        Array.prototype.map.call(files, (ifile) => {
+            return [
+                ifile.webkitRelativePath.split("/").slice(1).join("/"),
+                {
+                    readBlob: async () => {
+                        return ifile;
+                    },
+                    readText: async () => {
+                        return await ifile.text();
+                    },
+                    readJson: async () => {
+                        let text = await ifile.text();
+                        return Hjson.parse(text);
+                    },
+                },
+            ];
+        }),
+    );
+}
 
 if (browser) window.db = db;
 
@@ -64,7 +74,9 @@ const memoryFileSystem = writable({});
 function blobToDataURL(blob) {
     return new Promise((resolve, reject) => {
         var a = new FileReader();
-        a.onload = function (e) { resolve(e.target.result); }
+        a.onload = function (e) {
+            resolve(e.target.result);
+        };
         a.onerror = reject;
         a.readAsDataURL(blob);
     });
@@ -74,74 +86,67 @@ const V1 = {
     version: /^0\.(1|2)\.\d+[a-z]?$/,
     name: "V1",
     async loadFiles(source, files) {
-        const modId = source == "jar" ? "base" : "assets"
+        const modId = source == "jar" ? "base" : "assets";
         // await db.transaction("rw", db.textures, db.models, async () => {
         // Textures
         await this.unloadFiles(source);
         await db.textures.bulkPut(
-            await Promise.all(Object.entries(files).filter(
-                entry => entry[0].startsWith("textures/") && entry[0].endsWith(".png")
-            ).map(
-                async entry => (
-                    {
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].startsWith("textures/") && entry[0].endsWith(".png"))
+                    .map(async (entry) => ({
                         path: modId + "/" + entry[0],
                         source,
                         data: (await blobToDataURL(await entry[1].readBlob())).replace("application/octet-stream", "image/png"),
                         modId: modId,
                         subPath: entry[0],
-                    }
-                )
-            ))
+                    })),
+            ),
         );
 
         // Models
         await db.models.bulkPut(
-            await Promise.all(Object.entries(files).filter(
-                entry => entry[0].startsWith("models/") && entry[0].endsWith(".json")
-            ).map(
-                async entry => {
-                    const data = await entry[1].readJson();
-                    if (data.textures) {
-                        data.textures = Object.fromEntries(
-                            Object.entries(data.textures).map(
-                                ([name, sdata]) => {
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].startsWith("models/") && entry[0].endsWith(".json"))
+                    .map(async (entry) => {
+                        const data = await entry[1].readJson();
+                        if (data.textures) {
+                            data.textures = Object.fromEntries(
+                                Object.entries(data.textures).map(([name, sdata]) => {
                                     if (sdata.fileName) {
                                         sdata.fileName = modId + ":textures/" + entry[0].split("/")[1] + "/" + sdata.fileName;
                                     }
                                     return [name, sdata];
-                                }
-                            )
-                        );
-                    };
-                    if (data.parent) {
-                        data.parent = modId + ":models/" + entry[0].split("/")[1] + "/" + data.parent + ".json";
-                    };
-                    return (
-                        {
+                                }),
+                            );
+                        }
+                        if (data.parent) {
+                            data.parent = modId + ":models/" + entry[0].split("/")[1] + "/" + data.parent + ".json";
+                        }
+                        return {
                             path: modId + "/" + entry[0],
                             source,
                             data,
                             modId: modId,
                             subPath: entry[0],
-                        }
-                    )
-                }
-            )
-            ));
+                        };
+                    }),
+            ),
+        );
 
         // Items
         await db.items.bulkPut(
-            await Promise.all(Object.entries(files).filter(
-                entry => entry[0].startsWith("items/") && entry[0].endsWith(".json")
-            ).map(
-                async entry => {
-                    const data = await entry[1].readJson();
-                    const subId = data.id.split(":")[1];
-                    if (data.id.split(":")[0] != modId) {
-                        console.error("Mod ID mismatch in item", entry[0]);
-                    }
-                    return (
-                        {
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].startsWith("items/") && entry[0].endsWith(".json"))
+                    .map(async (entry) => {
+                        const data = await entry[1].readJson();
+                        const subId = data.id.split(":")[1];
+                        if (data.id.split(":")[0] != modId) {
+                            console.error("Mod ID mismatch in item", entry[0]);
+                        }
+                        return {
                             path: modId + "/" + entry[0],
                             source,
                             fullId: `${modId}:${subId}`,
@@ -149,83 +154,84 @@ const V1 = {
                             modId,
                             subId,
                             subPath: entry[0],
-                        }
-                    )
-                }
-            ))
+                        };
+                    }),
+            ),
         );
 
         // Blocks
         await db.blockstates.bulkPut(
-            (await Promise.all(Object.entries(files).filter(
-                entry => entry[0].startsWith("blocks/") && entry[0].endsWith(".json")
-            ).map(
-                async entry => {
-                    const data = await entry[1].readJson();
-                    const subId = data.stringId.split(":")[1]
-                    if (data.stringId.split(":")[0] != modId) {
-                        console.error("Mod ID mismatch in block", entry[0]);
-                    }
-                    return await Promise.all(Object.entries(data.blockStates).map(
-                        async ([blockStateName, blockStateData]) => {
-                            if (blockStateData.modelName) {
-                                blockStateData.modelName = modId + ":models/blocks/" + blockStateData.modelName + ".json";
+            (
+                await Promise.all(
+                    Object.entries(files)
+                        .filter((entry) => entry[0].startsWith("blocks/") && entry[0].endsWith(".json"))
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            const subId = data.stringId.split(":")[1];
+                            if (data.stringId.split(":")[0] != modId) {
+                                console.error("Mod ID mismatch in block", entry[0]);
                             }
-                            return {
-                                path: modId + "/" + entry[0],
-                                fullId: `${modId}:${subId}[${blockStateName}]`,
-                                blockId: `${modId}:${subId}`,
-                                source,
-                                data: blockStateData,
-                                modId,
-                                subId,
-                                state: blockStateName,
-                                showInCatalog: !blockStateData.catalogHidden ? 1 : 0,
-                            }
-                        }
-                    ))
-                }
-            ))).flat()
+                            return await Promise.all(
+                                Object.entries(data.blockStates).map(async ([blockStateName, blockStateData]) => {
+                                    if (blockStateData.modelName) {
+                                        blockStateData.modelName = modId + ":models/blocks/" + blockStateData.modelName + ".json";
+                                    }
+                                    return {
+                                        path: modId + "/" + entry[0],
+                                        fullId: `${modId}:${subId}[${blockStateName}]`,
+                                        blockId: `${modId}:${subId}`,
+                                        source,
+                                        data: blockStateData,
+                                        modId,
+                                        subId,
+                                        state: blockStateName,
+                                        showInCatalog: !blockStateData.catalogHidden ? 1 : 0,
+                                    };
+                                }),
+                            );
+                        }),
+                )
+            ).flat(),
         );
 
         // Recipes
         await db.craftingRecipes.bulkPut(
             (
-                await Promise.all(Object.entries(files).filter(
-                    entry => entry[0].startsWith("recipes/crafting/") && entry[0].endsWith(".json")
-                ).map(
-                    async entry => {
-                        const data = await entry[1].readJson();
-                        return (await this.parseCraftingRecipe(data)).map(recipe => ({
-                            path: entry[0],
-                            subPath: entry[0].split("/").slice(1).join("/"),
-                            modId: entry[0].split("/")[0],
-                            source,
-                            ...recipe,
-                            usedItemsFullIds: recipe.usedItems.map(usedItem => usedItem.fullId)
-                        }));
-                    }
-                ))
-            ).flat()
+                await Promise.all(
+                    Object.entries(files)
+                        .filter((entry) => entry[0].startsWith("recipes/crafting/") && entry[0].endsWith(".json"))
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            return (await this.parseCraftingRecipe(data)).map((recipe) => ({
+                                path: entry[0],
+                                subPath: entry[0].split("/").slice(1).join("/"),
+                                modId: entry[0].split("/")[0],
+                                source,
+                                ...recipe,
+                                usedItemsFullIds: recipe.usedItems.map((usedItem) => usedItem.fullId),
+                            }));
+                        }),
+                )
+            ).flat(),
         );
 
         await db.furnaceRecipes.bulkPut(
             (
-                await Promise.all(Object.entries(files).filter(
-                    entry => entry[0].startsWith("recipes/furnace") && entry[0].endsWith(".json")
-                ).map(
-                    async entry => {
-                        const data = await entry[1].readJson();
-                        return (await this.parseFurnaceRecipe(data)).map(recipe => ({
-                            path: entry[0],
-                            subPath: entry[0].split("/").slice(1).join("/"),
-                            modId: entry[0].split("/")[0],
-                            source,
-                            ...recipe,
-                        }));
-                    }
-                ))
-            ).flat()
+                await Promise.all(
+                    Object.entries(files)
+                        .filter((entry) => entry[0].startsWith("recipes/furnace") && entry[0].endsWith(".json"))
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            return (await this.parseFurnaceRecipe(data)).map((recipe) => ({
+                                path: entry[0],
+                                subPath: entry[0].split("/").slice(1).join("/"),
+                                modId: entry[0].split("/")[0],
+                                source,
+                                ...recipe,
+                            }));
+                        }),
+                )
+            ).flat(),
         );
 
         // });
@@ -248,15 +254,15 @@ const V1 = {
         for (let recipe of Object.entries(data)) {
             const input = {
                 fullId: recipe[0],
-                count: 1
+                count: 1,
             };
             const output = {
                 fullId: recipe[1],
-                count: 1
+                count: 1,
             };
             result.push({
                 usedItem: input,
-                result: output
+                result: output,
             });
         }
         return result;
@@ -266,7 +272,7 @@ const V1 = {
         for (let recipe of data.recipes) {
             const output = {
                 fullId: recipe.output.item,
-                count: recipe.output.amount
+                count: recipe.output.amount,
             };
 
             if (!recipe.pattern) {
@@ -280,7 +286,7 @@ const V1 = {
                             });
                     }
                 }
-                const grid = []
+                const grid = [];
                 for (let x = 0; x < 3; x++) {
                     const gridRow = [];
                     for (let y = 0; y < 3; y++) {
@@ -292,7 +298,7 @@ const V1 = {
                     patternless: true,
                     usedItems,
                     grid,
-                    result: output
+                    result: output,
                 });
             } else {
                 const grid = [];
@@ -319,7 +325,7 @@ const V1 = {
                 }
                 result.push({
                     patternless: false,
-                    usedItems: grid.flat().map(itemId => ({
+                    usedItems: grid.flat().map((itemId) => ({
                         fullId: itemId,
                         count: 1,
                     })),
@@ -335,7 +341,6 @@ const V1 = {
     },
 };
 
-
 const V0 = {
     ...V1,
     version: /^0\.0\.\d+[a-z]?$/,
@@ -344,8 +349,7 @@ const V0 = {
         // alert("Loading pre 0.1.0 versions will result in no textures displayed, as the game used a uv map which is not implemented here.\n\nImplementation of uv support is planned but low priority.")
         V1.loadFiles(source, files);
     },
-}
-
+};
 
 const V2 = {
     version: /(?:^0\.3\.\d+$)|(?:^0\.3\.2-pre(1|2|5|6|7|8|9|10)$)/,
@@ -372,16 +376,16 @@ const V2 = {
 
         // Translations
         const translations = {};
-        await Promise.all(Object.entries(files).filter(
-            entry => entry[0].split("/")[1] === "lang" && entry[0].endsWith(".json")
-        ).map(
-            async entry => {
-                const language = entry[0].split("/")[2];
-                if (language.endsWith(".schema.json")) return null;
-                const data = await entry[1].readJson();
-                translations[language] = Object.assign(translations[language] || {}, data);
-            }
-        ));
+        await Promise.all(
+            Object.entries(files)
+                .filter((entry) => entry[0].split("/")[1] === "lang" && entry[0].endsWith(".json"))
+                .map(async (entry) => {
+                    const language = entry[0].split("/")[2];
+                    if (language.endsWith(".schema.json")) return null;
+                    const data = await entry[1].readJson();
+                    translations[language] = Object.assign(translations[language] || {}, data);
+                }),
+        );
 
         for (const [langKey, data] of Object.entries(translations)) {
             await db.translations.bulkPut(
@@ -391,72 +395,66 @@ const V2 = {
                         translationKey,
                         source,
                         value,
-                    }
-                })
+                    };
+                }),
             );
         }
 
-        if (source === "jar") await db.metadata.put({
-            key: "languages",
-            value: Object.entries(translations).map(([key, value]) => ({
-                key,
-                name: value?.metadata?.name || key,
-            })),
-        })
-
-
+        if (source === "jar")
+            await db.metadata.put({
+                key: "languages",
+                value: Object.entries(translations).map(([key, value]) => ({
+                    key,
+                    name: value?.metadata?.name || key,
+                })),
+            });
 
         // Textures
         await db.textures.bulkPut(
-            await Promise.all(Object.entries(files).filter(
-                entry => entry[0].split("/")[1] === "textures" && entry[0].endsWith(".png")
-            ).map(
-                async entry => (
-                    {
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].split("/")[1] === "textures" && entry[0].endsWith(".png"))
+                    .map(async (entry) => ({
                         path: entry[0],
                         source,
                         data: (await blobToDataURL(await entry[1].readBlob())).replace("application/octet-stream", "image/png"),
                         modId: entry[0].split("/")[0],
                         subPath: entry[0].split("/").slice(1).join("/"),
-                    }
-                )
-            ))
+                    })),
+            ),
         );
 
         // Models
         await db.models.bulkPut(
-            await Promise.all(Object.entries(files).filter(
-                entry => entry[0].split("/")[1] === "models" && entry[0].endsWith(".json")
-            ).map(
-                async entry => {
-                    const data = await entry[1].readJson();
-                    return (
-                        {
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].split("/")[1] === "models" && entry[0].endsWith(".json"))
+                    .map(async (entry) => {
+                        const data = await entry[1].readJson();
+                        return {
                             path: entry[0],
                             source,
                             data,
                             modId: entry[0].split("/")[0],
                             subPath: entry[0].split("/").slice(1).join("/"),
-                        }
-                    )
-                }
-            ))
+                        };
+                    }),
+            ),
         );
 
         // Items
         await db.items.bulkPut(
-            await Promise.all(Object.entries(files).filter(
-                entry => entry[0].split("/")[1] === "items" && entry[0].endsWith(".json")
-            ).map(
-                async entry => {
-                    const data = await entry[1].readJson();
-                    const modId = entry[0].split("/")[0];
-                    const subId = data.id.split(":")[1];
-                    if (data.id.split(":")[0] != entry[0].split("/")[0]) {
-                        console.error("Mod ID mismatch in item", entry[0]);
-                    }
-                    return (
-                        {
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].split("/")[1] === "items" && entry[0].endsWith(".json"))
+                    .map(async (entry) => {
+                        const data = await entry[1].readJson();
+                        const modId = entry[0].split("/")[0];
+                        const subId = data.id.split(":")[1];
+                        if (data.id.split(":")[0] != entry[0].split("/")[0]) {
+                            console.error("Mod ID mismatch in item", entry[0]);
+                        }
+                        return {
                             path: entry[0],
                             source,
                             fullId: `${modId}:${subId}`,
@@ -464,90 +462,98 @@ const V2 = {
                             modId,
                             subId,
                             subPath: entry[0].split("/").slice(1).join("/"),
-                        }
-                    )
-                }
-            ))
+                        };
+                    }),
+            ),
         );
 
         // Blocks
         await db.blockstates.bulkPut(
-            (await Promise.all(Object.entries(files).filter(
-                entry => entry[0].split("/")[1] === "blocks" && entry[0].endsWith(".json")
-            ).map(
-                async entry => {
-                    const data = await entry[1].readJson();
-                    const modId = entry[0].split("/")[0];
-                    const subId = data.stringId.split(":")[1]
-                    if (data.stringId.split(":")[0] != entry[0].split("/")[0]) {
-                        console.error("Mod ID mismatch in block", entry[0]);
-                    }
-                    return await Promise.all(Object.entries(data.blockStates).map(
-                        async ([blockStateName, blockStateData]) => {
-                            return {
-                                path: entry[0],
-                                fullId: `${modId}:${subId}[${blockStateName}]`,
-                                blockId: `${modId}:${subId}`,
-                                source,
-                                data: blockStateData,
-                                modId,
-                                subId,
-                                state: blockStateName,
-                                showInCatalog: !blockStateData.catalogHidden ? 1 : 0,
+            (
+                await Promise.all(
+                    Object.entries(files)
+                        .filter((entry) => entry[0].split("/")[1] === "blocks" && entry[0].endsWith(".json"))
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            const modId = entry[0].split("/")[0];
+                            const subId = data.stringId.split(":")[1];
+                            if (data.stringId.split(":")[0] != entry[0].split("/")[0]) {
+                                console.error("Mod ID mismatch in block", entry[0]);
                             }
-                        }
-                    ))
-                }
-            ))).flat()
+                            return await Promise.all(
+                                Object.entries(data.blockStates).map(async ([blockStateName, blockStateData]) => {
+                                    return {
+                                        path: entry[0],
+                                        fullId: `${modId}:${subId}[${blockStateName}]`,
+                                        blockId: `${modId}:${subId}`,
+                                        source,
+                                        data: blockStateData,
+                                        modId,
+                                        subId,
+                                        state: blockStateName,
+                                        showInCatalog: !blockStateData.catalogHidden ? 1 : 0,
+                                    };
+                                }),
+                            );
+                        }),
+                )
+            ).flat(),
         );
 
         // Recipes
         await db.craftingRecipes.bulkPut(
             (
-                await Promise.all(Object.entries(files).filter(
-                    entry => entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "crafting" && entry[0].endsWith(".json")
-                ).map(
-                    async entry => {
-                        const data = await entry[1].readJson();
-                        return (await this.parseCraftingRecipe(data)).map(recipe => ({
-                            path: entry[0],
-                            subPath: entry[0].split("/").slice(1).join("/"),
-                            modId: entry[0].split("/")[0],
-                            source,
-                            ...recipe,
-                            usedItemsFullIds: recipe.usedItems.map(usedItem => usedItem.fullId)
-                        }));
-                    }
-                ))
-            ).flat()
+                await Promise.all(
+                    Object.entries(files)
+                        .filter(
+                            (entry) =>
+                                entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "crafting" && entry[0].endsWith(".json"),
+                        )
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            return (await this.parseCraftingRecipe(data)).map((recipe) => ({
+                                path: entry[0],
+                                subPath: entry[0].split("/").slice(1).join("/"),
+                                modId: entry[0].split("/")[0],
+                                source,
+                                ...recipe,
+                                usedItemsFullIds: recipe.usedItems.map((usedItem) => usedItem.fullId),
+                            }));
+                        }),
+                )
+            ).flat(),
         );
 
         await db.furnaceRecipes.bulkPut(
             (
-                await Promise.all(Object.entries(files).filter(
-                    entry => entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "furnace" && entry[0].endsWith(".json")
-                ).map(
-                    async entry => {
-                        const data = await entry[1].readJson();
-                        return (await this.parseFurnaceRecipe(data)).map(recipe => ({
-                            path: entry[0],
-                            subPath: entry[0].split("/").slice(1).join("/"),
-                            modId: entry[0].split("/")[0],
-                            source,
-                            ...recipe,
-                        }));
-                    }
-                ))
-            ).flat()
+                await Promise.all(
+                    Object.entries(files)
+                        .filter(
+                            (entry) =>
+                                entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "furnace" && entry[0].endsWith(".json"),
+                        )
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            return (await this.parseFurnaceRecipe(data)).map((recipe) => ({
+                                path: entry[0],
+                                subPath: entry[0].split("/").slice(1).join("/"),
+                                modId: entry[0].split("/")[0],
+                                source,
+                                ...recipe,
+                            }));
+                        }),
+                )
+            ).flat(),
         );
 
         // Oreloader ores
         await db.ores.bulkPut(
-            (
-                await Promise.all(Object.entries(files).filter(
-                    entry => entry[0].split("/")[1] === "worldgen" && entry[0].split("/")[2] === "ores" && entry[0].endsWith(".json")
-                ).map(
-                    async entry => {
+            await Promise.all(
+                Object.entries(files)
+                    .filter(
+                        (entry) => entry[0].split("/")[1] === "worldgen" && entry[0].split("/")[2] === "ores" && entry[0].endsWith(".json"),
+                    )
+                    .map(async (entry) => {
                         const data = await entry[1].readJson();
                         return {
                             path: entry[0],
@@ -557,10 +563,9 @@ const V2 = {
                             blockId: data?.ore?.blockId,
                             tagsOfBlocksToReplace: data?.ore?.tagsOfBlocksToReplace,
                             data,
-                        }
-                    }
-                ))
-            )
+                        };
+                    }),
+            ),
         );
 
         await db.renderedModels.clear();
@@ -571,15 +576,15 @@ const V2 = {
         for (let recipe of Object.entries(data)) {
             const input = {
                 fullId: recipe[0],
-                count: 1
+                count: 1,
             };
             const output = {
                 fullId: recipe[1],
-                count: 1
+                count: 1,
             };
             result.push({
                 usedItem: input,
-                result: output
+                result: output,
             });
         }
         return result;
@@ -589,7 +594,7 @@ const V2 = {
         for (let recipe of data.recipes) {
             const output = {
                 fullId: recipe.output.item,
-                count: recipe.output.amount
+                count: recipe.output.amount,
             };
 
             if (!recipe.pattern) {
@@ -604,7 +609,7 @@ const V2 = {
                     }
                 }
                 const usedItemsCopy = usedItems.concat();
-                const grid = []
+                const grid = [];
                 for (let x = 0; x < 3; x++) {
                     const gridRow = [];
                     for (let y = 0; y < 3; y++) {
@@ -616,7 +621,7 @@ const V2 = {
                     patternless: true,
                     usedItems,
                     grid,
-                    result: output
+                    result: output,
                 });
             } else {
                 const grid = [];
@@ -643,7 +648,7 @@ const V2 = {
                 }
                 result.push({
                     patternless: false,
-                    usedItems: grid.flat().map(itemId => ({
+                    usedItems: grid.flat().map((itemId) => ({
                         fullId: itemId,
                         count: 1,
                     })),
@@ -657,7 +662,6 @@ const V2 = {
 };
 
 const loaders = [V0, V1, V2];
-
 
 export function getLoader(version) {
     for (let mloader of loaders) {

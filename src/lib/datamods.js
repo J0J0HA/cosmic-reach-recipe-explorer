@@ -19,7 +19,6 @@ export async function loadDatamodsFromFolder(folder) {
 
     await getLoader(get(crVersion)).loadFiles(sourceId, files);
 
-
     await db.loadedSources.put({
         sourceId,
         name,
@@ -34,7 +33,6 @@ export async function loadDatamodFromZIP(zip) {
     const createdAt = Date.now();
     const sourceId = "zip:" + zip.name + "@" + createdAt;
     const files = await getZipFiles(zip);
-
 
     await db.loadedSources.put({
         sourceId,
@@ -61,10 +59,6 @@ export async function loadDatamodFromCRMM(metadata) {
     const name = metadata.name || "Unnamed Project";
     const sourceId = "crmm:" + metadata.slug;
 
-    const res = await fetch(`https://api.crmm.tech/api/project/${metadata.slug}/version/latest/primary-file`);
-
-    const files = await getZipFiles(await res.blob());
-
     await db.loadedSources.put({
         sourceId,
         name,
@@ -73,6 +67,9 @@ export async function loadDatamodFromCRMM(metadata) {
         icon: metadata.icon,
         editing: true,
     });
+
+    const res = await fetch(`https://api.crmm.tech/api/project/${metadata.slug}/version/latest/primary-file`);
+    const files = await getZipFiles(await res.blob());
 
     await getLoader(get(crVersion)).loadFiles(sourceId, files);
 
@@ -107,13 +104,16 @@ export async function listCRMMmods(query, page) {
     const respackData = await respackRes.json();
     const respacks = respackData?.hits || [];
 
-    const hits = datamods.concat(respacks).reduce((acc, val) => {
-        // unique
-        if (!acc.some(v => v.slug === val.slug)) acc.push(val);
-        return acc;
-    }, []).sort((a, b) => {
-        return b.downloads - a.downloads
-    })
+    const hits = datamods
+        .concat(respacks)
+        .reduce((acc, val) => {
+            // unique
+            if (!acc.some((v) => v.slug === val.slug)) acc.push(val);
+            return acc;
+        }, [])
+        .sort((a, b) => {
+            return b.downloads - a.downloads;
+        });
 
     if (!hits) alert(`Failed loading mods: ${data.message}`);
 

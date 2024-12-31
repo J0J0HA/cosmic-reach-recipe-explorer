@@ -97,14 +97,38 @@ progress {
     border-radius: 5px;
 }
 
+button.highlight {
+    outline: 1px solid yellow;
+}
+
+dialog[open] {
+    top: 50dvh;
+    left: 50dvw;
+    position: fixed;
+    transform: translate(-50%, -50%);
+
+    width: 50vw;
+    height: 60vh;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+@media (max-width: 600px) {
+    dialog {
+        width: 80dvw;
+        height: 80vh;
+    }
+}
+
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
 
 /* Accessibilty */
 a:focus-visible {
     outline: 2px solid var(--outline);
     outline-offset: 2px;
     text-decoration: none;
-}
-
-button.highlight {
-    outline: 1px solid yellow;
 }

@@ -1,12 +1,12 @@
 <script>
-    import { locale } from "$lib/stores";
-    import InventoryDisplay from "./InventoryDisplay.svelte";
-    export let itemStack;
+import { locale } from "$lib/stores";
+import InventoryDisplay from "./InventoryDisplay.svelte";
+export let itemStack;
 
-    import { liveQuery } from "dexie";
-    $: name = liveQuery(async () => {
-        return await itemStack.getName($locale);
-    });
+import { liveQuery } from "dexie";
+$: name = liveQuery(async () => {
+    return await itemStack.getName($locale);
+});
 </script>
 
 <div class="item bordered">

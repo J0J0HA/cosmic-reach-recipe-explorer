@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 import { db } from "./db";
 
 const textureMapping = {
@@ -7,8 +7,8 @@ const textureMapping = {
     left: ["side", "all"],
     right: ["side", "all"],
     top: ["top", "all"],
-    bottom: ["bottom", "all"]
-}
+    bottom: ["bottom", "all"],
+};
 
 function resolveTexture(model, side) {
     for (let key of textureMapping[side]) {
@@ -25,9 +25,10 @@ function resolveTexture(model, side) {
             // }
 
             return {
-                modId, subPath
+                modId,
+                subPath,
             };
-        };
+        }
     }
     if (model.parent) {
         return resolveTexture(current_models[model.parent], side);
@@ -57,15 +58,16 @@ function getRenderingStuff() {
         camera,
         renderer,
         loader,
-    }
+    };
 }
-
 
 async function mergeModel(model) {
     const a = model;
     let b = {};
     if (model.parent) {
-        b = await mergeModel((await db.models.where({ modId: model.parent.split(":")[0], subPath: model.parent.split(":")[1] }).first()).data)
+        b = await mergeModel(
+            (await db.models.where({ modId: model.parent.split(":")[0], subPath: model.parent.split(":")[1] }).first()).data,
+        );
     }
 
     return {
@@ -74,13 +76,12 @@ async function mergeModel(model) {
             ...(a.textures || {}),
         },
         cuboids: a.cuboids || b.cuboids || [],
-    }
-
+    };
 }
 
 function geoOfDir(dir, bounds) {
     const [minX, minY, minZ, maxX, maxY, maxZ] = bounds;
-    const [midX, midY, midZ] = [(maxX - minX) / 2, (maxY - minY) / 2, (maxZ - minZ) / 2]
+    const [midX, midY, midZ] = [(maxX - minX) / 2, (maxY - minY) / 2, (maxZ - minZ) / 2];
     switch (dir) {
         case "localNegX":
             return [-midX, 0, 0];
@@ -95,8 +96,8 @@ function geoOfDir(dir, bounds) {
         case "localPosZ":
             return [0, 0, midZ];
     }
-    console.error("Huh?")
-    throw new Error("Huh?")
+    console.error("Huh?");
+    throw new Error("Huh?");
 }
 
 function rotOfDir(dir) {
@@ -116,8 +117,8 @@ function rotOfDir(dir) {
         case "localPosZ":
             return new THREE.Euler(0, 0, 0);
     }
-    console.error("Huh?")
-    throw new Error("Huh?")
+    console.error("Huh?");
+    throw new Error("Huh?");
 }
 
 function colorOfDir(dir) {
@@ -125,25 +126,25 @@ function colorOfDir(dir) {
         case "localNegX":
             return 0x666666;
         case "localPosX":
-            return 0xCCCCCC;
+            return 0xcccccc;
         case "localNegY":
             return 0x999999;
         case "localPosY":
-            return 0xFFFFFF;
+            return 0xffffff;
         case "localNegZ":
             return 0x444444;
         case "localPosZ":
-            return 0xAAAAAA;
+            return 0xaaaaaa;
     }
-    console.error("Huh?")
-    throw new Error("Huh?")
+    console.error("Huh?");
+    throw new Error("Huh?");
 }
 
 export async function renderBlockModel(modelName, highQual = false) {
     const [modId, subPath] = modelName.split(":");
     if (!highQual) {
         const renderedModel = await db.renderedModels.where({ modId, subPath }).first();
-        if (renderedModel?.data) return new Promise(resolve => resolve(renderedModel.data));
+        if (renderedModel?.data) return new Promise((resolve) => resolve(renderedModel.data));
     }
     const model = (await db.models.where({ modId, subPath }).first())?.data;
 
@@ -162,31 +163,40 @@ export async function renderBlockModel(modelName, highQual = false) {
     // const textureTop = (merged.textures.top || merged.textures.all)?.fileName;
     // const textureBottom = (merged.textures.bottom || merged.textures.all)?.fileName;
 
-    const textureFor = Object.fromEntries(await Promise.all(Object.entries(merged.textures).map(async ([k, v]) => {
-        if (!v?.fileName) return [k, null];
-        const [modId, subPath] = v.fileName.split(":");
-        const file = await db.textures.where({ modId, subPath }).first();
-        if (!file?.data) return [k, null];
+    const textureFor = Object.fromEntries(
+        await Promise.all(
+            Object.entries(merged.textures).map(async ([k, v]) => {
+                if (!v?.fileName) return [k, null];
+                const [modId, subPath] = v.fileName.split(":");
+                const file = await db.textures.where({ modId, subPath }).first();
+                if (!file?.data) return [k, null];
 
-        return await new Promise((resolve, reject) => {
-            let texture;
-            texture = loader.load(file.data, () => {
-                texture.minFilter = THREE.NearestFilter;
-                texture.magFilter = THREE.NearestFilter;
-                resolve([k, texture]);
-            }, () => {}, reject);
-        })
-    })));
+                return await new Promise((resolve, reject) => {
+                    let texture;
+                    texture = loader.load(
+                        file.data,
+                        () => {
+                            texture.minFilter = THREE.NearestFilter;
+                            texture.magFilter = THREE.NearestFilter;
+                            resolve([k, texture]);
+                        },
+                        () => {},
+                        reject,
+                    );
+                });
+            }),
+        ),
+    );
 
     const makeMaterial = (texture, tint) => {
         const material = new THREE.MeshBasicMaterial({ color: tint, map: texture, side: THREE.DoubleSide, transparent: true });
         return material;
-    }
+    };
 
     for (let cube of merged.cuboids) {
         for (let [direction, face] of Object.entries(cube.faces)) {
             const faceGeo = new THREE.PlaneGeometry(face.uv[2] - face.uv[0], face.uv[3] - face.uv[1]);
-            const [rotX, rotY, rotZ] = rotOfDir(direction)
+            const [rotX, rotY, rotZ] = rotOfDir(direction);
             faceGeo.rotateX(rotX);
             faceGeo.rotateY(rotY);
             faceGeo.rotateZ(rotZ);
@@ -206,8 +216,8 @@ export async function renderBlockModel(modelName, highQual = false) {
 
     return new Promise((resolve, reject) => {
         renderer.domElement.toBlob((blob) => {
-            db.renderedModels.put({ modId, subPath, data: renderer.domElement.toDataURL("image/png") })
+            db.renderedModels.put({ modId, subPath, data: renderer.domElement.toDataURL("image/png") });
             resolve(URL.createObjectURL(blob));
-        })
+        });
     });
 }

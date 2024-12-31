@@ -1,9 +1,9 @@
 <script>
-    import { loadDatamodFromCRMM, unloadSource } from "$lib/datamods";
-    import WaitableImg from "./WaitableIMG.svelte";
+import { loadDatamodFromCRMM, unloadSource } from "$lib/datamods";
+import WaitableImg from "./WaitableIMG.svelte";
 
-    export let hit;
-    export let isInstalled;
+export let hit;
+export let isInstalled;
 </script>
 
 <div class:bordered={true} class="dm-box">
