@@ -9,14 +9,24 @@ export async function loadDatamodsFromFolder(folder) {
     const sourceId = "folder:" + name + "@" + createdAt;
     const files = await getFolderFiles(folder);
 
-    db.loadedSources.put({
+    await db.loadedSources.put({
         sourceId,
         name,
         type: "folder",
         createdAt,
+        editing: true,
     });
 
     await getLoader(get(crVersion)).loadFiles(sourceId, files);
+
+
+    await db.loadedSources.put({
+        sourceId,
+        name,
+        type: "folder",
+        createdAt,
+        editing: false,
+    });
 }
 
 export async function loadDatamodFromZIP(zip) {
@@ -25,50 +35,102 @@ export async function loadDatamodFromZIP(zip) {
     const sourceId = "zip:" + zip.name + "@" + createdAt;
     const files = await getZipFiles(zip);
 
-    db.loadedSources.put({
+
+    await db.loadedSources.put({
         sourceId,
         name,
         type: "ZIP file",
         createdAt,
+        editing: true,
     });
 
     await getLoader(get(crVersion)).loadFiles(sourceId, files);
+
+    await db.loadedSources.put({
+        sourceId,
+        name,
+        type: "ZIP file",
+        createdAt,
+        editing: false,
+    });
 }
 
-export async function loadDatamodFromCRMM(id) {
-    const res = await fetch(`https://api.crmm.tech/api/project/${id}`);
-    const metadata = await res.json();
-
-    if (!metadata.success) alert(`Failed loading mod: ${metadata.message}`);
-
+export async function loadDatamodFromCRMM(metadata) {
     const createdAt = Date.now();
 
-    const name = metadata.project.name || "Unnamed Project";
-    const sourceId = "crmm:" + id;
-    const files = await getZipFiles(folder);
+    const name = metadata.name || "Unnamed Project";
+    const sourceId = "crmm:" + metadata.slug;
 
-    db.loadedSources.put({
+    const res = await fetch(`https://api.crmm.tech/api/project/${metadata.slug}/version/latest/primary-file`);
+
+    const files = await getZipFiles(await res.blob());
+
+    await db.loadedSources.put({
         sourceId,
         name,
         type: "crmm.tech",
         createdAt,
+        icon: metadata.icon,
+        editing: true,
     });
 
     await getLoader(get(crVersion)).loadFiles(sourceId, files);
+
+    await db.loadedSources.put({
+        sourceId,
+        name,
+        type: "crmm.tech",
+        createdAt,
+        icon: metadata.icon,
+        editing: false,
+    });
 }
 
-export async function listCRMMmods(query) {
-    const urlparams = new URLSearchParams("type=datamod");
+export async function loadCRMMmodMetadata(id) {
+    const res = await fetch(`https://api.crmm.tech/api/project/${id}`);
+    const metadata = await res.json();
+    return metadata;
+}
+
+export async function listCRMMmods(query, page) {
+    const urlparams = new URLSearchParams();
     if (query) urlparams.set("q", query);
-    const res = await fetch(`https://api.crmm.tech/api/search?` + urlparams.toString());
-    const data = await res.json();
+    if (page) urlparams.set("page", page);
+    urlparams.set("sortby", "downloads");
+    urlparams.set("type", "datamod");
+    urlparams.set("limit", "10");
+    const datamodRes = await fetch(`https://api.crmm.tech/api/search?` + urlparams.toString());
+    const datamodData = await datamodRes.json();
+    const datamods = datamodData?.hits || [];
+    urlparams.set("type", "resource-pack");
+    const respackRes = await fetch(`https://api.crmm.tech/api/search?` + urlparams.toString());
+    const respackData = await respackRes.json();
+    const respacks = respackData?.hits || [];
 
-    if (data?.hits === undefined) alert(`Failed loading mods: ${data.message}`);
+    const hits = datamods.concat(respacks).reduce((acc, val) => {
+        // unique
+        if (!acc.some(v => v.slug === val.slug)) acc.push(val);
+        return acc;
+    }, []).sort((a, b) => {
+        return b.downloads - a.downloads
+    })
 
-    return data.hits;
+    if (!hits) alert(`Failed loading mods: ${data.message}`);
+
+    return {
+        hits,
+        totalHits: Math.max(datamodData.estimatedTotalHits, respackData.estimatedTotalHits),
+        passedHits: Math.max(datamodData.offset + datamodData.hits.length, respackData.offset + respackData.hits.length),
+    };
 }
 
 export async function unloadSource(source) {
+    await db.loadedSources.put({
+        ...(await db.loadedSources.get(source)),
+        sourceId: source,
+        editing: true,
+    });
+
     await getLoader(get(crVersion)).unloadFiles(source);
     await db.loadedSources.where("sourceId").equals(source).delete();
 }

@@ -58,6 +58,6 @@ export async function setVersion(version, stateCallback) {
     await loader.loadFiles("jar", files);
     crVersion.set(version.id);
     store("loadedVersion", version.id);
-    setURLParam("version", version.id);
+    // setURLParam("version", version.id);
     stateCallback?.("idle");
 }

@@ -155,60 +155,33 @@ export async function renderBlockModel(modelName, highQual = false) {
     const merged = await mergeModel(model);
 
     // textures & materials
-    const textureSide = (merged.textures.side || merged.textures.all)?.fileName;
-    const textureTop = (merged.textures.top || merged.textures.all)?.fileName;
-    const textureBottom = (merged.textures.bottom || merged.textures.all)?.fileName;
+    // const textureFront = (merged.textures.front || merged.textures.side || merged.textures.all)?.fileName;
+    // const textureLeft = (merged.textures.left || merged.textures.side || merged.textures.all)?.fileName;
+    // const textureBack = (merged.textures.back || merged.textures.side || merged.textures.all)?.fileName;
+    // const textureRight = (merged.textures.right || merged.textures.side || merged.textures.all)?.fileName;
+    // const textureTop = (merged.textures.top || merged.textures.all)?.fileName;
+    // const textureBottom = (merged.textures.bottom || merged.textures.all)?.fileName;
 
-    const uniquePaths = new Set([textureBottom, textureSide, textureTop]);
-
-    const fetchedTextures = {};
-
-    for (let path of uniquePaths) {
-        if (path == undefined) continue;
-        const [modId, subPath] = path.split(":");
+    const textureFor = Object.fromEntries(await Promise.all(Object.entries(merged.textures).map(async ([k, v]) => {
+        if (!v?.fileName) return [k, null];
+        const [modId, subPath] = v.fileName.split(":");
         const file = await db.textures.where({ modId, subPath }).first();
-        fetchedTextures[path] = file;
-    }
+        if (!file?.data) return [k, null];
 
-    const loadedTextures = Object.fromEntries(await Promise.all(Object.entries(fetchedTextures).map(([path, textureRow]) => new Promise((resolve, reject) => {
-        let texture;
-        if (!textureRow?.data) {
-            resolve([path, null]);
-        }
-        texture = loader.load(textureRow.data, () => {
-            texture.minFilter = THREE.NearestFilter;
-            texture.magFilter = THREE.NearestFilter;
-            resolve([path, texture])
-        }, () => { }, reject);
-    }))));
-
-    // const materials = Object.fromEntries(loadedTextures.map(([path, texture]) => [path, new THREE.MeshBasicMaterial({ color: 0xFFFFFF, map: texture, side: THREE.DoubleSide })]).map(([path, material]) => {
-    //     material.color = 0xFFFFFF;
-    //     material.map.minFilter = THREE.NearestFilter;
-    //     material.map.magFilter = THREE.NearestFilter;
-    //     material.transparent = true;
-    //     return [path, material];
-    // }));
+        return await new Promise((resolve, reject) => {
+            let texture;
+            texture = loader.load(file.data, () => {
+                texture.minFilter = THREE.NearestFilter;
+                texture.magFilter = THREE.NearestFilter;
+                resolve([k, texture]);
+            }, () => {}, reject);
+        })
+    })));
 
     const makeMaterial = (texture, tint) => {
         const material = new THREE.MeshBasicMaterial({ color: tint, map: texture, side: THREE.DoubleSide, transparent: true });
         return material;
     }
-
-    const textureFor = {
-        side: loadedTextures[textureSide],
-        top: loadedTextures[textureTop],
-        bottom: loadedTextures[textureBottom],
-    }
-
-    // const materialFor = {
-    //     side: (materials[textureSide]),
-    //     top: materials[textureTop],
-    //     bottom: materials[textureBottom],
-    // }
-
-    // faces
-
 
     for (let cube of merged.cuboids) {
         for (let [direction, face] of Object.entries(cube.faces)) {
@@ -217,7 +190,7 @@ export async function renderBlockModel(modelName, highQual = false) {
             faceGeo.rotateX(rotX);
             faceGeo.rotateY(rotY);
             faceGeo.rotateZ(rotZ);
-            const faceMat = makeMaterial(textureFor[face.texture], colorOfDir(direction));
+            const faceMat = makeMaterial(textureFor[face.texture] || textureFor["all"], colorOfDir(direction));
             const faceMesh = new THREE.Mesh(faceGeo, faceMat);
             faceMesh.position.set(...geoOfDir(direction, cube.localBounds));
             scene.add(faceMesh);

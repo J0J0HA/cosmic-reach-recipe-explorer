@@ -116,7 +116,6 @@ const V1 = {
                     if (data.parent) {
                         data.parent = modId + ":models/" + entry[0].split("/")[1] + "/" + data.parent + ".json";
                     };
-                    console.log(data)
                     return (
                         {
                             path: modId + "/" + entry[0],
@@ -342,7 +341,7 @@ const V0 = {
     version: /^0\.0\.\d+[a-z]?$/,
     name: "V0",
     async loadFiles(source, files) {
-        alert("Loading pre 0.1.0 versions will result in no textures displayed, as the game used a uv map which is not implemented here.\n\nImplementation of uv support is planned but low priority.")
+        // alert("Loading pre 0.1.0 versions will result in no textures displayed, as the game used a uv map which is not implemented here.\n\nImplementation of uv support is planned but low priority.")
         V1.loadFiles(source, files);
     },
 }

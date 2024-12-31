@@ -10,6 +10,7 @@
     } from "$lib/datamods.js";
 
     import { browser } from "$app/environment";
+    import CrmMmod from "./CRMMmod.svelte";
 
     let canLoadFolders = false;
     if (browser) {
@@ -24,16 +25,22 @@
 
     let crmmSearchI;
     let crmmSearchO;
+    let crmmSearchPage = 1;
+
+    let includeVersion;
 
     setInterval(() => {
-        crmmSearchO = crmmSearchI;
-    }, 1000)
+        if (crmmSearchI !== crmmSearchO) {
+            crmmSearchPage = 1;
+            crmmSearchO = crmmSearchI;
+        }
+    }, 1000);
 </script>
 
 <button
+    disabled={!dialog}
     on:click={() => {
         if (dialog) dialog.showModal();
-        else console.log("Dialog not found");
     }}>Edit datamod sources</button
 >
 <!-- on:click={(e) => {
@@ -126,18 +133,47 @@
             <h1>Search CRMM</h1>
 
             <div class="bar">
-                <button on:click={() => {crmmDialog.close()}}>Close</button>
-                <input type="search" placeholder="Search" bind:value={crmmSearchI}>
+                <button
+                    on:click={() => {
+                        crmmDialog.close();
+                    }}>Close</button
+                >
+                <input
+                    type="search"
+                    placeholder="Search"
+                    bind:value={crmmSearchI}
+                />
             </div>
 
-            {#await listCRMMmods(crmmSearchO)}
+            {#await listCRMMmods(crmmSearchO, crmmSearchPage)}
                 Loading...
-            {:then hits}
-                {hits}
+            {:then result}
+                {#each result.hits as hit}
+                    <CrmMmod
+                        {hit}
+                        isInstalled={$sources?.find(
+                            (source) => source.sourceId === "crmm:" + hit.slug,
+                        )}
+                    />
+                {/each}
+                <button
+                    disabled={crmmSearchPage === 1}
+                    on:click={() => {
+                        crmmSearchPage -= 1;
+                    }}>Last page</button
+                >
+                <button
+                    disabled={result.passedHits >= result.totalHits}
+                    on:click={() => {
+                        crmmSearchPage += 1;
+                    }}>Next page</button
+                >
+            {:catch error}
+                <p>Failed: {error.message}</p>
             {/await}
         </dialog>
         <button
-            disabled={true || inProgress}
+            disabled={inProgress}
             on:click={() => {
                 crmmDialog.showModal();
             }}

@@ -104,3 +104,7 @@ a:focus-visible {
     outline-offset: 2px;
     text-decoration: none;
 }
+
+button.highlight {
+    outline: 1px solid yellow;
+}
