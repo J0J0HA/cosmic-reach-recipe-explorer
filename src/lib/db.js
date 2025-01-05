@@ -1,6 +1,6 @@
+import { browser } from "$app/environment";
 import Dexie from "dexie";
 import { renderBlockModel } from "./rendering";
-import { browser } from "$app/environment";
 
 export const db = new Dexie("CosmicReachStore");
 db.version(6).stores({
