@@ -1,5 +1,6 @@
 import Dexie from "dexie";
 import { renderBlockModel } from "./rendering";
+import { browser } from "$app/environment";
 
 export const db = new Dexie("CosmicReachStore");
 db.version(6).stores({
@@ -115,3 +116,17 @@ export class ItemTakeableAdapter {
 
 db.items.mapToClass(ItemTakeableAdapter);
 db.blockstates.mapToClass(BlockStateTakeableAdapter);
+
+// Reset command
+if (browser) {
+    // I know this is silly, but it is fun.
+    const randomString = `R${(Math.random() + 1).toString(36).substring(7)}`;
+    window.reset = `Type '${randomString}()' and press enter to reset.`;
+    window[randomString] = async () => {
+        await db.delete();
+        const v = JSON.parse(localStorage.getItem("loadedVersion")) || ":any";
+        const l = JSON.parse(localStorage.getItem("locale")) || "";
+        localStorage.clear();
+        window.location = `?version=${v}&locale=${l}&forceReload=${Date.now()}`;
+    };
+}
