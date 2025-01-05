@@ -75,7 +75,7 @@ $: images = liveQuery(async () => {
         <!-- {#await subitemStack.getImage() then image} -->
         <img
             src={$images?.[index]}
-            alt={$names?.[index] || subItemStack.fullId}
+            alt={subItemStack.fullId === "::air" ? "" : ($names?.[index] || subItemStack.fullId)}
             draggable="false"
             style:display={index === $tickTime % itemStack.length
                 ? "block"
