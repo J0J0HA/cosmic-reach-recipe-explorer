@@ -5,13 +5,10 @@ import Header from "../../Header.svelte";
 import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
 import { page } from "$app/stores";
-import { db } from "$lib/db";
 import { getTakeable, makeItemStack } from "$lib/utils";
 import { liveQuery } from "dexie";
-import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
 import Body from "../../Body.svelte";
-import OreDistribution from "../../OreDistribution.svelte";
 
 $: itemStack = liveQuery(async () => {
     return await makeItemStack(await getTakeable($page.params.item));

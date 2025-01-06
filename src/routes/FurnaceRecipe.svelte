@@ -13,7 +13,14 @@ const outputItem = liveQuery(async () => {
     return await makeItemStack(await getTakeable(recipe.result.fullId));
 });
 const fuelItem = liveQuery(async () => {
-    return await makeItemStack(await getTakeable({ __require__: "isFuel" }));
+    return await makeItemStack(
+        await getTakeable({
+            __require__: [
+                { key: "isFuel", value: true },
+                { key: "showInCatalog", value: 1 },
+            ],
+        }),
+    );
 });
 </script>
 

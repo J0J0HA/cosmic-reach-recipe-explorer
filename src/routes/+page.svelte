@@ -1,5 +1,6 @@
 <script>
 import { db } from "$lib/db.js";
+import { mergeByKey } from "$lib/utils";
 import { liveQuery } from "dexie";
 import Body from "./Body.svelte";
 import Header from "./Header.svelte";
@@ -17,11 +18,10 @@ const blockStates = liveQuery(() => db.blockstates.where("showInCatalog").equals
 <Body>
     <h2>Item overview</h2>
     <SearchableItemList
-        takeables={($items || [])
-            .concat($blockStates || [])
-            .reduce((acc, val) => {
-                if (!acc.find((v) => v.fullId === val.fullId)) acc.push(val);
-                return acc;
-            }, [])}
+        takeables={mergeByKey(
+            ($items || []).concat($blockStates || []),
+            (obj) => obj.fullId,
+            ([a, b]) => b.source === "jar",
+        )}
     />
 </Body>

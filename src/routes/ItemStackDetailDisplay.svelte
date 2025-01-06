@@ -13,7 +13,7 @@ $: itemName = liveQuery(async () => {
     <div class="leftmost">
         <InventoryDisplay grid={[[itemStack]]} />
         <div class="details">
-            <div class="name">{$itemName}</div>
+            <div class="name">{$itemName || itemStack.fullId}</div>
             <div class="lore">{@html itemStack.lore.join("<br />")}</div>
         </div>
     </div>

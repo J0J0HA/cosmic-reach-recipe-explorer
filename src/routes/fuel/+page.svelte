@@ -4,6 +4,7 @@ import Header from "../Header.svelte";
 import SearchableItemList from "../SearchableItemList.svelte";
 
 import { db } from "$lib/db";
+import { mergeByKey } from "$lib/utils";
 import { liveQuery } from "dexie";
 
 const fuels = liveQuery(async () => {
@@ -27,7 +28,11 @@ const fuels = liveQuery(async () => {
     <h2>Fuels</h2>
 
     <div class="center">
-        <SearchableItemList takeables={$fuels || []} />
+        <SearchableItemList takeables={mergeByKey(
+            $fuels || [],
+            (obj) => obj.fullId,
+            ([a, b]) => b.source === "jar",
+        )} />
         {#if !$fuels?.length}
             <p>There are no fuels.</p>
         {/if}

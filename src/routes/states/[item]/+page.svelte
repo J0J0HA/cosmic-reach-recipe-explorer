@@ -1,6 +1,7 @@
 <script>
 import { ItemStack } from "$lib/items";
 import { locale } from "$lib/stores";
+import { mergeByKey } from "$lib/utils";
 import { getTakeable, makeItemStack } from "$lib/utils";
 import Header from "../../Header.svelte";
 import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
@@ -43,7 +44,13 @@ const name = liveQuery(async () => {
     />
 
     <div class="center">
-        <SearchableItemList takeables={$states || []} />
+        <SearchableItemList
+            takeables={mergeByKey(
+                $states || [],
+                (obj) => obj.fullId,
+                ([a, b]) => b.source === "jar",
+            )}
+        />
         {#if !$states?.length}
             <p>{$name || $itemStack?.fullId} has no other blockstates.</p>
         {/if}

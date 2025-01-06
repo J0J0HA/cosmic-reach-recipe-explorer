@@ -5,7 +5,7 @@ import ItemStackDisplay from "./ItemStackDisplay.svelte";
 
 export let grid = [];
 export let out = false;
-let bgImage = liveQuery(
+const bgImage = liveQuery(
     () =>
         db.textures
             .where({
@@ -17,7 +17,7 @@ let bgImage = liveQuery(
         initialValue: null,
     },
 );
-let hoverBgImage = liveQuery(
+const hoverBgImage = liveQuery(
     () =>
         db.textures
             .where({
