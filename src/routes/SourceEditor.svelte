@@ -12,6 +12,8 @@ if (browser) {
     canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
 }
 
+export let disabled;
+export let forceOpen;
 let dialog;
 let crmmDialog;
 let inProgress;
@@ -33,16 +35,16 @@ setInterval(() => {
 </script>
 
 <button
-    disabled={!dialog}
+    disabled={!dialog || forceOpen}
     on:click={() => {
         if (dialog) dialog.showModal();
     }}>Edit datamod sources</button
 >
-<dialog bind:this={dialog} class="bordered">
-    <h1>Edit datamod sources</h1>
+<dialog bind:this={dialog} class="bordered" open={forceOpen}>
+    <h1>{forceOpen ? "Loading datamods..." : "Edit datamod sources"}</h1>
 
     <div class="bar">
-        <button on:click={() => dialog.close()}>Close</button>
+        <button {disabled} on:click={() => dialog.close()}>Close</button>
 
         <input
             id="dir-chooser"
@@ -71,6 +73,7 @@ setInterval(() => {
             id="zip-chooser"
             type="file"
             hidden
+            disabled={inProgress || disabled}
             on:change={async (event) => {
                 await loadDatamodFromZIP(event.target.files[0]);
                 inProgress = false;
@@ -87,7 +90,7 @@ setInterval(() => {
         />
         {#if canLoadFolders}
             <button
-                disabled={inProgress}
+                disabled={inProgress || disabled}
                 on:click={() => {
                     inProgress = true;
                     document.querySelector("#dir-chooser").click();
@@ -97,7 +100,7 @@ setInterval(() => {
             </button>
         {/if}
         <button
-            disabled={inProgress}
+            disabled={inProgress || disabled}
             on:click={() => {
                 inProgress = true;
                 document.querySelector("#zip-chooser").click();
@@ -127,6 +130,7 @@ setInterval(() => {
             {:then result}
                 {#each result.hits as hit}
                     <CrmMmod
+                        {disabled}
                         {hit}
                         isInstalled={$sources?.find(
                             (source) => source.sourceId === "crmm:" + hit.slug,
@@ -150,7 +154,7 @@ setInterval(() => {
             {/await}
         </dialog>
         <button
-            disabled={inProgress}
+            disabled={inProgress || disabled}
             on:click={() => {
                 crmmDialog.showModal();
             }}
@@ -160,7 +164,7 @@ setInterval(() => {
     </div>
     <div class="container">
         {#each $sources || [] as source (source.sourceId)}
-            <Source {source} />
+            <Source {source} {disabled} />
         {/each}
     </div>
 </dialog>

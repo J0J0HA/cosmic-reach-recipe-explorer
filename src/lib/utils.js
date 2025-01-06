@@ -1,5 +1,8 @@
+import { browser } from "$app/environment";
+import { get } from "svelte/store";
 import { db } from "./db";
 import { ItemStack } from "./items";
+import { crVersion, locale } from "./stores";
 
 export async function getTakeable(fullId) {
     if (fullId.__require__) {
@@ -81,3 +84,17 @@ export function mergeByKey(array, key, prioritizeA, deepMerge = true) {
         }, {}),
     );
 }
+
+export async function generateShareLink() {
+    const params = new URLSearchParams(window.location.search);
+
+    params.set("clean", true);
+    if (get(crVersion)) params.set("version", get(crVersion));
+    if (get(locale)) params.set("locale", get(locale));
+
+    const additionalSources = ((await db.loadedSources.toArray()) || []).map((source) => source.sourceId);
+    for (const source of additionalSources) params.append("mod", source);
+
+    return window.location.toString().split("?")[0] + (params.toString() ? `?${params.toString()}` : "");
+}
+if (browser) window.generateShareLink = generateShareLink;

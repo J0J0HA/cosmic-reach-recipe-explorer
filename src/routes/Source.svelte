@@ -3,10 +3,15 @@ import { unloadSource } from "$lib/datamods";
 import WaitableImg from "./WaitableIMG.svelte";
 
 export let source;
+export let disabled;
 </script>
 
 <div class:bordered={true} class="dm-box">
-    <WaitableImg src={source.icon} alt={source.name} inProgress={source.editing} />
+    <WaitableImg
+        src={source.icon}
+        alt={source.name}
+        inProgress={source.editing}
+    />
     <div class="side">
         <h3 class="name">{source.name}</h3>
         <p>
@@ -15,15 +20,22 @@ export let source;
             ).toLocaleString()}
         </p>
         <button
-            disabled={source.editing}
-            on:click={()=>unloadSource(source.sourceId)}>Unload</button
+            disabled={source.editing || disabled}
+            on:click={() => unloadSource(source.sourceId)}>Unload</button
         >
         {#if source.editing}
-            <button on:click={()=> {
-                if (confirm("This may result in corrupted data, which can only be removed by clearing browser data for this page. Continue?")) {
-                    unloadSource(source.sourceId);
-                }
-            }}>DELETE</button>
+            <button
+                {disabled}
+                on:click={() => {
+                    if (
+                        confirm(
+                            "This may result in corrupted data, which can only be removed by clearing browser data for this page. Continue?",
+                        )
+                    ) {
+                        unloadSource(source.sourceId);
+                    }
+                }}>DELETE</button
+            >
         {/if}
     </div>
 </div>

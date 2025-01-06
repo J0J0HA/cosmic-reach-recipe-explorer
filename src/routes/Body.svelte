@@ -1,10 +1,11 @@
 <script>
 import { crVersion, ready } from "$lib/stores";
+import { parsingURL } from "$lib/urlset";
 </script>
 
 <div class="wrapper">
     <main>
-        {#if !$ready}
+        {#if !$ready || $parsingURL}
             <p>Loading...</p>
         {:else if !$crVersion}
             <p>No active version</p>

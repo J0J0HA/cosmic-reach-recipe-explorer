@@ -1,20 +1,34 @@
 <script>
 import { ItemStack } from "$lib/items";
 import { locale } from "$lib/stores";
+import { setURLParams } from "$lib/urlset";
 import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
 
 export let takeables = [];
+export let key = "search";
 
 import { liveQuery } from "dexie";
 const names = liveQuery(async () => {
     return await Promise.all(takeables.map(async (takeable) => await takeable.getName($locale)));
 });
 
-let search = "";
+const initialParams = new URLSearchParams(window.location.search);
+let first = true;
+let search = initialParams.get("search") || "";
+$: {
+    if (first) {
+        first = false;
+    } else {
+        const params = new URLSearchParams(window.location.search);
+        params.set(key, search);
+        if (!search) params.delete(key);
+        setURLParams(params);
+    }
+}
 $: cleaned_search = search.trim().toLowerCase().split(" ");
 $: results = takeables
     .filter((takeable, index) =>
-        cleaned_search.every((word) => takeable.subId.toLowerCase().includes(word) || $names[index]?.toLowerCase().includes(word)),
+        cleaned_search.every((word) => takeable.fullId.toLowerCase().includes(word) || $names?.[index]?.toLowerCase().includes(word)),
     )
     .map((takeable) => takeable.fullId);
 </script>
@@ -23,12 +37,7 @@ $: results = takeables
     type="text"
     class="search bordered"
     placeholder="Search..."
-    on:change={(e) => {
-        search = e.target.value;
-    }}
-    on:keyup={(e) => {
-        search = e.target.value;
-    }}
+    bind:value={search}
 />
 
 <div class="results">

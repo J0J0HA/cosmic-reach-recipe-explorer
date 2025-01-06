@@ -3,7 +3,8 @@ import { version } from "$app/environment";
 import { updated } from "$app/stores";
 import { db } from "$lib/db";
 import { crVersion, locale, ready } from "$lib/stores";
-import { readURLParams } from "$lib/urlset.js";
+import { parsingURL, readURLParams } from "$lib/urlset.js";
+import { generateShareLink } from "$lib/utils";
 import { getVersionList, setVersion } from "$lib/versions";
 import { liveQuery } from "dexie";
 import { onMount } from "svelte";
@@ -40,6 +41,19 @@ const languages = liveQuery(() => {
     {version.slice(0, 6)}
 </div>
 
+<button
+    class="share"
+    style="position: fixed; top:13px; right: 13px; font-size: 0.7rem;"
+    on:click={async () => {
+        try {
+            navigator.clipboard.writeText(await generateShareLink());
+            alert("Copied to clipboard:\n\n" + (await generateShareLink()));
+        } catch (e) {
+            prompt("Failed to copy. Link:", await generateShareLink());
+        }
+    }}>Share</button
+>
+
 <div class="jar-chooser-box bordered">
     <div
         style:width="20%"
@@ -65,7 +79,7 @@ const languages = liveQuery(() => {
                 </select>
             {:then versions}
                 <select
-                    disabled={!$ready || $loadingJar}
+                    disabled={!$ready || $loadingJar || $parsingURL}
                     value={$loadingJar
                         ? ":LOAD-" + $loadingJarState
                         : $crVersion || ":"}
@@ -137,13 +151,17 @@ const languages = liveQuery(() => {
                     value={$locale}
                     class="fill"
                     on:change={(event) => locale.set(event.target.value)}
+                    disabled={$parsingURL}
                 >
                     {#each $languages?.value || [] as language (language.key)}
                         <option value={language.key}>{language.name}</option>
                     {/each}
                 </select>
             </span>
-            <SourceEditor />
+            <SourceEditor disabled={$parsingURL} forceOpen={$parsingURL} />
+        {/if}
+        {#if $parsingURL}
+            Please wait...
         {/if}
     </div>
 

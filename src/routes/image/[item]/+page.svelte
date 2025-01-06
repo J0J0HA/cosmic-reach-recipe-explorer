@@ -41,7 +41,11 @@ $: texture = liveQuery(async () => {
                 <p>Generating Image...</p>
             {:else}
                 <a href={$texture} download="{$itemName}.png">Download</a>
-                <img src={$texture} alt={$itemName} style="width: 80%; aspect-ratio: 1;" />
+                <img
+                    src={$texture}
+                    alt={$itemName}
+                    style="width: 80%; aspect-ratio: 1;"
+                />
             {/if}
         </div>
     {/if}

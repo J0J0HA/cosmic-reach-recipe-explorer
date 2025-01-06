@@ -4,10 +4,15 @@ import WaitableImg from "./WaitableIMG.svelte";
 
 export let hit;
 export let isInstalled;
+export let disabled;
 </script>
 
 <div class:bordered={true} class="dm-box">
-    <WaitableImg src={hit.icon} alt={hit.name} inProgress={isInstalled?.editing} />
+    <WaitableImg
+        src={hit.icon}
+        alt={hit.name}
+        inProgress={isInstalled?.editing}
+    />
     <div class="side">
         <h3 class="name">{hit.name}</h3>
         <p>
@@ -22,7 +27,7 @@ export let isInstalled;
             {/if}
         </p>
         <button
-            disabled={isInstalled?.editing}
+            disabled={isInstalled?.editing || disabled}
             class:highlight={isInstalled &&
                 new Date(hit.dateUpdated) > new Date(isInstalled.createdAt)}
             on:click={async () => {
@@ -33,7 +38,7 @@ export let isInstalled;
         </button>
         {#if isInstalled}
             <button
-                disabled={isInstalled.editing}
+                disabled={isInstalled.editing || disabled}
                 on:click={async () => {
                     await unloadSource("crmm:" + hit.slug);
                 }}
