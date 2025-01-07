@@ -1,13 +1,15 @@
 import { browser } from "$app/environment";
 import { readable, writable } from "svelte/store";
 import { load, store } from "./serializer";
-import { getVersionList } from "./versions";
 import { readURLParams } from "./urlset";
+import { getVersionList } from "./versions";
 
 export const crVersion = writable(null);
 export const locale = writable("en_us");
 export const ready = writable(false);
-export const stateCallbackJar = writable((...args)=>{console.log("stateCallbackJar", ...args)});
+export const stateCallbackJar = writable((...args) => {
+    console.log("stateCallbackJar", ...args);
+});
 
 if (browser) {
     load("locale").then((value) => {

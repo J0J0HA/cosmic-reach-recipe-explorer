@@ -1,11 +1,11 @@
 <script>
-    import { unloadSource } from "$lib/datamods";
-    import WaitableImg from "./WaitableIMG.svelte";
-    import { FiTrash2 } from "svelte-icons-pack/fi";
-    import BasicButton from "./ui/BasicButton.svelte";
-    import HorizontalBar from "./ui/HorizontalBar.svelte";
+import { unloadSource } from "$lib/datamods";
+import { FiTrash2 } from "svelte-icons-pack/fi";
+import WaitableImg from "./WaitableIMG.svelte";
+import BasicButton from "./ui/BasicButton.svelte";
+import HorizontalBar from "./ui/HorizontalBar.svelte";
 
-    let { source, disabled } = $props();
+let { source, disabled } = $props();
 </script>
 
 <div class:bordered={true} class="dm-box">

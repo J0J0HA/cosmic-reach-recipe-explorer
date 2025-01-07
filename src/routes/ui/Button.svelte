@@ -1,31 +1,31 @@
 <script>
-    import { Icon } from "svelte-icons-pack";
-    import { FiLoader } from "svelte-icons-pack/fi";
-    let {
-        children,
-        variant = "primary",
-        inProgress = false,
-        icon = undefined,
-        feedbackIcon = undefined,
-        feedbackColor = undefined,
-        disabled = false,
-        button = $bindable(),
-        square = false,
-        onclick = () => {},
-        ...restProps
-    } = $props();
+import { Icon } from "svelte-icons-pack";
+import { FiLoader } from "svelte-icons-pack/fi";
+let {
+    children,
+    variant = "primary",
+    inProgress = false,
+    icon = undefined,
+    feedbackIcon = undefined,
+    feedbackColor = undefined,
+    disabled = false,
+    button = $bindable(),
+    square = false,
+    onclick = () => {},
+    ...restProps
+} = $props();
 
-    let feedbackVisible = $state(false);
+let feedbackVisible = $state(false);
 
-    $effect(() => {
-        if (!feedbackVisible) return;
-        const id = setTimeout(() => {
-            feedbackVisible = false;
-        }, 1500);
-        return () => {
-            clearTimeout(id);
-        };
-    });
+$effect(() => {
+    if (!feedbackVisible) return;
+    const id = setTimeout(() => {
+        feedbackVisible = false;
+    }, 1500);
+    return () => {
+        clearTimeout(id);
+    };
+});
 </script>
 
 <button

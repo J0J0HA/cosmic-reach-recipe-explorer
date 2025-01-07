@@ -1,5 +1,5 @@
 <script>
-    let { children, align = "center", ...restProps } = $props();
+let { children, align = "center", ...restProps } = $props();
 </script>
 
 <div style:--align={align} {...restProps}>

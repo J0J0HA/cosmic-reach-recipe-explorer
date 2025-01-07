@@ -1,45 +1,48 @@
 <script>
-    import { goto } from "$app/navigation";
-    import { ItemStack } from "$lib/items";
-    import { locale, tickTime } from "$lib/stores";
-    import { liveQuery } from "dexie";
+import { goto } from "$app/navigation";
+import { ItemStack } from "$lib/items";
+import { locale, tickTime } from "$lib/stores";
+import { liveQuery } from "dexie";
 
-    let { itemStack: initialItemStack = undefined } = $props();
+let { itemStack: initialItemStack = undefined } = $props();
 
-    let finalItemStack = $derived.by(() => {
-        const itemStack = initialItemStack || new ItemStack(null);
-        return Array.isArray(itemStack) ? itemStack : [itemStack];
-    });
-    let currentItemStack = $derived(
-        finalItemStack[$tickTime % finalItemStack.length] ||
-            new ItemStack(null),
-    );
-    let isAir = $derived(currentItemStack?.item === null);
+let finalItemStack = $derived.by(() => {
+    const itemStack = initialItemStack || new ItemStack(null);
+    return Array.isArray(itemStack) ? itemStack : [itemStack];
+});
+let currentItemStack = $derived(finalItemStack[$tickTime % finalItemStack.length] || new ItemStack(null));
+let isAir = $derived(currentItemStack?.item === null);
 
-    let names = $derived(
-        liveQuery(async () => {
+let names = $derived(
+    liveQuery(
+        async () => {
             return await Promise.all(
                 finalItemStack.map(async (subItemStack) => {
                     return await subItemStack?.getName?.($locale);
                 }),
             );
-        }, {}, [finalItemStack, $locale]),
-    );
-    let currentItemStackName = $derived(
-        $names?.[$tickTime % finalItemStack.length] || currentItemStack.fullId,
-    );
+        },
+        {},
+        [finalItemStack, $locale],
+    ),
+);
+let currentItemStackName = $derived($names?.[$tickTime % finalItemStack.length] || currentItemStack.fullId);
 
-    let startedTouch = $state(0);
+let startedTouch = $state(0);
 
-    let images = $derived(
-        liveQuery(async () => {
+let images = $derived(
+    liveQuery(
+        async () => {
             return await Promise.all(
                 finalItemStack.map(async (subItemStack) => {
                     return await subItemStack?.getImage?.();
                 }),
             );
-        }, {}, [finalItemStack]),
-    );
+        },
+        {},
+        [finalItemStack],
+    ),
+);
 </script>
 
 <button

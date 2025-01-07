@@ -1,54 +1,49 @@
 <script>
-    import {
-        listCRMMmods,
-        loadDatamodFromCRMM,
-        loadDatamodFromZIP,
-        loadDatamodsFromFolder,
-    } from "$lib/datamods.js";
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
-    import {
-        FiEdit,
-        FiFolderPlus,
-        FiFilePlus,
-        FiDownloadCloud,
-        FiXCircle,
-        FiSearch,
-        FiChevronLeft,
-        FiChevronRight,
-    } from "svelte-icons-pack/fi";
-    import Source from "./Source.svelte";
-    import BasicButton from "./ui/BasicButton.svelte";
-    import TextInput from "./ui/TextInput.svelte";
-    import HorizontalBar from "./ui/HorizontalBar.svelte";
+import { listCRMMmods, loadDatamodFromCRMM, loadDatamodFromZIP, loadDatamodsFromFolder } from "$lib/datamods.js";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
+import {
+    FiChevronLeft,
+    FiChevronRight,
+    FiDownloadCloud,
+    FiEdit,
+    FiFilePlus,
+    FiFolderPlus,
+    FiSearch,
+    FiXCircle,
+} from "svelte-icons-pack/fi";
+import Source from "./Source.svelte";
+import BasicButton from "./ui/BasicButton.svelte";
+import HorizontalBar from "./ui/HorizontalBar.svelte";
+import TextInput from "./ui/TextInput.svelte";
 
-    import { browser } from "$app/environment";
-    import CrmMmod from "./CRMMmod.svelte";
+import { browser } from "$app/environment";
+import CrmMmod from "./CRMMmod.svelte";
 
-    let canLoadFolders = $state(false);
-    if (browser) {
-        canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
+let canLoadFolders = $state(false);
+if (browser) {
+    canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
+}
+
+let { disabled, forceOpen } = $props();
+let dialog = $state();
+let crmmDialog = $state();
+let inProgress = $state();
+
+const sources = liveQuery(() => db.loadedSources.toArray());
+
+let crmmSearchI = $state();
+let crmmSearchO = $state();
+let crmmSearchPage = $state(1);
+
+let includeVersion;
+
+setInterval(() => {
+    if (crmmSearchI !== crmmSearchO) {
+        crmmSearchPage = 1;
+        crmmSearchO = crmmSearchI;
     }
-
-    let { disabled, forceOpen } = $props();
-    let dialog = $state();
-    let crmmDialog = $state();
-    let inProgress = $state();
-
-    const sources = liveQuery(() => db.loadedSources.toArray());
-
-    let crmmSearchI = $state();
-    let crmmSearchO = $state();
-    let crmmSearchPage = $state(1);
-
-    let includeVersion;
-
-    setInterval(() => {
-        if (crmmSearchI !== crmmSearchO) {
-            crmmSearchPage = 1;
-            crmmSearchO = crmmSearchI;
-        }
-    }, 1000);
+}, 1000);
 </script>
 
 <BasicButton

@@ -1,58 +1,52 @@
 <script>
-    import { getTakeable, makeItemStack } from "$lib/utils";
-    import InventoryDisplay from "./InventoryDisplay.svelte";
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
+import { db } from "$lib/db";
+import { getTakeable, makeItemStack } from "$lib/utils";
+import { liveQuery } from "dexie";
+import InventoryDisplay from "./InventoryDisplay.svelte";
 
-    let { ore } = $props();
+let { ore } = $props();
 
-    function shortNumber(labelValue) {
-        return Math.abs(Number(labelValue)) >= 1.0e9
-            ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e9)} bn`
-            : Math.abs(Number(labelValue)) >= 1.0e6
-              ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e6)} m`
-              : Math.abs(Number(labelValue)) >= 1.0e3
-                ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e3)} k`
-                : Math.round(Math.abs(Number(labelValue)));
-    }
+function shortNumber(labelValue) {
+    return Math.abs(Number(labelValue)) >= 1.0e9
+        ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e9)} bn`
+        : Math.abs(Number(labelValue)) >= 1.0e6
+          ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e6)} m`
+          : Math.abs(Number(labelValue)) >= 1.0e3
+            ? `${Math.round(Math.abs(Number(labelValue)) / 1.0e3)} k`
+            : Math.round(Math.abs(Number(labelValue)));
+}
 
-    let oreBlock = $derived(
-        liveQuery(
-            async () => {
-                return await makeItemStack(
-                    await getTakeable(`${ore.blockId}[default]`),
-                    ore.data.ore.MaxOresPerCluster,
-                );
-            },
-            {},
-            [ore.blockId, ore.data.ore.MaxOresPerCluster],
-        ),
-    );
-    let oreReplace = $derived(
-        liveQuery(
-            async () => {
-                return await makeItemStack(
-                    await getTakeable({ has_tag: ore.tagsOfBlocksToReplace }),
-                    ore.data.ore.AttemptsPerColumn,
-                );
-            },
-            {},
-            [ore.data.ore.AttemptsPerColumn, ore.tagsOfBlocksToReplace],
-        ),
-    );
-    const progressArrow = liveQuery(
-        () =>
-            db.textures
-                .where({
-                    modId: "base",
-                    subPath: "textures/ui/progress-arrow-full.png",
-                })
-                .first(),
-        { initialValue: null },
-    );
+let oreBlock = $derived(
+    liveQuery(
+        async () => {
+            return await makeItemStack(await getTakeable(`${ore.blockId}[default]`), ore.data.ore.MaxOresPerCluster);
+        },
+        {},
+        [ore.blockId, ore.data.ore.MaxOresPerCluster],
+    ),
+);
+let oreReplace = $derived(
+    liveQuery(
+        async () => {
+            return await makeItemStack(await getTakeable({ has_tag: ore.tagsOfBlocksToReplace }), ore.data.ore.AttemptsPerColumn);
+        },
+        {},
+        [ore.data.ore.AttemptsPerColumn, ore.tagsOfBlocksToReplace],
+    ),
+);
+const progressArrow = liveQuery(
+    () =>
+        db.textures
+            .where({
+                modId: "base",
+                subPath: "textures/ui/progress-arrow-full.png",
+            })
+            .first(),
+    { initialValue: null },
+);
 
-    let maxHeightWords = $derived(shortNumber(ore.data.ore.MaxElevation));
-    let minHeightWords = $derived(shortNumber(ore.data.ore.MinElevation));
+let maxHeightWords = $derived(shortNumber(ore.data.ore.MaxElevation));
+let minHeightWords = $derived(shortNumber(ore.data.ore.MinElevation));
 </script>
 
 <div class="before-after bordered">

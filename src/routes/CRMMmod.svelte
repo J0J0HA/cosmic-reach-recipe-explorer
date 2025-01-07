@@ -1,12 +1,12 @@
 <script>
-    import { loadDatamodFromCRMM, unloadSource } from "$lib/datamods";
-    import WaitableImg from "./WaitableIMG.svelte";
-    import { FiDownload, FiRefreshCcw, FiTrash } from "svelte-icons-pack/fi";
-    import BasicButton from "./ui/BasicButton.svelte";
-    import TextInput from "./ui/TextInput.svelte";
-    import HorizontalBar from "./ui/HorizontalBar.svelte";
+import { loadDatamodFromCRMM, unloadSource } from "$lib/datamods";
+import { FiDownload, FiRefreshCcw, FiTrash } from "svelte-icons-pack/fi";
+import WaitableImg from "./WaitableIMG.svelte";
+import BasicButton from "./ui/BasicButton.svelte";
+import HorizontalBar from "./ui/HorizontalBar.svelte";
+import TextInput from "./ui/TextInput.svelte";
 
-    let { hit, isInstalled, disabled } = $props();
+let { hit, isInstalled, disabled } = $props();
 </script>
 
 <div class:bordered={true} class="dm-box">

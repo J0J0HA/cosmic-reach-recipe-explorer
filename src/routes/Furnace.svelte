@@ -1,31 +1,31 @@
 <script>
-    import InventoryDisplay from "./InventoryDisplay.svelte";
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
+import InventoryDisplay from "./InventoryDisplay.svelte";
 
-    let { input, fuel, output, ticks = null } = $props();
+let { input, fuel, output, ticks = null } = $props();
 
-    const progressArrow = liveQuery(
-        () =>
-            db.textures
-                .where({
-                    modId: "base",
-                    subPath: "textures/ui/progress-arrow-full.png",
-                })
-                .first(),
-        { initialValue: null },
-    );
+const progressArrow = liveQuery(
+    () =>
+        db.textures
+            .where({
+                modId: "base",
+                subPath: "textures/ui/progress-arrow-full.png",
+            })
+            .first(),
+    { initialValue: null },
+);
 
-    const progressFlame = liveQuery(
-        () =>
-            db.textures
-                .where({
-                    modId: "base",
-                    subPath: "textures/ui/progress-fuel-full.png",
-                })
-                .first(),
-        { initialValue: null },
-    );
+const progressFlame = liveQuery(
+    () =>
+        db.textures
+            .where({
+                modId: "base",
+                subPath: "textures/ui/progress-fuel-full.png",
+            })
+            .first(),
+    { initialValue: null },
+);
 </script>
 
 <div class="before-after bordered">

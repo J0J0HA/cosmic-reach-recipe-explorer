@@ -1,5 +1,5 @@
 <script>
-    let { inProgress = false, alt = null, src = null } = $props();
+let { inProgress = false, alt = null, src = null } = $props();
 </script>
 
 <div class="imgWrap">

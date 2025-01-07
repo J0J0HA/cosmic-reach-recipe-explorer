@@ -1,50 +1,42 @@
 <script>
-    import { ItemStack } from "$lib/items";
-    import { locale } from "$lib/stores";
-    import { setURLParams } from "$lib/urlset";
-    import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
+import { ItemStack } from "$lib/items";
+import { locale } from "$lib/stores";
+import { setURLParams } from "$lib/urlset";
+import ItemStackDetailDisplay from "./ItemStackDetailDisplay.svelte";
 
-    import { liveQuery } from "dexie";
-    let { takeables = [], key = "search" } = $props();
-    const names = $derived(
-        liveQuery(
-            async () => {
-                return await Promise.all(
-                    takeables.map(
-                        async (takeable) => await takeable.getName($locale),
-                    ),
-                );
-            },
-            {},
-            [takeables, $locale],
-        ),
-    );
+import { liveQuery } from "dexie";
+let { takeables = [], key = "search" } = $props();
+const names = $derived(
+    liveQuery(
+        async () => {
+            return await Promise.all(takeables.map(async (takeable) => await takeable.getName($locale)));
+        },
+        {},
+        [takeables, $locale],
+    ),
+);
 
-    const initialParams = new URLSearchParams(window.location.search);
-    let first = $state(true);
-    let search = $state(initialParams.get("search") || "");
-    $effect(() => {
-        if (first) {
-            first = false;
-        } else {
-            const params = new URLSearchParams(window.location.search);
-            params.set(key, search);
-            if (!search) params.delete(key);
-            setURLParams(params);
-        }
-    });
-    let cleaned_search = $derived(search.trim().toLowerCase().split(" "));
-    let results = $derived(
-        takeables
-            .filter((takeable, index) =>
-                cleaned_search.every(
-                    (word) =>
-                        takeable.fullId.toLowerCase().includes(word) ||
-                        $names?.[index]?.toLowerCase().includes(word),
-                ),
-            )
-            .map((takeable) => takeable.fullId),
-    );
+const initialParams = new URLSearchParams(window.location.search);
+let first = $state(true);
+let search = $state(initialParams.get("search") || "");
+$effect(() => {
+    if (first) {
+        first = false;
+    } else {
+        const params = new URLSearchParams(window.location.search);
+        params.set(key, search);
+        if (!search) params.delete(key);
+        setURLParams(params);
+    }
+});
+let cleaned_search = $derived(search.trim().toLowerCase().split(" "));
+let results = $derived(
+    takeables
+        .filter((takeable, index) =>
+            cleaned_search.every((word) => takeable.fullId.toLowerCase().includes(word) || $names?.[index]?.toLowerCase().includes(word)),
+        )
+        .map((takeable) => takeable.fullId),
+);
 </script>
 
 <input

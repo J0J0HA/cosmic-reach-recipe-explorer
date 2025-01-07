@@ -1,45 +1,43 @@
 <script>
-    import { locale } from "$lib/stores";
-    import CraftingRecipe from "../../CraftingRecipe.svelte";
-    import Header from "../../Header.svelte";
-    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
+import { locale } from "$lib/stores";
+import CraftingRecipe from "../../CraftingRecipe.svelte";
+import Header from "../../Header.svelte";
+import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
-    import { page } from "$app/stores";
-    import { getTakeable, makeItemStack } from "$lib/utils";
-    import { liveQuery } from "dexie";
+import { page } from "$app/stores";
+import { getTakeable, makeItemStack } from "$lib/utils";
+import { liveQuery } from "dexie";
 
-    import Body from "../../Body.svelte";
+import Body from "../../Body.svelte";
 
-    let itemStack = $derived(
-        liveQuery(
-            async () => {
-                return await makeItemStack(
-                    await getTakeable($page.params.item),
-                );
-            },
-            {},
-            $page.params.item,
-        ),
-    );
+let itemStack = $derived(
+    liveQuery(
+        async () => {
+            return await makeItemStack(await getTakeable($page.params.item));
+        },
+        {},
+        $page.params.item,
+    ),
+);
 
-    let itemName = $derived(
-        liveQuery(
-            async () => {
-                return await $itemStack?.getName($locale);
-            },
-            {},
-            $page.params.item,
-        ),
-    );
-    let texture = $derived(
-        liveQuery(
-            async () => {
-                return await $itemStack?.getImage?.(true);
-            },
-            {},
-            $page.params.item,
-        ),
-    );
+let itemName = $derived(
+    liveQuery(
+        async () => {
+            return await $itemStack?.getName($locale);
+        },
+        {},
+        $page.params.item,
+    ),
+);
+let texture = $derived(
+    liveQuery(
+        async () => {
+            return await $itemStack?.getImage?.(true);
+        },
+        {},
+        $page.params.item,
+    ),
+);
 </script>
 
 <svelte:head>

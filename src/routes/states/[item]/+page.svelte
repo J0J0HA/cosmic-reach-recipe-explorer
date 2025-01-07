@@ -11,20 +11,38 @@ import { liveQuery } from "dexie";
 import Body from "../../Body.svelte";
 import SearchableItemList from "../../SearchableItemList.svelte";
 
-let itemStack = $derived(liveQuery(async () => {
-    return await makeItemStack(await getTakeable($page.params.item));
-}, {}, $page.params.item));
+let itemStack = $derived(
+    liveQuery(
+        async () => {
+            return await makeItemStack(await getTakeable($page.params.item));
+        },
+        {},
+        $page.params.item,
+    ),
+);
 
-let states = $derived(liveQuery(() => {
-    return db.blockstates
-        .where({ blockId: $page.params.item.split("[")[0] })
-        .and((blockState) => blockState.fullId !== $page.params.item)
-        .toArray();
-}, {}, $page.params.item));
+let states = $derived(
+    liveQuery(
+        () => {
+            return db.blockstates
+                .where({ blockId: $page.params.item.split("[")[0] })
+                .and((blockState) => blockState.fullId !== $page.params.item)
+                .toArray();
+        },
+        {},
+        $page.params.item,
+    ),
+);
 
-let name = $derived(liveQuery(async () => {
-    return await $itemStack?.getName($locale);
-}, {}, [$itemStack, $locale]));
+let name = $derived(
+    liveQuery(
+        async () => {
+            return await $itemStack?.getName($locale);
+        },
+        {},
+        [$itemStack, $locale],
+    ),
+);
 </script>
 
 <svelte:head>

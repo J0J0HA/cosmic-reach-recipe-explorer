@@ -1,9 +1,9 @@
 <script>
-    import { Icon } from "svelte-icons-pack";
-    import { FiLoader } from "svelte-icons-pack/fi";
-    let { value = $bindable(), icon = undefined, ...restProps } = $props();
+import { Icon } from "svelte-icons-pack";
+import { FiLoader } from "svelte-icons-pack/fi";
+let { value = $bindable(), icon = undefined, ...restProps } = $props();
 
-    let inputElement = $state();
+let inputElement = $state();
 </script>
 
 <div

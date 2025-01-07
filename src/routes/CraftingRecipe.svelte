@@ -9,9 +9,15 @@ import { getTakeable, makeItemStack } from "$lib/utils";
 import { db } from "$lib/db";
 import { liveQuery } from "dexie";
 
-const resultTakeable = $derived(liveQuery(async () => {
-    return await makeItemStack(await getTakeable(recipe.result.fullId));
-}, {}, [recipe.result.fullId]));
+const resultTakeable = $derived(
+    liveQuery(
+        async () => {
+            return await makeItemStack(await getTakeable(recipe.result.fullId));
+        },
+        {},
+        [recipe.result.fullId],
+    ),
+);
 
 const progressArrow = liveQuery(
     () =>

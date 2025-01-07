@@ -1,37 +1,33 @@
 <script>
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
-    import ItemStackDisplay from "./ItemStackDisplay.svelte";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
+import ItemStackDisplay from "./ItemStackDisplay.svelte";
 
-    let { grid = [], out = false} = $props();
-    const bgImage = liveQuery(
-        () =>
-            db.textures
-                .where({
-                    modId: "base",
-                    subPath: out
-                        ? "textures/ui/container-output.png"
-                        : "textures/ui/container.png",
-                })
-                .first(),
-        {
-            initialValue: null,
-        },
-    );
-    const hoverBgImage = liveQuery(
-        () =>
-            db.textures
-                .where({
-                    modId: "base",
-                    subPath: out
-                        ? "textures/ui/container-output-hovered.png"
-                        : "textures/ui/container-hovered.png",
-                })
-                .first(),
-        {
-            initialValue: null,
-        },
-    );
+let { grid = [], out = false } = $props();
+const bgImage = liveQuery(
+    () =>
+        db.textures
+            .where({
+                modId: "base",
+                subPath: out ? "textures/ui/container-output.png" : "textures/ui/container.png",
+            })
+            .first(),
+    {
+        initialValue: null,
+    },
+);
+const hoverBgImage = liveQuery(
+    () =>
+        db.textures
+            .where({
+                modId: "base",
+                subPath: out ? "textures/ui/container-output-hovered.png" : "textures/ui/container-hovered.png",
+            })
+            .first(),
+    {
+        initialValue: null,
+    },
+);
 </script>
 
 <table

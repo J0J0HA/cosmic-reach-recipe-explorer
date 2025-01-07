@@ -1,45 +1,38 @@
 <script>
-    import { version } from "$app/environment";
-    import { updated } from "$app/stores";
-    import { db } from "$lib/db";
-    import {
-        crVersion,
-        locale,
-        ready,
-        stateCallbackJar,
-        refetchVersionList,
-        versionListPromise,
-    } from "$lib/stores";
-    import { parsingURL, readURLParams } from "$lib/urlset.js";
-    import { generateShareLink } from "$lib/utils";
-    import { getVersionList, setVersion } from "$lib/versions";
-    import { liveQuery } from "dexie";
-    import { onMount } from "svelte";
-    import { writable } from "svelte/store";
-    import SourceEditor from "./SourceEditor.svelte";
+import { version } from "$app/environment";
+import { updated } from "$app/stores";
+import { db } from "$lib/db";
+import { crVersion, locale, ready, refetchVersionList, stateCallbackJar, versionListPromise } from "$lib/stores";
+import { parsingURL, readURLParams } from "$lib/urlset.js";
+import { generateShareLink } from "$lib/utils";
+import { getVersionList, setVersion } from "$lib/versions";
+import { liveQuery } from "dexie";
+import { onMount } from "svelte";
+import { writable } from "svelte/store";
+import SourceEditor from "./SourceEditor.svelte";
 
-    import BasicButton from "./ui/BasicButton.svelte";
-    import Select from "./ui/Select.svelte";
-    import HorizontalBar from "./ui/HorizontalBar.svelte";
-    import { FiShare2, FiClipboard } from "svelte-icons-pack/fi";
+import { FiClipboard, FiShare2 } from "svelte-icons-pack/fi";
+import BasicButton from "./ui/BasicButton.svelte";
+import HorizontalBar from "./ui/HorizontalBar.svelte";
+import Select from "./ui/Select.svelte";
 
-    const loadingJar = writable(false);
-    const loadingJarState = writable("idle");
-    const downloadTotal = writable(0);
-    const downloadDone = writable(0);
+const loadingJar = writable(false);
+const loadingJarState = writable("idle");
+const downloadTotal = writable(0);
+const downloadDone = writable(0);
 
-    onMount(() =>
-        stateCallbackJar.set((state, done, total) => {
-            loadingJar.set(state !== "idle");
-            loadingJarState.set(state);
-            downloadDone.set(done);
-            downloadTotal.set(total);
-        }),
-    );
+onMount(() =>
+    stateCallbackJar.set((state, done, total) => {
+        loadingJar.set(state !== "idle");
+        loadingJarState.set(state);
+        downloadDone.set(done);
+        downloadTotal.set(total);
+    }),
+);
 
-    const languages = liveQuery(() => {
-        return db.metadata.where({ key: "languages" }).first();
-    });
+const languages = liveQuery(() => {
+    return db.metadata.where({ key: "languages" }).first();
+});
 </script>
 
 <div style="position: fixed; top:10px; left: 12.5px; font-size: 0.7rem;">

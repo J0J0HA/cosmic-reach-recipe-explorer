@@ -1,50 +1,44 @@
 <script>
-    import { Icon } from "svelte-icons-pack";
-    import { FiChevronDown, FiChevronUp } from "svelte-icons-pack/fi";
-    import Button from "./Button.svelte";
+import { Icon } from "svelte-icons-pack";
+import { FiChevronDown, FiChevronUp } from "svelte-icons-pack/fi";
+import Button from "./Button.svelte";
 
-    let {
-        options,
-        variant = "primary",
-        text = undefined,
-        icon = undefined,
-        disabled = false,
-        value = $bindable(null),
-        ...restProps
-    } = $props();
+let {
+    options,
+    variant = "primary",
+    text = undefined,
+    icon = undefined,
+    disabled = false,
+    value = $bindable(null),
+    ...restProps
+} = $props();
 
-    let open = $state(false);
-    let delayedOpen = $state(false);
-    let container;
-    let button = $state();
+let open = $state(false);
+let delayedOpen = $state(false);
+let container;
+let button = $state();
 
-    let updateUntil = $derived((open || true) && Date.now() + 50);
+let updateUntil = $derived((open || true) && Date.now() + 50);
 
-    $effect(() => {
-        [updateUntil]; // dependency
-        if (!container) return;
-        const anim = setInterval(() => {
-            container.style["padding-right"] =
-                `${button.getBoundingClientRect().width + 10}px`;
-            container.style["padding-bottom"] =
-                `${button.getBoundingClientRect().height}px`;
-            if (Date.now() > updateUntil) {
-                clearInterval(anim);
-                delayedOpen = open;
-            }
-        }, 1);
-        return () => {
+$effect(() => {
+    [updateUntil]; // dependency
+    if (!container) return;
+    const anim = setInterval(() => {
+        container.style["padding-right"] = `${button.getBoundingClientRect().width + 10}px`;
+        container.style["padding-bottom"] = `${button.getBoundingClientRect().height}px`;
+        if (Date.now() > updateUntil) {
             clearInterval(anim);
-        };
-    });
+            delayedOpen = open;
+        }
+    }, 1);
+    return () => {
+        clearInterval(anim);
+    };
+});
 
-    let search = $state();
-    let searchString = $state();
-    let filteredOptions = $derived(
-        Object.entries(options).filter(([key, val]) =>
-            val.includes(searchString || ""),
-        ),
-    );
+let search = $state();
+let searchString = $state();
+let filteredOptions = $derived(Object.entries(options).filter(([key, val]) => val.includes(searchString || "")));
 </script>
 
 <div class="container" bind:this={container}>

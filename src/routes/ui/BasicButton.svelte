@@ -1,47 +1,39 @@
 <script>
-    import { Icon } from "svelte-icons-pack";
-    import { FiLoader, FiCheck, FiAlertCircle } from "svelte-icons-pack/fi";
-    let {
-        children,
-        icon,
-        onclick: onclickListener,
-        class: klass,
-        disabled,
-        feedbackFor,
-        ...restProps
-    } = $props();
+import { Icon } from "svelte-icons-pack";
+import { FiAlertCircle, FiCheck, FiLoader } from "svelte-icons-pack/fi";
+let { children, icon, onclick: onclickListener, class: klass, disabled, feedbackFor, ...restProps } = $props();
 
-    let square = $derived(!children);
-    let state = $state("idle");
+let square = $derived(!children);
+let state = $state("idle");
 
-    let currentIcon = $derived(
-        icon
-            ? {
-                  inProgress: FiLoader,
-                  succeeded: FiCheck,
-                  failed: FiAlertCircle,
-              }[state] || icon
-            : null,
-    );
+let currentIcon = $derived(
+    icon
+        ? {
+              inProgress: FiLoader,
+              succeeded: FiCheck,
+              failed: FiAlertCircle,
+          }[state] || icon
+        : null,
+);
 
-    let taskEnded = $state(0);
+let taskEnded = $state(0);
 
-    $effect(() => {
-        taskEnded; // dependency
+$effect(() => {
+    taskEnded; // dependency
 
-        let id;
-        if (["failed", "succeeded"].includes(state)) {
-            id = setTimeout(() => {
-                if (["failed", "succeeded"].includes(state)) {
-                    state = "idle";
-                }
-            }, feedbackFor);
-        }
+    let id;
+    if (["failed", "succeeded"].includes(state)) {
+        id = setTimeout(() => {
+            if (["failed", "succeeded"].includes(state)) {
+                state = "idle";
+            }
+        }, feedbackFor);
+    }
 
-        return () => {
-            if (id) clearTimeout(id);
-        };
-    });
+    return () => {
+        if (id) clearTimeout(id);
+    };
+});
 </script>
 
 <button
