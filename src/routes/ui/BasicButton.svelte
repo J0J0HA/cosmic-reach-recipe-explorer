@@ -65,7 +65,7 @@ $effect(() => {
         <Icon src={currentIcon} className="icon" />
     {/if}
     {#if children}
-        <span>{@render children()}</span>
+        {@render children()}
     {/if}
 </button>
 
@@ -73,7 +73,7 @@ $effect(() => {
     button {
         all: unset;
 
-        display: inline flex;
+        display: flex;
         gap: 6px;
         border-radius: 4px;
         padding: 6px 8px;

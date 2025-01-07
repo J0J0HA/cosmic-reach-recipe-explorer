@@ -47,7 +47,7 @@ setInterval(() => {
 </script>
 
 <BasicButton
-    disabled={!dialog || forceOpen}
+    disabled={!dialog || forceOpen || disabled}
     icon={FiEdit}
     onclick={() => {
         if (dialog) dialog.showModal();

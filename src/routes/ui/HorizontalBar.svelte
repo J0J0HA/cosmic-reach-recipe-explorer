@@ -11,8 +11,9 @@ let { children, align = "center", ...restProps } = $props();
         display: flex;
 
         flex-direction: row;
-        gap: 5px;
         justify-content: var(--align);
         box-sizing: border-box;
+        flex-wrap: wrap;
+        align-items: center;
     }
 </style>
