@@ -2,8 +2,7 @@
 import { unloadSource } from "$lib/datamods";
 import WaitableImg from "./WaitableIMG.svelte";
 
-export let source;
-export let disabled;
+    let { source, disabled } = $props();
 </script>
 
 <div class:bordered={true} class="dm-box">
@@ -21,12 +20,12 @@ export let disabled;
         </p>
         <button
             disabled={source.editing || disabled}
-            on:click={() => unloadSource(source.sourceId)}>Unload</button
+            onclick={() => unloadSource(source.sourceId)}>Unload</button
         >
         {#if source.editing}
             <button
                 {disabled}
-                on:click={() => {
+                onclick={() => {
                     if (
                         confirm(
                             "This may result in corrupted data, which can only be removed by clearing browser data for this page. Continue?",

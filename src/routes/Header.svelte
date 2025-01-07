@@ -1,40 +1,33 @@
 <script>
-import { version } from "$app/environment";
-import { updated } from "$app/stores";
-import { db } from "$lib/db";
-import { crVersion, locale, ready } from "$lib/stores";
-import { parsingURL, readURLParams } from "$lib/urlset.js";
-import { generateShareLink } from "$lib/utils";
-import { getVersionList, setVersion } from "$lib/versions";
-import { liveQuery } from "dexie";
-import { onMount } from "svelte";
-import { writable } from "svelte/store";
-import SourceEditor from "./SourceEditor.svelte";
+    import { version } from "$app/environment";
+    import { updated } from "$app/stores";
+    import { db } from "$lib/db";
+    import { crVersion, locale, ready, stateCallbackJar, refetchVersionList, versionListPromise } from "$lib/stores";
+    import { parsingURL, readURLParams } from "$lib/urlset.js";
+    import { generateShareLink } from "$lib/utils";
+    import { getVersionList, setVersion } from "$lib/versions";
+    import { liveQuery } from "dexie";
+    import { onMount } from "svelte";
+    import { writable } from "svelte/store";
+    import SourceEditor from "./SourceEditor.svelte";
 
-const loadingJar = writable(false);
-const loadingJarState = writable("idle");
-const downloadTotal = writable(0);
-const downloadDone = writable(0);
+    const loadingJar = writable(false);
+    const loadingJarState = writable("idle");
+    const downloadTotal = writable(0);
+    const downloadDone = writable(0);
 
-const stateCallbackJar = (state, done, total) => {
-    loadingJar.set(state !== "idle");
-    loadingJarState.set(state);
-    downloadDone.set(done);
-    downloadTotal.set(total);
-};
+    onMount(() =>
+        stateCallbackJar.set((state, done, total) => {
+            loadingJar.set(state !== "idle");
+            loadingJarState.set(state);
+            downloadDone.set(done);
+            downloadTotal.set(total);
+        }),
+    );
 
-const versionListPromise = writable(null);
-
-function refetchVersionList() {
-    versionListPromise.set(getVersionList());
-}
-onMount(refetchVersionList);
-
-onMount(() => readURLParams(stateCallbackJar));
-
-const languages = liveQuery(() => {
-    return db.metadata.where({ key: "languages" }).first();
-});
+    const languages = liveQuery(() => {
+        return db.metadata.where({ key: "languages" }).first();
+    });
 </script>
 
 <div style="position: fixed; top:10px; left: 12.5px; font-size: 0.7rem;">
@@ -44,7 +37,7 @@ const languages = liveQuery(() => {
 <button
     class="share"
     style="position: fixed; top:13px; right: 13px; font-size: 0.7rem;"
-    on:click={async () => {
+    onclick={async () => {
         try {
             navigator.clipboard.writeText(await generateShareLink());
             alert("Copied to clipboard:\n\n" + (await generateShareLink()));
@@ -83,13 +76,13 @@ const languages = liveQuery(() => {
                     value={$loadingJar
                         ? ":LOAD-" + $loadingJarState
                         : $crVersion || ":"}
-                    on:change={(e) => {
+                    onchange={(e) => {
                         loadingJar.set(true);
                         setVersion(
                             versions.filter(
                                 (version) => version.id == e.target.value,
                             )[0],
-                            stateCallbackJar,
+                            $stateCallbackJar,
                         ).then(() => {
                             loadingJar.set(false);
                         });
@@ -129,7 +122,7 @@ const languages = liveQuery(() => {
                             max={$downloadTotal}
                             value={$downloadDone}
                             class="fill"
-                        />
+                        ></progress>
                         <span class="static">
                             {Math.round(
                                 ($downloadDone / $downloadTotal) * 100,
@@ -139,7 +132,7 @@ const languages = liveQuery(() => {
                 {/if}
             {:catch}
                 <p>Failed to load versions.</p>
-                <button on:click={refetchVersionList}>Retry</button>
+                <button onclick={refetchVersionList}>Retry</button>
             {/await}
         {/if}
         {#if $ready && $crVersion && !$loadingJar}
@@ -150,7 +143,7 @@ const languages = liveQuery(() => {
                     key="lang-select"
                     value={$locale}
                     class="fill"
-                    on:change={(event) => locale.set(event.target.value)}
+                    onchange={(event) => locale.set(event.target.value)}
                     disabled={$parsingURL}
                 >
                     {#each $languages?.value || [] as language (language.key)}
@@ -170,7 +163,7 @@ const languages = liveQuery(() => {
         <div class="toast">
             <p style:font-weight="bold">
                 CR Recipes was updated since you loaded this page.
-                <a href="/" on:click={() => location.reload()}>
+                <a href="/" onclick={() => location.reload()}>
                     Reload to apply
                 </a>
             </p>

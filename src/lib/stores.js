@@ -1,10 +1,13 @@
 import { browser } from "$app/environment";
 import { readable, writable } from "svelte/store";
 import { load, store } from "./serializer";
+import { getVersionList } from "./versions";
+import { readURLParams } from "./urlset";
 
 export const crVersion = writable(null);
 export const locale = writable("en_us");
 export const ready = writable(false);
+export const stateCallbackJar = writable((...args)=>{console.log("stateCallbackJar", ...args)});
 
 if (browser) {
     load("locale").then((value) => {
@@ -30,3 +33,14 @@ export const tickTime = readable(0, function start(set) {
         clearInterval(interval);
     };
 });
+
+export const versionListPromise = writable(null);
+
+export function refetchVersionList() {
+    versionListPromise.set(getVersionList());
+}
+
+if (browser) {
+    refetchVersionList();
+    readURLParams(stateCallbackJar);
+}

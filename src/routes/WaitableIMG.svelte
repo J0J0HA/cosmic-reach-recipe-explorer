@@ -1,7 +1,5 @@
 <script>
-export let inProgress = false;
-export let alt = null;
-export let src = null;
+    let { inProgress = false, alt = null, src = null } = $props();
 </script>
 
 <div class="imgWrap">

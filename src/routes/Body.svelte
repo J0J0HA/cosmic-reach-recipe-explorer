@@ -1,6 +1,8 @@
 <script>
 import { crVersion, ready } from "$lib/stores";
 import { parsingURL } from "$lib/urlset";
+
+    let { children } = $props();
 </script>
 
 <div class="wrapper">
@@ -8,9 +10,9 @@ import { parsingURL } from "$lib/urlset";
         {#if !$ready || $parsingURL}
             <p>Loading...</p>
         {:else if !$crVersion}
-            <p>No active version</p>
+            <p>No version selected.</p>
         {:else}
-            <slot />
+            {@render children?.()}
         {/if}
     </main>
 </div>

@@ -1,12 +1,15 @@
 <script>
-import { locale } from "$lib/stores";
-import InventoryDisplay from "./InventoryDisplay.svelte";
-export let itemStack;
+    import { locale } from "$lib/stores";
+    import InventoryDisplay from "./InventoryDisplay.svelte";
+    import { liveQuery } from "dexie";
 
-import { liveQuery } from "dexie";
-$: itemName = liveQuery(async () => {
-    return await itemStack.getName($locale);
-});
+    let { itemStack, children } = $props();
+
+    let itemName = $derived(
+        liveQuery(async () => {
+            return await itemStack.getName($locale);
+        }, {}, [itemStack, $locale]),
+    );
 </script>
 
 <div class="item bordered">
@@ -18,7 +21,7 @@ $: itemName = liveQuery(async () => {
         </div>
     </div>
     <div class="rightmost">
-        <slot />
+        {@render children?.()}
     </div>
 </div>
 

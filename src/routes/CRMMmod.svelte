@@ -1,10 +1,8 @@
 <script>
-import { loadDatamodFromCRMM, unloadSource } from "$lib/datamods";
-import WaitableImg from "./WaitableIMG.svelte";
+    import { loadDatamodFromCRMM, unloadSource } from "$lib/datamods";
+    import WaitableImg from "./WaitableIMG.svelte";
 
-export let hit;
-export let isInstalled;
-export let disabled;
+    let { hit, isInstalled, disabled } = $props();
 </script>
 
 <div class:bordered={true} class="dm-box">
@@ -30,7 +28,7 @@ export let disabled;
             disabled={isInstalled?.editing || disabled}
             class:highlight={isInstalled &&
                 new Date(hit.dateUpdated) > new Date(isInstalled.createdAt)}
-            on:click={async () => {
+            onclick={async () => {
                 await loadDatamodFromCRMM(hit);
             }}
         >
@@ -39,7 +37,7 @@ export let disabled;
         {#if isInstalled}
             <button
                 disabled={isInstalled.editing || disabled}
-                on:click={async () => {
+                onclick={async () => {
                     await unloadSource("crmm:" + hit.slug);
                 }}
             >

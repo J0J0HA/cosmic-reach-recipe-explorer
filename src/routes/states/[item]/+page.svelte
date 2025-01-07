@@ -11,20 +11,20 @@ import { liveQuery } from "dexie";
 import Body from "../../Body.svelte";
 import SearchableItemList from "../../SearchableItemList.svelte";
 
-$: itemStack = liveQuery(async () => {
+let itemStack = $derived(liveQuery(async () => {
     return await makeItemStack(await getTakeable($page.params.item));
-});
+}, {}, $page.params.item));
 
-$: states = liveQuery(() => {
+let states = $derived(liveQuery(() => {
     return db.blockstates
         .where({ blockId: $page.params.item.split("[")[0] })
         .and((blockState) => blockState.fullId !== $page.params.item)
         .toArray();
-});
+}, {}, $page.params.item));
 
-const name = liveQuery(async () => {
+let name = $derived(liveQuery(async () => {
     return await $itemStack?.getName($locale);
-});
+}, {}, [$itemStack, $locale]));
 </script>
 
 <svelte:head>

@@ -1,7 +1,7 @@
 <script>
 import InventoryDisplay from "./InventoryDisplay.svelte";
 
-export let recipe;
+let { recipe } = $props();
 
 import { ItemStack } from "$lib/items";
 import { getTakeable, makeItemStack } from "$lib/utils";
@@ -9,9 +9,9 @@ import { getTakeable, makeItemStack } from "$lib/utils";
 import { db } from "$lib/db";
 import { liveQuery } from "dexie";
 
-$: resultTakeable = liveQuery(async () => {
+const resultTakeable = $derived(liveQuery(async () => {
     return await makeItemStack(await getTakeable(recipe.result.fullId));
-});
+}, {}, [recipe.result.fullId]));
 
 const progressArrow = liveQuery(
     () =>

@@ -1,39 +1,51 @@
 <script>
-import { goto } from "$app/navigation";
-import { ItemStack } from "$lib/items";
-import { locale, tickTime } from "$lib/stores";
-import { liveQuery } from "dexie";
+    import { goto } from "$app/navigation";
+    import { ItemStack } from "$lib/items";
+    import { locale, tickTime } from "$lib/stores";
+    import { liveQuery } from "dexie";
 
-export let itemStack = undefined;
-$: itemStack = itemStack || new ItemStack(null);
-$: itemStack = Array.isArray(itemStack) ? itemStack : [itemStack];
-$: currentItemStack = itemStack[$tickTime % itemStack.length] || new ItemStack(null);
-$: air = currentItemStack?.item === null;
+    let { itemStack: initialItemStack = undefined } = $props();
 
-$: names = liveQuery(async () => {
-    return await Promise.all(
-        itemStack.map(async (subItemStack) => {
-            return await subItemStack?.getName?.($locale);
-        }),
+    let finalItemStack = $derived.by(() => {
+        const itemStack = initialItemStack || new ItemStack(null);
+        return Array.isArray(itemStack) ? itemStack : [itemStack];
+    });
+    let currentItemStack = $derived(
+        finalItemStack[$tickTime % finalItemStack.length] ||
+            new ItemStack(null),
     );
-});
-$: currentItemStackName = $names?.[$tickTime % itemStack.length] || currentItemStack.fullId;
+    let isAir = $derived(currentItemStack?.item === null);
 
-let startedTouch = 0;
-
-$: images = liveQuery(async () => {
-    return await Promise.all(
-        itemStack.map(async (subItemStack) => {
-            return await subItemStack?.getImage?.();
-        }),
+    let names = $derived(
+        liveQuery(async () => {
+            return await Promise.all(
+                finalItemStack.map(async (subItemStack) => {
+                    return await subItemStack?.getName?.($locale);
+                }),
+            );
+        }, {}, [finalItemStack, $locale]),
     );
-});
+    let currentItemStackName = $derived(
+        $names?.[$tickTime % finalItemStack.length] || currentItemStack.fullId,
+    );
+
+    let startedTouch = $state(0);
+
+    let images = $derived(
+        liveQuery(async () => {
+            return await Promise.all(
+                finalItemStack.map(async (subItemStack) => {
+                    return await subItemStack?.getImage?.();
+                }),
+            );
+        }, {}, [finalItemStack]),
+    );
 </script>
 
 <button
-    class="img-wrapper{air ? ' nohover' : ''}"
-    on:touchstart={(e) => (startedTouch = Date.now())}
-    on:touchend={(e) => {
+    class="img-wrapper{isAir ? ' nohover' : ''}"
+    ontouchstart={(e) => (startedTouch = Date.now())}
+    ontouchend={(e) => {
         const touchedFor = Date.now() - startedTouch;
 
         if (touchedFor > 250) {
@@ -42,9 +54,9 @@ $: images = liveQuery(async () => {
             goto(`/get/${currentItemStack.item.fullId}`);
         }
     }}
-    on:mouseup={(e) => {
+    onmouseup={(e) => {
         e.preventDefault();
-        if (air) return false;
+        if (isAir) return false;
         switch (e.button) {
             case 0:
                 goto(`/get/${currentItemStack.item.fullId}`);
@@ -60,12 +72,12 @@ $: images = liveQuery(async () => {
                 break;
         }
     }}
-    on:mousedown={(e) => {
+    onmousedown={(e) => {
         e.preventDefault();
     }}
-    on:contextmenu={(e) => e.preventDefault()}
+    oncontextmenu={(e) => e.preventDefault()}
 >
-    {#each itemStack as subItemStack, index}
+    {#each finalItemStack as subItemStack, index}
         <!-- {#await subitemStack.getImage() then image} -->
         <img
             src={$images?.[index]}
@@ -73,13 +85,13 @@ $: images = liveQuery(async () => {
                 ? ""
                 : $names?.[index] || subItemStack.fullId}
             draggable="false"
-            style:display={index === $tickTime % itemStack.length
+            style:display={index === $tickTime % finalItemStack.length
                 ? "block"
                 : "none"}
         />
         <!-- {/await} -->
     {/each}
-    {#if !air}
+    {#if !isAir}
         <div class="count">
             {currentItemStack.count === 1 ? "" : currentItemStack.count}
         </div>

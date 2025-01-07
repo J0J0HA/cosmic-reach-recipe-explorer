@@ -1,12 +1,21 @@
 <script>
-import Body from "../Body.svelte";
-import Header from "../Header.svelte";
+    import Body from "../Body.svelte";
+    import Header from "../Header.svelte";
 
-import { db } from "$lib/db";
-import { liveQuery } from "dexie";
-import OreDistribution from "../OreDistribution.svelte";
+    import { db } from "$lib/db";
+    import { liveQuery } from "dexie";
+    import OreDistribution from "../OreDistribution.svelte";
 
-const ores = liveQuery(async () => db.ores.toArray());
+    const ores = liveQuery(async () => db.ores.toArray());
+    let changeDir = $state(false);
+    $effect(() => {
+        const id = setTimeout(() => {
+            changeDir = true;
+        }, 4000);
+        return () => {
+            clearTimeout(id);
+        };
+    });
 </script>
 
 <svelte:head>
@@ -22,7 +31,8 @@ const ores = liveQuery(async () => db.ores.toArray());
 
     <div class="center">
         <!-- <SearchableItemList takeables={$ores || []} /> -->
-        {#each $ores || [] as ore}
+        {#each changeDir ? ($ores || []).reverse() : $ores || [] as ore}
+            {JSON.stringify(ore)}
             <OreDistribution {ore} />
         {/each}
         {#if !$ores?.length}

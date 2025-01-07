@@ -7,22 +7,21 @@ import Source from "./Source.svelte";
 import { browser } from "$app/environment";
 import CrmMmod from "./CRMMmod.svelte";
 
-let canLoadFolders = false;
+let canLoadFolders = $state(false);
 if (browser) {
     canLoadFolders = !!window.DataTransferItem.prototype.webkitGetAsEntry;
 }
 
-export let disabled;
-export let forceOpen;
-let dialog;
-let crmmDialog;
-let inProgress;
+    let { disabled, forceOpen } = $props();
+let dialog = $state();
+let crmmDialog = $state();
+let inProgress = $state();
 
 const sources = liveQuery(() => db.loadedSources.toArray());
 
-let crmmSearchI;
-let crmmSearchO;
-let crmmSearchPage = 1;
+let crmmSearchI = $state();
+let crmmSearchO = $state();
+let crmmSearchPage = $state(1);
 
 let includeVersion;
 
@@ -36,7 +35,7 @@ setInterval(() => {
 
 <button
     disabled={!dialog || forceOpen}
-    on:click={() => {
+    onclick={() => {
         if (dialog) dialog.showModal();
     }}>Edit datamod sources</button
 >
@@ -44,7 +43,7 @@ setInterval(() => {
     <h1>{forceOpen ? "Loading datamods..." : "Edit datamod sources"}</h1>
 
     <div class="bar">
-        <button {disabled} on:click={() => dialog.close()}>Close</button>
+        <button {disabled} onclick={() => dialog.close()}>Close</button>
 
         <input
             id="dir-chooser"
@@ -54,17 +53,17 @@ setInterval(() => {
             webkitdirectory
             multiple
             hidden
-            on:change={async (event) => {
+            onchange={async (event) => {
                 await loadDatamodsFromFolder(event.target.files);
                 inProgress = false;
             }}
-            on:abort={() => {
+            onabort={() => {
                 inProgress = false;
             }}
-            on:cancel={() => {
+            oncancel={() => {
                 inProgress = false;
             }}
-            on:error={() => {
+            onerror={() => {
                 inProgress = false;
             }}
         />
@@ -74,24 +73,24 @@ setInterval(() => {
             type="file"
             hidden
             disabled={inProgress || disabled}
-            on:change={async (event) => {
+            onchange={async (event) => {
                 await loadDatamodFromZIP(event.target.files[0]);
                 inProgress = false;
             }}
-            on:abort={() => {
+            onabort={() => {
                 inProgress = false;
             }}
-            on:cancel={() => {
+            oncancel={() => {
                 inProgress = false;
             }}
-            on:error={() => {
+            onerror={() => {
                 inProgress = false;
             }}
         />
         {#if canLoadFolders}
             <button
                 disabled={inProgress || disabled}
-                on:click={() => {
+                onclick={() => {
                     inProgress = true;
                     document.querySelector("#dir-chooser").click();
                 }}
@@ -101,7 +100,7 @@ setInterval(() => {
         {/if}
         <button
             disabled={inProgress || disabled}
-            on:click={() => {
+            onclick={() => {
                 inProgress = true;
                 document.querySelector("#zip-chooser").click();
             }}
@@ -114,7 +113,7 @@ setInterval(() => {
 
             <div class="bar">
                 <button
-                    on:click={() => {
+                    onclick={() => {
                         crmmDialog.close();
                     }}>Close</button
                 >
@@ -139,13 +138,13 @@ setInterval(() => {
                 {/each}
                 <button
                     disabled={crmmSearchPage === 1}
-                    on:click={() => {
+                    onclick={() => {
                         crmmSearchPage -= 1;
                     }}>Last page</button
                 >
                 <button
                     disabled={result.passedHits >= result.totalHits}
-                    on:click={() => {
+                    onclick={() => {
                         crmmSearchPage += 1;
                     }}>Next page</button
                 >
@@ -155,7 +154,7 @@ setInterval(() => {
         </dialog>
         <button
             disabled={inProgress || disabled}
-            on:click={() => {
+            onclick={() => {
                 crmmDialog.showModal();
             }}
         >

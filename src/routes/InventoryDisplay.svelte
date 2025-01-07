@@ -1,34 +1,37 @@
 <script>
-import { db } from "$lib/db";
-import { liveQuery } from "dexie";
-import ItemStackDisplay from "./ItemStackDisplay.svelte";
+    import { db } from "$lib/db";
+    import { liveQuery } from "dexie";
+    import ItemStackDisplay from "./ItemStackDisplay.svelte";
 
-export let grid = [];
-export let out = false;
-const bgImage = liveQuery(
-    () =>
-        db.textures
-            .where({
-                modId: "base",
-                subPath: out ? "textures/ui/container-output.png" : "textures/ui/container.png",
-            })
-            .first(),
-    {
-        initialValue: null,
-    },
-);
-const hoverBgImage = liveQuery(
-    () =>
-        db.textures
-            .where({
-                modId: "base",
-                subPath: out ? "textures/ui/container-output-hovered.png" : "textures/ui/container-hovered.png",
-            })
-            .first(),
-    {
-        initialValue: null,
-    },
-);
+    let { grid = [], out = false} = $props();
+    const bgImage = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: out
+                        ? "textures/ui/container-output.png"
+                        : "textures/ui/container.png",
+                })
+                .first(),
+        {
+            initialValue: null,
+        },
+    );
+    const hoverBgImage = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: out
+                        ? "textures/ui/container-output-hovered.png"
+                        : "textures/ui/container-hovered.png",
+                })
+                .first(),
+        {
+            initialValue: null,
+        },
+    );
 </script>
 
 <table
@@ -36,13 +39,15 @@ const hoverBgImage = liveQuery(
     style:--img-slot="url({$bgImage?.data || ''})"
     style:--img-slot-hover="url({$hoverBgImage?.data || ''})"
 >
-    {#each grid as row}
-        <tr>
-            {#each row as cell}
-                <td><ItemStackDisplay itemStack={cell} /></td>
-            {/each}
-        </tr>
-    {/each}
+    <tbody>
+        {#each grid as row}
+            <tr>
+                {#each row as cell}
+                    <td><ItemStackDisplay itemStack={cell} /></td>
+                {/each}
+            </tr>
+        {/each}
+    </tbody>
 </table>
 
 <style>

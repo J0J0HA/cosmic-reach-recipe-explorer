@@ -1,32 +1,76 @@
 <script>
-import { locale } from "$lib/stores";
-import CraftingRecipe from "../../CraftingRecipe.svelte";
-import Header from "../../Header.svelte";
-import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
+    import { locale } from "$lib/stores";
+    import CraftingRecipe from "../../CraftingRecipe.svelte";
+    import Header from "../../Header.svelte";
+    import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
-import { page } from "$app/stores";
-import { db } from "$lib/db";
-import { getTakeable, makeItemStack } from "$lib/utils";
-import { liveQuery } from "dexie";
-import FurnaceRecipe from "../../FurnaceRecipe.svelte";
+    import { page } from "$app/stores";
+    import { db } from "$lib/db";
+    import { getTakeable, makeItemStack } from "$lib/utils";
+    import { liveQuery } from "dexie";
+    import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
-import Body from "../../Body.svelte";
-import OreDistribution from "../../OreDistribution.svelte";
+    import Body from "../../Body.svelte";
+    import OreDistribution from "../../OreDistribution.svelte";
 
-$: itemStack = liveQuery(async () => {
-    return await makeItemStack(await getTakeable($page.params.item));
-});
+    let itemStack = $derived(
+        liveQuery(
+            async () => {
+                return await makeItemStack(
+                    await getTakeable($page.params.item),
+                );
+            },
+            {},
+            $page.params.item,
+        ),
+    );
 
-$: craftingRecipes = liveQuery(() => db.craftingRecipes.where("result.fullId").equals($page.params.item).toArray());
+    let craftingRecipes = $derived(
+        liveQuery(
+            () =>
+                db.craftingRecipes
+                    .where("result.fullId")
+                    .equals($page.params.item)
+                    .toArray(),
+            {},
+            $page.params.item,
+        ),
+    );
 
-$: furnaceRecipes = liveQuery(() => db.furnaceRecipes.where("result.fullId").equals($page.params.item).toArray(), { initialValue: [] });
+    let furnaceRecipes = $derived(
+        liveQuery(
+            () =>
+                db.furnaceRecipes
+                    .where("result.fullId")
+                    .equals($page.params.item)
+                    .toArray(),
+            { initialValue: [] },
+            $page.params.item,
+        ),
+    );
 
-// TODO: Only if $page.params.item is default blockstate
-$: ores = liveQuery(() => db.ores.where("blockId").equals($page.params.item.split("[")[0]).toArray());
+    // TODO: Only if $page.params.item is default blockstate
+    let ores = $derived(
+        liveQuery(
+            () =>
+                db.ores
+                    .where("blockId")
+                    .equals($page.params.item.split("[")[0])
+                    .toArray(),
+            {},
+            $page.params.item,
+        ),
+    );
 
-const name = liveQuery(async () => {
-    return await $itemStack?.getName($locale);
-});
+    let name = $derived(
+        liveQuery(
+            async () => {
+                return await $itemStack?.getName($locale);
+            },
+            {},
+            [$itemStack, $locale],
+        ),
+    );
 </script>
 
 <svelte:head>
