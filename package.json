@@ -13,10 +13,12 @@
         "dexie": "^4.0.8",
         "hjson": "^3.2.2",
         "hjson-devvit": "^3.2.1",
+        "svelte-icons-pack": "^3.1.3",
         "three": "^0.168.0"
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.4",
+        "@melt-ui/svelte": "^0.86.2",
         "@sveltejs/adapter-auto": "^3.3.1",
         "@sveltejs/kit": "^2.15.1",
         "@sveltejs/vite-plugin-svelte": "^4.0.0",

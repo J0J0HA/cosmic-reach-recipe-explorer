@@ -1,9 +1,10 @@
 <script>
-import { crVersion, ready } from "$lib/stores";
-import { parsingURL } from "$lib/urlset";
+    import { crVersion, ready } from "$lib/stores";
+    import { parsingURL } from "$lib/urlset";
 
     let { children } = $props();
 </script>
+
 
 <div class="wrapper">
     <main>

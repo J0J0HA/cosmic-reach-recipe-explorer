@@ -1,6 +1,10 @@
 <script>
     import { loadDatamodFromCRMM, unloadSource } from "$lib/datamods";
     import WaitableImg from "./WaitableIMG.svelte";
+    import { FiDownload, FiRefreshCcw, FiTrash } from "svelte-icons-pack/fi";
+    import BasicButton from "./ui/BasicButton.svelte";
+    import TextInput from "./ui/TextInput.svelte";
+    import HorizontalBar from "./ui/HorizontalBar.svelte";
 
     let { hit, isInstalled, disabled } = $props();
 </script>
@@ -11,7 +15,7 @@
         alt={hit.name}
         inProgress={isInstalled?.editing}
     />
-    <div class="side">
+    <div class="metadata">
         <h3 class="name">{hit.name}</h3>
         <p>
             [{hit.type.join(", ")}]
@@ -24,27 +28,33 @@
                 ).toLocaleString()}
             {/if}
         </p>
-        <button
+    </div>
+    <HorizontalBar align="start" class="buttons">
+        <BasicButton
             disabled={isInstalled?.editing || disabled}
-            class:highlight={isInstalled &&
-                new Date(hit.dateUpdated) > new Date(isInstalled.createdAt)}
+            icon={isInstalled ? FiRefreshCcw : FiDownload}
+            class={isInstalled &&
+            new Date(hit.dateUpdated) > new Date(isInstalled.createdAt)
+                ? "highlight"
+                : null}
             onclick={async () => {
                 await loadDatamodFromCRMM(hit);
             }}
         >
-            {isInstalled ? "Update" : "Load"}
-        </button>
+            {isInstalled ? "Update" : "Download"}
+        </BasicButton>
         {#if isInstalled}
-            <button
+            <BasicButton
+                icon={FiTrash}
                 disabled={isInstalled.editing || disabled}
                 onclick={async () => {
                     await unloadSource("crmm:" + hit.slug);
                 }}
             >
                 Remove
-            </button>
-        {/if}
-    </div>
+            </BasicButton>
+        {/if}</HorizontalBar
+    >
 </div>
 
 <style>
@@ -54,5 +64,16 @@
         display: flex;
         flex-direction: row;
         gap: 10px;
+
+        justify-content: stretch;
+        align-items: center;
+    }
+
+    .metadata {
+        height: 100%;
+        flex: 1;
+    }
+    .buttons {
+        flex: 0;
     }
 </style>

@@ -3,12 +3,12 @@ import { replaceState } from "$app/navigation";
 import { get, writable } from "svelte/store";
 import { loadCRMMmodMetadata, loadDatamodFromCRMM, unloadSource } from "./datamods";
 import { db } from "./db";
-import { crVersion, locale, ready } from "./stores";
+import { crVersion, locale, ready, stateCallbackJar as stateCallback } from "./stores";
 import { getVersionList, setVersion } from "./versions";
 
 export const parsingURL = writable(true);
 
-export async function readURLParams(stateCallback) {
+export async function readURLParams() {
     try {
         const params = new URLSearchParams(window.location.search);
 
@@ -36,7 +36,12 @@ export async function readURLParams(stateCallback) {
                     version = versionList.find((version) => version.id === targetVersion);
                     break;
             }
-            if (version && currentVersion !== version.id) await setVersion(version, stateCallback);
+            await new Promise((resolve) => {
+                stateCallback.subscribe((value) => {
+                    if (value) resolve();
+                });
+            });
+            if (version && currentVersion !== version.id) await setVersion(version, get(stateCallback));
             params.delete("version");
         }
 

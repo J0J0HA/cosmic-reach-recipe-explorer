@@ -1,6 +1,9 @@
 <script>
-import { unloadSource } from "$lib/datamods";
-import WaitableImg from "./WaitableIMG.svelte";
+    import { unloadSource } from "$lib/datamods";
+    import WaitableImg from "./WaitableIMG.svelte";
+    import { FiTrash2 } from "svelte-icons-pack/fi";
+    import BasicButton from "./ui/BasicButton.svelte";
+    import HorizontalBar from "./ui/HorizontalBar.svelte";
 
     let { source, disabled } = $props();
 </script>
@@ -11,18 +14,25 @@ import WaitableImg from "./WaitableIMG.svelte";
         alt={source.name}
         inProgress={source.editing}
     />
-    <div class="side">
+    <div class="metadata">
         <h3 class="name">{source.name}</h3>
         <p>
             Loaded from {source.type} at {new Date(
                 source.createdAt,
             ).toLocaleString()}
         </p>
-        <button
+    </div>
+
+    <HorizontalBar align="end" class="buttons">
+        <BasicButton
             disabled={source.editing || disabled}
-            onclick={() => unloadSource(source.sourceId)}>Unload</button
+            icon={FiTrash2}
+            onclick={async () => {
+                await unloadSource(source.sourceId);
+                await new Promise(() => {});
+            }}>Remove</BasicButton
         >
-        {#if source.editing}
+        <!-- {#if source.editing}
             <button
                 {disabled}
                 onclick={() => {
@@ -35,8 +45,8 @@ import WaitableImg from "./WaitableIMG.svelte";
                     }
                 }}>DELETE</button
             >
-        {/if}
-    </div>
+        {/if} -->
+    </HorizontalBar>
 </div>
 
 <style>
@@ -47,5 +57,15 @@ import WaitableImg from "./WaitableIMG.svelte";
         display: flex;
         flex-direction: row;
         gap: 10px;
+        justify-content: stretch;
+        align-items: center;
+    }
+
+    .metadata {
+        height: 100%;
+        flex: 1;
+    }
+    .buttons {
+        flex: 0;
     }
 </style>

@@ -2,7 +2,14 @@
     import { version } from "$app/environment";
     import { updated } from "$app/stores";
     import { db } from "$lib/db";
-    import { crVersion, locale, ready, stateCallbackJar, refetchVersionList, versionListPromise } from "$lib/stores";
+    import {
+        crVersion,
+        locale,
+        ready,
+        stateCallbackJar,
+        refetchVersionList,
+        versionListPromise,
+    } from "$lib/stores";
     import { parsingURL, readURLParams } from "$lib/urlset.js";
     import { generateShareLink } from "$lib/utils";
     import { getVersionList, setVersion } from "$lib/versions";
@@ -10,6 +17,11 @@
     import { onMount } from "svelte";
     import { writable } from "svelte/store";
     import SourceEditor from "./SourceEditor.svelte";
+
+    import BasicButton from "./ui/BasicButton.svelte";
+    import Select from "./ui/Select.svelte";
+    import HorizontalBar from "./ui/HorizontalBar.svelte";
+    import { FiShare2, FiClipboard } from "svelte-icons-pack/fi";
 
     const loadingJar = writable(false);
     const loadingJarState = writable("idle");
@@ -34,18 +46,16 @@
     {version.slice(0, 6)}
 </div>
 
-<button
-    class="share"
-    style="position: fixed; top:13px; right: 13px; font-size: 0.7rem;"
+<BasicButton
+    style="position: fixed; top:13px; right: 13px;"
+    icon={FiClipboard}
+    feedbackFor={2000}
     onclick={async () => {
-        try {
-            navigator.clipboard.writeText(await generateShareLink());
-            alert("Copied to clipboard:\n\n" + (await generateShareLink()));
-        } catch (e) {
-            prompt("Failed to copy. Link:", await generateShareLink());
-        }
-    }}>Share</button
+        navigator.clipboard.writeText(await generateShareLink());
+    }}
 >
+    Copy link
+</BasicButton>
 
 <div class="jar-chooser-box bordered">
     <div
