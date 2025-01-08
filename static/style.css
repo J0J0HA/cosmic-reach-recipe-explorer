@@ -138,12 +138,13 @@ dialog[open] {
     gap: 10px;
 }
 
-@media (max-width: 600px) {
-    dialog {
-        width: 80dvw;
-        height: 80vh;
+@media screen and (max-width: 500px) {
+    dialog[open] {
+        width: 85dvw;
+        height: 80dvh;
     }
 }
+
 
 dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
