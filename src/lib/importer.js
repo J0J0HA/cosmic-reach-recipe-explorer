@@ -352,8 +352,8 @@ const V0 = {
 };
 
 const V2 = {
-    version: /(?:^0\.3\.\d+$)|(?:^0\.3\.2-pre(1|2|5|6|7|8|9|10)$)/,
-    name: "0.3 (V2)",
+    version: /(?:^0\.(?:3|4)\.\d+$)|(?:^0\.(?:3|4)\.2-pre(1|2|5|6|7|8|9|10)$)/,
+    name: "0.3 & 0.4 (V2)",
     async unloadFiles(source) {
         await db.translations.where("source").equals(source).delete();
         await db.textures.where("source").equals(source).delete();
