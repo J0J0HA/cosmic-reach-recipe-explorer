@@ -1,53 +1,42 @@
 <script>
-    import InventoryDisplay from "./InventoryDisplay.svelte";
+import InventoryDisplay from "./InventoryDisplay.svelte";
 
-    let { recipe } = $props();
+let { recipe } = $props();
 
-    import { ItemStack } from "$lib/items";
-    import { getTakeable, makeItemStack } from "$lib/utils";
+import { ItemStack } from "$lib/items";
+import { getTakeable, makeItemStack } from "$lib/utils";
 
-    import { db } from "$lib/db";
-    import { liveQuery } from "dexie";
+import { db } from "$lib/db";
+import { liveQuery } from "dexie";
 
-    const outputTakeable = $derived(
-        liveQuery(
-            async () => {
-                return await makeItemStack(
-                    await getTakeable(recipe.output.fullId),
-                    recipe.output.count || 1,
-                );
-            },
-            {},
-            [recipe.output.fullId],
-        ),
-    );
+const outputTakeable = $derived(
+    liveQuery(
+        async () => {
+            return await makeItemStack(await getTakeable(recipe.output.fullId), recipe.output.count || 1);
+        },
+        {},
+        [recipe.output.fullId],
+    ),
+);
 
-    const progressArrow = liveQuery(
-        () =>
-            db.textures
-                .where({
-                    modId: "base",
-                    subPath: "textures/ui/progress-arrow-full.png",
-                })
-                .first(),
-        { initialValue: null },
-    );
+const progressArrow = liveQuery(
+    () =>
+        db.textures
+            .where({
+                modId: "base",
+                subPath: "textures/ui/progress-arrow-full.png",
+            })
+            .first(),
+    { initialValue: null },
+);
 
-    const chunkArray = (arr, size) =>
-        arr.length > size
-            ? [arr.slice(0, size), ...chunkArray(arr.slice(size), size)]
-            : [arr];
+const chunkArray = (arr, size) => (arr.length > size ? [arr.slice(0, size), ...chunkArray(arr.slice(size), size)] : [arr]);
 
-    const inputItems = Promise.all(
-        recipe.inputs.map(async (input) =>
-            input === null
-                ? null
-                : await makeItemStack(
-                      await getTakeable(input.fullId || input),
-                      input.count || 1,
-                  ),
-        ),
-    );
+const inputItems = Promise.all(
+    recipe.inputs.map(async (input) =>
+        input === null ? null : await makeItemStack(await getTakeable(input.fullId || input), input.count || 1),
+    ),
+);
 </script>
 
 <div class="before-after bordered">

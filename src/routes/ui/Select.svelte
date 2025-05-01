@@ -52,8 +52,7 @@ let filteredOptions = $derived(Object.entries(options).filter(([key, val]) => va
                         open = !open;
                     }}
                     onkeydown={() => {
-                        if (!search.focus)
-                        search?.focus?.();
+                        if (!search.focus) search?.focus?.();
                         search.setSelectionRange(0, search.value.length);
                     }}
                 >

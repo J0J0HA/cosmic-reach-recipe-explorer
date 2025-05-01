@@ -12,7 +12,7 @@ import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
 import Body from "../../Body.svelte";
 import OreDistribution from "../../OreDistribution.svelte";
-    import CraftingRecipe from "../../CraftingRecipe.svelte";
+import CraftingRecipe from "../../CraftingRecipe.svelte";
 
 let itemStack = $derived(
     liveQuery(
