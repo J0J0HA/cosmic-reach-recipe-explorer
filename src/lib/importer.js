@@ -4,6 +4,7 @@ import * as Hjson from "hjson-devvit";
 import { writable } from "svelte/store";
 import { db } from "./db";
 import { patch_files } from "./patches";
+import { IoNutrition } from "svelte-icons-pack/io";
 
 export function fileNamesToTree(files) {
     const result = {};
@@ -195,7 +196,7 @@ const V1 = {
         );
 
         // Recipes
-        await db.craftingRecipes.bulkPut(
+        await db.legacyShapedCraftingRecipes.bulkPut(
             (
                 await Promise.all(
                     Object.entries(files)
@@ -246,6 +247,7 @@ const V1 = {
         await db.items.where("source").equals(source).delete();
         await db.blockstates.where("source").equals(source).delete();
         await db.craftingRecipes.where("source").equals(source).delete();
+        await db.legacyShapedCraftingRecipes.where("source").equals(source).delete();
         await db.furnaceRecipes.where("source").equals(source).delete();
         await db.ores.where("source").equals(source).delete();
     },
@@ -352,8 +354,8 @@ const V0 = {
 };
 
 const V2 = {
-    version: /(?:^0\.(?:3|4)\.\d+$)|(?:^0\.(?:3|4)\.2-pre(1|2|5|6|7|8|9|10)$)/,
-    name: "0.3 & 0.4 (V2)",
+    version: /(?:^0\.4\.(0|1|2|3|4)+$)|(?:^0\.3\.\d+$)|(?:^0\.3\.2-pre(1|2|5|6|7|8|9|10)$)/,
+    name: "0.3 - 0.4.8 (V2)",
     async unloadFiles(source) {
         await db.translations.where("source").equals(source).delete();
         await db.textures.where("source").equals(source).delete();
@@ -361,6 +363,7 @@ const V2 = {
         await db.items.where("source").equals(source).delete();
         await db.blockstates.where("source").equals(source).delete();
         await db.craftingRecipes.where("source").equals(source).delete();
+        await db.legacyShapedCraftingRecipes.where("source").equals(source).delete();
         await db.furnaceRecipes.where("source").equals(source).delete();
         await db.ores.where("source").equals(source).delete();
         await db.renderedModels.clear();
@@ -501,7 +504,7 @@ const V2 = {
         );
 
         // Recipes
-        await db.craftingRecipes.bulkPut(
+        await db.legacyShapedCraftingRecipes.bulkPut(
             (
                 await Promise.all(
                     Object.entries(files)
@@ -661,7 +664,280 @@ const V2 = {
     },
 };
 
-const loaders = [V0, V1, V2];
+const V3 = {
+    version: /^0\.4\.\d$/,
+    name: "0.4.8+ (V3)",
+    async unloadFiles(source) {
+        await db.translations.where("source").equals(source).delete();
+        await db.textures.where("source").equals(source).delete();
+        await db.models.where("source").equals(source).delete();
+        await db.items.where("source").equals(source).delete();
+        await db.blockstates.where("source").equals(source).delete();
+        await db.craftingRecipes.where("source").equals(source).delete();
+        await db.legacyShapedCraftingRecipes.where("source").equals(source).delete();
+        await db.furnaceRecipes.where("source").equals(source).delete();
+        await db.ores.where("source").equals(source).delete();
+        await db.renderedModels.clear();
+    },
+    async activate() {
+        await this.loadFiles("static_patch", patch_files);
+    },
+    async loadFiles(source, files) {
+        // await db.transaction("rw", db.textures, db.models, async () => {
+
+        // Unload
+        await this.unloadFiles(source);
+
+        // Translations
+        const translations = {};
+        await Promise.all(
+            Object.entries(files)
+                .filter((entry) => entry[0].split("/")[1] === "lang" && entry[0].endsWith(".json"))
+                .map(async (entry) => {
+                    const language = entry[0].split("/")[2];
+                    if (language.endsWith(".schema.json")) return null;
+                    const data = await entry[1].readJson();
+                    translations[language] = Object.assign(translations[language] || {}, data);
+                }),
+        );
+
+        for (const [langKey, data] of Object.entries(translations)) {
+            await db.translations.bulkPut(
+                Object.entries(data).map(([translationKey, value]) => {
+                    return {
+                        langKey,
+                        translationKey,
+                        source,
+                        value,
+                    };
+                }),
+            );
+        }
+
+        if (source === "jar")
+            await db.metadata.put({
+                key: "languages",
+                value: Object.entries(translations).map(([key, value]) => ({
+                    key,
+                    name: value?.metadata?.name || key,
+                })),
+            });
+
+        // Textures
+        await db.textures.bulkPut(
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].split("/")[1] === "textures" && entry[0].endsWith(".png"))
+                    .map(async (entry) => ({
+                        path: entry[0],
+                        source,
+                        data: (await blobToDataURL(await entry[1].readBlob())).replace("application/octet-stream", "image/png"),
+                        modId: entry[0].split("/")[0],
+                        subPath: entry[0].split("/").slice(1).join("/"),
+                    })),
+            ),
+        );
+
+        // Models
+        await db.models.bulkPut(
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].split("/")[1] === "models" && entry[0].endsWith(".json"))
+                    .map(async (entry) => {
+                        const data = await entry[1].readJson();
+                        return {
+                            path: entry[0],
+                            source,
+                            data,
+                            modId: entry[0].split("/")[0],
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                        };
+                    }),
+            ),
+        );
+
+        // Items
+        await db.items.bulkPut(
+            await Promise.all(
+                Object.entries(files)
+                    .filter((entry) => entry[0].split("/")[1] === "items" && entry[0].endsWith(".json"))
+                    .map(async (entry) => {
+                        const data = await entry[1].readJson();
+                        const modId = entry[0].split("/")[0];
+                        const subId = data.id.split(":")[1];
+                        if (data.id.split(":")[0] !== entry[0].split("/")[0]) {
+                            console.error("Mod ID mismatch in item", entry[0]);
+                        }
+                        return {
+                            path: entry[0],
+                            source,
+                            fullId: `${modId}:${subId}`,
+                            data: data.itemProperties,
+                            modId,
+                            subId,
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                        };
+                    }),
+            ),
+        );
+
+        // Blocks
+        await db.blockstates.bulkPut(
+            (
+                await Promise.all(
+                    Object.entries(files)
+                        .filter((entry) => entry[0].split("/")[1] === "blocks" && entry[0].endsWith(".json"))
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            const modId = entry[0].split("/")[0];
+                            const subId = data.stringId.split(":")[1];
+                            if (data.stringId.split(":")[0] !== entry[0].split("/")[0]) {
+                                console.error("Mod ID mismatch in block", entry[0]);
+                            }
+                            return await Promise.all(
+                                Object.entries(data.blockStates).map(async ([blockStateName, blockStateData]) => {
+                                    return {
+                                        path: entry[0],
+                                        fullId: `${modId}:${subId}[${blockStateName}]`,
+                                        blockId: `${modId}:${subId}`,
+                                        source,
+                                        data: blockStateData,
+                                        modId,
+                                        subId,
+                                        state: blockStateName,
+                                        showInCatalog: !blockStateData.catalogHidden ? 1 : 0,
+                                    };
+                                }),
+                            );
+                        }),
+                )
+            ).flat(),
+        );
+
+        // Recipes
+        await db.craftingRecipes.bulkPut(
+            (
+                await Promise.all(
+                    Object.entries(files)
+                        .filter(
+                            (entry) =>
+                                entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "crafting" && entry[0].endsWith(".json"),
+                        )
+                        .map(async (entry) => {
+                            let recipes = await entry[1].readJson();
+                            if (!Array.isArray(recipes)) {
+                                recipes = [recipes];
+                            }
+                            console.log(recipes);
+                            return recipes.map((recipe) => ({
+                                path: entry[0],
+                                subPath: entry[0].split("/").slice(1).join("/"),
+                                modId: entry[0].split("/")[0],
+                                source,
+                                inputsFullIds: recipe.inputs.map((input) => input.item),
+                                inputs: recipe.inputs.map((input) => ({ fullId: input.item, count: input.amount })),
+                                output: {
+                                    fullId: recipe.output.item,
+                                    count: recipe.output.amount,
+                                },
+                            }));
+                        }),
+                )
+            ).flat(),
+        );
+
+        await db.furnaceRecipes.bulkPut(
+            (
+                await Promise.all(
+                    Object.entries(files)
+                        .filter(
+                            (entry) =>
+                                entry[0].split("/")[1] === "recipes" && entry[0].split("/")[2] === "furnace" && entry[0].endsWith(".json"),
+                        )
+                        .map(async (entry) => {
+                            const data = await entry[1].readJson();
+                            return (await this.parseFurnaceRecipe(data)).map((recipe) => ({
+                                path: entry[0],
+                                subPath: entry[0].split("/").slice(1).join("/"),
+                                modId: entry[0].split("/")[0],
+                                source,
+                                ...recipe,
+                            }));
+                        }),
+                )
+            ).flat(),
+        );
+
+        // Oreloader ores
+        await db.ores.bulkPut(
+            await Promise.all(
+                Object.entries(files)
+                    .filter(
+                        (entry) => entry[0].split("/")[1] === "worldgen" && entry[0].split("/")[2] === "ores" && entry[0].endsWith(".json"),
+                    )
+                    .map(async (entry) => {
+                        const data = await entry[1].readJson();
+                        return {
+                            path: entry[0],
+                            subPath: entry[0].split("/").slice(1).join("/"),
+                            modId: entry[0].split("/")[0],
+                            source,
+                            blockId: data?.ore?.blockId,
+                            tagsOfBlocksToReplace: data?.ore?.tagsOfBlocksToReplace,
+                            data,
+                        };
+                    }),
+            ),
+        );
+
+        await db.renderedModels.clear();
+        // });
+    },
+    async parseFurnaceRecipe(data) {
+        const result = [];
+        for (const recipe of Object.entries(data)) {
+            const input = {
+                fullId: recipe[0],
+                count: 1,
+            };
+            const output = {
+                fullId: recipe[1],
+                count: 1,
+            };
+            result.push({
+                usedItem: input,
+                result: output,
+            });
+        }
+        return result;
+    },
+};
+
+const Vcorrupt = {
+    version: /^0\.4\.5$/,
+    name: "0.4.5 (Vcorrupt)",
+    async unloadFiles(source) {
+        await db.translations.where("source").equals(source).delete();
+        await db.textures.where("source").equals(source).delete();
+        await db.models.where("source").equals(source).delete();
+        await db.items.where("source").equals(source).delete();
+        await db.blockstates.where("source").equals(source).delete();
+        await db.craftingRecipes.where("source").equals(source).delete();
+        await db.legacyShapedCraftingRecipes.where("source").equals(source).delete();
+        await db.furnaceRecipes.where("source").equals(source).delete();
+        await db.ores.where("source").equals(source).delete();
+        await db.renderedModels.clear();
+    },
+    async activate() {
+        await this.loadFiles("static_patch", patch_files);
+    },
+    async loadFiles(source, files) {
+        await this.unloadFiles(source);
+        if (source === "jar") alert("This version contains corrupted files and thus cannot be loaded successfully.");
+    },
+};
+
+const loaders = [Vcorrupt, V0, V1, V2, V3];
 
 export function getLoader(version) {
     for (const mloader of loaders) {

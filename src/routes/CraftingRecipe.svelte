@@ -1,53 +1,61 @@
 <script>
-import InventoryDisplay from "./InventoryDisplay.svelte";
+    import InventoryDisplay from "./InventoryDisplay.svelte";
 
-let { recipe } = $props();
+    let { recipe } = $props();
 
-import { ItemStack } from "$lib/items";
-import { getTakeable, makeItemStack } from "$lib/utils";
+    import { ItemStack } from "$lib/items";
+    import { getTakeable, makeItemStack } from "$lib/utils";
 
-import { db } from "$lib/db";
-import { liveQuery } from "dexie";
+    import { db } from "$lib/db";
+    import { liveQuery } from "dexie";
 
-const resultTakeable = $derived(
-    liveQuery(
-        async () => {
-            return await makeItemStack(await getTakeable(recipe.result.fullId));
-        },
-        {},
-        [recipe.result.fullId],
-    ),
-);
+    const outputTakeable = $derived(
+        liveQuery(
+            async () => {
+                return await makeItemStack(
+                    await getTakeable(recipe.output.fullId),
+                    recipe.output.count || 1,
+                );
+            },
+            {},
+            [recipe.output.fullId],
+        ),
+    );
 
-const progressArrow = liveQuery(
-    () =>
-        db.textures
-            .where({
-                modId: "base",
-                subPath: "textures/ui/progress-arrow-full.png",
-            })
-            .first(),
-    { initialValue: null },
-);
+    const progressArrow = liveQuery(
+        () =>
+            db.textures
+                .where({
+                    modId: "base",
+                    subPath: "textures/ui/progress-arrow-full.png",
+                })
+                .first(),
+        { initialValue: null },
+    );
 
-const transformedGrid = Promise.all(
-    recipe.grid.map(
-        async (row) =>
-            await Promise.all(
-                row.map(async (cell) =>
-                    cell === null ? null : await makeItemStack(await getTakeable(cell.fullId || cell, cell.count || 1)),
-                ),
-            ),
-    ),
-);
+    const chunkArray = (arr, size) =>
+        arr.length > size
+            ? [arr.slice(0, size), ...chunkArray(arr.slice(size), size)]
+            : [arr];
+
+    const inputItems = Promise.all(
+        recipe.inputs.map(async (input) =>
+            input === null
+                ? null
+                : await makeItemStack(
+                      await getTakeable(input.fullId || input),
+                      input.count || 1,
+                  ),
+        ),
+    );
 </script>
 
 <div class="before-after bordered">
     <div class="table">
-        {#await transformedGrid}
+        {#await inputItems}
             <p>Loading... ({recipe.id})</p>
-        {:then transformedGrid}
-            <InventoryDisplay grid={transformedGrid} />
+        {:then inputItems}
+            <InventoryDisplay grid={chunkArray(inputItems, 2)} />
         {:catch error}
             <p>{error.message}</p>
         {/await}
@@ -58,17 +66,12 @@ const transformedGrid = Promise.all(
         class="arrow"
         draggable="false"
     />
-    <p class="note">
-        {#if recipe.patternless}
-            (shapeless)
-        {/if}
-    </p>
     <InventoryDisplay
         grid={[
             [
                 new ItemStack(
-                    $resultTakeable || recipe.result.fullId,
-                    recipe.result.count || 1,
+                    $outputTakeable || recipe.output.fullId,
+                    recipe.output.count || 1,
                 ),
             ],
         ]}

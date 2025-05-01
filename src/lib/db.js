@@ -3,12 +3,13 @@ import Dexie from "dexie";
 import { renderBlockModel } from "./rendering";
 
 export const db = new Dexie("CosmicReachStore");
-db.version(6).stores({
+db.version(7).stores({
     metadata: "&key",
     translations: "++id, langKey, translationKey, source, [langKey+translationKey]",
     textures: "&[source+path], source, modId, subPath, [modId+subPath]",
     models: "&[source+path], source, modId, subPath, [modId+subPath]",
-    craftingRecipes: "++id, source, modId, *usedItemsFullIds, result.fullId",
+    legacyShapedCraftingRecipes: "++id, source, modId, *usedItemsFullIds, result.fullId",
+    craftingRecipes: "++id, source, modId, *inputsFullIds, output.fullId",
     furnaceRecipes: "++id, source, modId, usedItem.fullId, result.fullId",
     items: "&[source+path], fullId, source, modId, subId, [modId+subId]",
     blockstates:

@@ -1,6 +1,6 @@
 <script>
 import { locale } from "$lib/stores";
-import CraftingRecipe from "../../CraftingRecipe.svelte";
+import LegacyShapedCraftingRecipe from "../../LegacyShapedCraftingRecipe.svelte";
 import Header from "../../Header.svelte";
 import ItemStackDetailDisplay from "../../ItemStackDetailDisplay.svelte";
 
@@ -12,6 +12,7 @@ import FurnaceRecipe from "../../FurnaceRecipe.svelte";
 
 import Body from "../../Body.svelte";
 import OreDistribution from "../../OreDistribution.svelte";
+    import CraftingRecipe from "../../CraftingRecipe.svelte";
 
 let itemStack = $derived(
     liveQuery(
@@ -23,8 +24,12 @@ let itemStack = $derived(
     ),
 );
 
+let legacyShapedCraftingRecipes = $derived(
+    liveQuery(() => db.legacyShapedCraftingRecipes.where("result.fullId").equals($page.params.item).toArray(), {}, $page.params.item),
+);
+
 let craftingRecipes = $derived(
-    liveQuery(() => db.craftingRecipes.where("result.fullId").equals($page.params.item).toArray(), {}, $page.params.item),
+    liveQuery(() => db.craftingRecipes.where("output.fullId").equals($page.params.item).toArray(), {}, $page.params.item),
 );
 
 let furnaceRecipes = $derived(
@@ -67,11 +72,15 @@ let name = $derived(
                 <!-- not recipe.id to refresh when db refetched. -->
                 <FurnaceRecipe {recipe} />
             {/each}
+            {#each $legacyShapedCraftingRecipes || [] as recipe (recipe)}
+                <!-- not recipe.id to refresh when db refetched. -->
+                <LegacyShapedCraftingRecipe {recipe} />
+            {/each}
             {#each $craftingRecipes || [] as recipe (recipe)}
                 <!-- not recipe.id to refresh when db refetched. -->
                 <CraftingRecipe {recipe} />
             {/each}
-            {#if !$ores?.length && !$craftingRecipes?.length && !$furnaceRecipes?.length}
+            {#if !$ores?.length && !$craftingRecipes?.length && !$legacyShapedCraftingRecipes?.length && !$furnaceRecipes?.length}
                 <p>There are no ways to get {$name || $itemStack?.fullId}.</p>
             {/if}
         </div>
